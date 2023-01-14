@@ -1,0 +1,21 @@
+cppHeaderFileInclude {
+   \.h$
+   \.hpp$
+   \.inc$
+   \.inl$
+}
+
+cppSrcFileInclude {
+   \.cpp$
+}
+
+modifiableFileExclude {
+   gradle/
+   gradlew
+}
+
+generatedFileExclude {
+   \.odg$
+   \.pdf$
+   \.png$
+}

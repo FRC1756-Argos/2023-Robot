@@ -1,0 +1,49 @@
+# This is a basic workflow to build robot code.
+
+name: Format
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  wpiformat:
+    name: "wpiformat"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install wpiformat
+        run: pip3 install wpiformat==2022.21 clang-format
+      - name: Rename branch
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: git checkout -b main HEAD
+      - name: Run
+        run: wpiformat
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
+      - name: Push changes
+        if: ${{ steps.git-check.outputs.modified == 'true' && !(github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+        uses: EndBug/add-and-commit@v7
+        with:
+          default_author: github_actions
+          author_name: wpiformat
+          message: Automated formatting changes
+      - name: Create pull request
+        if: ${{ steps.git-check.outputs.modified == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: peter-evans/create-pull-request@v3.10.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Automated formatting changes
+          committer: GitHub <noreply@github.com>
+          author: wpiformat <${{ github.actor }}@users.noreply.github.com>
+          branch: wpiformat/auto_format_changes
+          delete-branch: true
+          title: Formatting Changes
+          labels: style
