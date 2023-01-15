@@ -12,7 +12,7 @@ When commissioning a new robot, you should set the instance type to either "Comp
 
 ### Vision
 
-See [vision readme](vision/READMEM.md) for information on which pipelines to use and which indices to install these pipelines on.
+See [vision readme](vision/README.md) for information on which pipelines to use and which indices to install these pipelines on.
 
 ## Project Setup
 
