@@ -1,13 +1,13 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
 
 #include "subsystems/lifter_subsystem.h"
-#include "argos_lib/config/falcon_config.h"
-#include "units/time.h"
 
-#include "constants/motors.h"
+#include "argos_lib/config/falcon_config.h"
 #include "constants/addresses.h"
+#include "constants/motors.h"
+#include "units/time.h"
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
