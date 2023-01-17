@@ -9,9 +9,6 @@
 #include <ctre/phoenix/sensors/CANCoder.h>
 #include <argos_lib/config/config_types.h>
 
-using namespace ctre::phoenix::motorcontrol::can;
-using namespace ctre::phoenix::sensors;
-
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
 class lifter_subsystem : public frc2::SubsystemBase {
@@ -50,11 +47,11 @@ class lifter_subsystem : public frc2::SubsystemBase {
   // declared private and exposed only through public methods.
 
   // Shoulder motors are attached in parallel mechanically to operate shoulder, back motor follows front motor
-  WPI_TalonFX m_frontShoulder;  // Shoulder motor closest to front of robot
-  WPI_TalonFX m_backShoulder;   // Shoulder motor closest to back of robot
-  WPI_TalonFX m_arm;            // Motor that controls extension of arm
-  WPI_TalonFX m_wrist;          // Motor that controls wrist movement
-  CANCoder m_armEncoder;        // Encoder that measures arm extension
-  CANCoder m_shoulderEncoder;   // Encoder that measures shoulder position
-  CANCoder m_wristEncoder;      // Encoder for measuring wrist position
+  ctre::phoenix::motorcontrol::can::WPI_TalonFX m_frontShoulder;  // Shoulder motor closest to front of robot
+  ctre::phoenix::motorcontrol::can::WPI_TalonFX m_backShoulder;   // Shoulder motor closest to back of robot
+  ctre::phoenix::motorcontrol::can::WPI_TalonFX m_arm;            // Motor that controls extension of arm
+  ctre::phoenix::motorcontrol::can::WPI_TalonFX m_wrist;          // Motor that controls wrist movement
+  ctre::phoenix::sensors::CANCoder m_armEncoder;                  // Encoder that measures arm extension
+  ctre::phoenix::sensors::CANCoder m_shoulderEncoder;             // Encoder that measures shoulder position
+  ctre::phoenix::sensors::CANCoder m_wristEncoder;                // Encoder for measuring wrist position
 };
