@@ -4,7 +4,12 @@
 
 #include "subsystems/intake_subsystem.h"
 
-IntakeSubsystem::IntakeSubsystem() = default;
+#include "constants/addresses.h"
+
+IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
+    : m_intakeMotor{instance == argos_lib::RobotInstance::Competition ?
+                        address::comp_bot::intake::intakeMotor.address :
+                        address::practice_bot::intake::intakeMotor.address} {}
 
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {}

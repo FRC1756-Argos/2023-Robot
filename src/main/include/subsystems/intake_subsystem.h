@@ -7,9 +7,11 @@
 #include <ctre/Phoenix.h>
 #include <frc2/command/SubsystemBase.h>
 
-class Intake_subsystem : public frc2::SubsystemBase {
+#include "argos_lib/config/config_types.h"
+
+class IntakeSubsystem : public frc2::SubsystemBase {
  public:
-  Intake_subsystem();
+  explicit IntakeSubsystem(argos_lib::RobotInstance instance);
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
