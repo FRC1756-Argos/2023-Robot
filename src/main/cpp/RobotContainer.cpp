@@ -20,7 +20,8 @@ RobotContainer::RobotContainer()
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
     , m_swerveDrive(m_instance)
-    , m_lifter(m_instance) {
+    , m_lifter(m_instance)
+    , m_intake(m_instance) {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
