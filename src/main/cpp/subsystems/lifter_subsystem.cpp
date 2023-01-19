@@ -65,5 +65,40 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   m_shoulderFollower.Follow(m_shoulderLeader);
 }
 
+/* —————————————————— LifterSubsystem Member Functions ————————————————— */
+
+void LifterSubsystem::SetShoulderSpeed(double speed) {
+  m_shoulderLeader.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void LifterSubsystem::StopArm() {
+  m_shoulderLeader.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_shoulderLeader.Set(0.0);
+}
+
+void LifterSubsystem::SetArmExtensionSpeed(double speed) {
+  m_armExtension.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void LifterSubsystem::StopArmExtension() {
+  m_armExtension.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_armExtension.Set(0.0);
+}
+
+void LifterSubsystem::SetWristSpeed(double speed) {
+  m_wrist.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void LifterSubsystem::StopWrist() {
+  m_wrist.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_wrist.Set(0.0);
+}
+
 // This method will be called once per scheduler run
 void LifterSubsystem::Periodic() {}
+
+void LifterSubsystem::Disable() {
+  StopArm();
+  StopArmExtension();
+  StopWrist();
+}

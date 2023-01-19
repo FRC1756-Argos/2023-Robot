@@ -87,7 +87,8 @@
     "streambuf": "cpp",
     "thread": "cpp",
     "cinttypes": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "core": "cpp"
   },
   "cSpell.words": [
     "ctre",
