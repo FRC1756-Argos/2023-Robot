@@ -20,11 +20,22 @@ namespace address {
       constexpr static argos_lib::CANAddress backLeftDrive{7, "drive"};
       constexpr static argos_lib::CANAddress backLeftTurn{8, "drive"};
     };
+    struct lifter {
+      constexpr static argos_lib::CANAddress frontShoulder{9, "rio"};
+      constexpr static argos_lib::CANAddress backShoulder{10, "rio"};
+      constexpr static argos_lib::CANAddress arm{11, "rio"};
+      constexpr static argos_lib::CANAddress wrist{12, "rio"};
+    };
     struct encoders {
       constexpr static argos_lib::CANAddress frontLeftEncoder{1, "drive"};
       constexpr static argos_lib::CANAddress frontRightEncoder{2, "drive"};
       constexpr static argos_lib::CANAddress backRightEncoder{3, "drive"};
       constexpr static argos_lib::CANAddress backLeftEncoder{4, "drive"};
+
+      // Lifter encoders
+      constexpr static argos_lib::CANAddress shoulderEncoder{5, "rio"};
+      constexpr static argos_lib::CANAddress armExtenderEncoder{6, "rio"};
+      constexpr static argos_lib::CANAddress wristEncoder{7, "rio"};
     };
     struct controllers {
       constexpr static const char driver = 0;
@@ -37,6 +48,7 @@ namespace address {
   }  // namespace comp_bot
   namespace practice_bot {
     using drive = address::comp_bot::drive;
+    using lifter = address::comp_bot::lifter;
     using encoders = address::comp_bot::encoders;
     using controllers = address::comp_bot::controllers;
     using solenoids = address::comp_bot::solenoids;
