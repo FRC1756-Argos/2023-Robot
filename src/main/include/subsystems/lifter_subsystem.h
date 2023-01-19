@@ -28,9 +28,9 @@ class LifterSubsystem : public frc2::SubsystemBase {
   // Shoulder motors are attached in parallel mechanically to operate shoulder, back motor follows front motor
   WPI_TalonFX m_shoulderLeader;    // Shoulder motor closest to front of robot
   WPI_TalonFX m_shoulderFollower;  // Shoulder motor closest to back of robot
-  WPI_TalonFX m_arm;               // Motor that controls extension of arm
+  WPI_TalonFX m_armExtension;      // Motor that controls extension of arm
   WPI_TalonFX m_wrist;             // Motor that controls wrist movement
-  CANCoder m_armEncoder;           // Encoder that measures arm extension
+  CANCoder m_armExtensionEncoder;  // Encoder that measures arm extension
   CANCoder m_shoulderEncoder;      // Encoder that measures shoulder position
   CANCoder m_wristEncoder;         // Encoder for measuring wrist position
 };

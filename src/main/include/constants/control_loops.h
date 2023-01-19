@@ -39,7 +39,33 @@ namespace controlLoop {
         constexpr static auto angularAcceleration = units::degrees_per_second_squared_t{360};
       };  // namespace rotational_follower
     }     // namespace drive
-  }       // namespace comp_bot
+    namespace lifter {
+      struct armExtension {
+        constexpr static double kP = 0;
+        constexpr static double kI = 0;
+        constexpr static double kD = 0;
+        constexpr static double kF = 0;
+        constexpr static double iZone = 0;
+        constexpr static double allowableError = 0;
+      };
+      struct shoulder {
+        constexpr static double kP = 0;
+        constexpr static double kI = 0;
+        constexpr static double kD = 0;
+        constexpr static double kF = 0;
+        constexpr static double iZone = 0;
+        constexpr static double allowableError = 0;
+      };
+      struct wrist {
+        constexpr static double kP = 0;
+        constexpr static double kI = 0;
+        constexpr static double kD = 0;
+        constexpr static double kF = 0;
+        constexpr static double iZone = 0;
+        constexpr static double allowableError = 0;
+      };
+    }  // namespace lifter
+  }    // namespace comp_bot
   namespace practice_bot {
     namespace drive {
       using rotate = controlLoop::comp_bot::drive::rotate;
@@ -47,5 +73,10 @@ namespace controlLoop {
       using linear_follower = controlLoop::comp_bot::drive::linear_follower;
       using rotational_follower = controlLoop::comp_bot::drive::rotational_follower;
     }  // namespace drive
+    namespace lifter {
+      using armExtension = comp_bot::lifter::armExtension;
+      using shoulder = comp_bot::lifter::shoulder;
+      using write = comp_bot::lifter::wrist;
+    }  // namespace lifter
   }    // namespace practice_bot
 }  // namespace controlLoop

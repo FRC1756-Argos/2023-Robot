@@ -25,16 +25,17 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                          std::string(GetCANBus(address::comp_bot::lifter::backShoulder,
                                                address::practice_bot::lifter::backShoulder,
                                                instance))}
-    , m_arm{GetCANAddr(address::comp_bot::lifter::arm, address::practice_bot::lifter::arm, instance),
-            std::string(GetCANBus(address::comp_bot::lifter::arm, address::practice_bot::lifter::arm, instance))}
+    , m_armExtension{GetCANAddr(address::comp_bot::lifter::arm, address::practice_bot::lifter::arm, instance),
+                     std::string(
+                         GetCANBus(address::comp_bot::lifter::arm, address::practice_bot::lifter::arm, instance))}
     , m_wrist{GetCANAddr(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance),
               std::string(GetCANBus(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance))}
-    , m_armEncoder{GetCANAddr(address::comp_bot::encoders::armExtenderEncoder,
-                              address::practice_bot::encoders::armExtenderEncoder,
-                              instance),
-                   std::string(GetCANBus(address::comp_bot::encoders::armExtenderEncoder,
-                                         address::practice_bot::encoders::armExtenderEncoder,
-                                         instance))}
+    , m_armExtensionEncoder{GetCANAddr(address::comp_bot::encoders::armExtenderEncoder,
+                                       address::practice_bot::encoders::armExtenderEncoder,
+                                       instance),
+                            std::string(GetCANBus(address::comp_bot::encoders::armExtenderEncoder,
+                                                  address::practice_bot::encoders::armExtenderEncoder,
+                                                  instance))}
     , m_shoulderEncoder{GetCANAddr(address::comp_bot::encoders::shoulderEncoder,
                                    address::practice_bot::encoders::shoulderEncoder,
                                    instance),
@@ -55,7 +56,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                                          motorConfig::practice_bot::lifter::shoulderFollower>(
       m_shoulderFollower, 100_ms, instance);
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::arm, motorConfig::practice_bot::lifter::arm>(
-      m_arm, 100_ms, instance);
+      m_armExtension, 100_ms, instance);
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::wrist,
                                          motorConfig::practice_bot::lifter::wrist>(m_wrist, 100_ms, instance);
