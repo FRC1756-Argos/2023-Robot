@@ -26,6 +26,9 @@ namespace address {
       constexpr static argos_lib::CANAddress arm{11, "rio"};
       constexpr static argos_lib::CANAddress wrist{12, "rio"};
     };
+    struct intake {
+      constexpr static argos_lib::CANAddress intakeMotor{13, "rio"};
+    };
     struct encoders {
       constexpr static argos_lib::CANAddress frontLeftEncoder{1, "drive"};
       constexpr static argos_lib::CANAddress frontRightEncoder{2, "drive"};
@@ -49,6 +52,7 @@ namespace address {
   namespace practice_bot {
     using drive = address::comp_bot::drive;
     using lifter = address::comp_bot::lifter;
+    using intake = address::comp_bot::intake;
     using encoders = address::comp_bot::encoders;
     using controllers = address::comp_bot::controllers;
     using solenoids = address::comp_bot::solenoids;

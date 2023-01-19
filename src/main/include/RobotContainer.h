@@ -10,6 +10,7 @@
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
 
@@ -46,6 +47,7 @@ class RobotContainer {
   argos_lib::SwappableControllersSubsystem m_controllers;
   SwerveDriveSubsystem m_swerveDrive;
   LifterSubsystem m_lifter;
+  IntakeSubsystem m_intake;
 
   void ConfigureBindings();
 };
