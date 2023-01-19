@@ -5,7 +5,7 @@
 #pragma once
 
 #include <argos_lib/config/config_types.h>
-#include <ctre/phoenix.h>
+#include <ctre/Phoenix.h>
 #include <frc2/command/SubsystemBase.h>
 
 #include <string>
