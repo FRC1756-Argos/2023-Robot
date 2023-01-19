@@ -118,8 +118,61 @@ namespace motorConfig {
     namespace lifter {
       // TODO both of these are temporarily set to generic drive motor configs
       //  but will need their own configs and control loop values in the future
-      using arm = motorConfig::comp_bot::drive::genericDrive;
-      using shoulder = motorConfig::comp_bot::drive::genericDrive;
+      struct arm {
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static bool sensorPhase = false;
+        constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
+        constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
+        constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
+        constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
+        constexpr static auto remoteFilter0_addr = address::comp_bot::encoders::armExtenderEncoder;
+        constexpr static auto remoteFilter0_type =
+            ctre::phoenix::motorcontrol::RemoteSensorSource::RemoteSensorSource_CANCoder;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::RemoteSensor0;
+        constexpr static auto pid0_kP = controlLoop::comp_bot::drive::drive::kP;
+        constexpr static auto pid0_kI = controlLoop::comp_bot::drive::drive::kI;
+        constexpr static auto pid0_kD = controlLoop::comp_bot::drive::drive::kD;
+        constexpr static auto pid0_kF = controlLoop::comp_bot::drive::drive::kF;
+        constexpr static auto pid0_iZone = controlLoop::comp_bot::drive::drive::iZone;
+        constexpr static auto pid0_allowableError = controlLoop::comp_bot::drive::drive::allowableError;
+      };
+      struct shoulderLeader {
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static bool sensorPhase = false;
+        constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
+        constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
+        constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
+        constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
+        constexpr static auto remoteFilter0_addr = address::comp_bot::encoders::shoulderEncoder;
+        constexpr static auto remoteFilter0_type =
+            ctre::phoenix::motorcontrol::RemoteSensorSource::RemoteSensorSource_CANCoder;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::RemoteSensor0;
+        constexpr static auto pid0_kP = controlLoop::comp_bot::drive::drive::kP;
+        constexpr static auto pid0_kI = controlLoop::comp_bot::drive::drive::kI;
+        constexpr static auto pid0_kD = controlLoop::comp_bot::drive::drive::kD;
+        constexpr static auto pid0_kF = controlLoop::comp_bot::drive::drive::kF;
+        constexpr static auto pid0_iZone = controlLoop::comp_bot::drive::drive::iZone;
+        constexpr static auto pid0_allowableError = controlLoop::comp_bot::drive::drive::allowableError;
+      };
+      struct shoulderFollower {
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static bool sensorPhase = false;
+        constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
+        constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
+        constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
+        constexpr static auto statusFrameMotorMode =
+            argos_lib::status_frame_config::MotorPresetMode::FollowerFX;  // As follower, send less CAN traffic
+        constexpr static auto remoteFilter0_addr = address::comp_bot::encoders::shoulderEncoder;
+        constexpr static auto remoteFilter0_type =
+            ctre::phoenix::motorcontrol::RemoteSensorSource::RemoteSensorSource_CANCoder;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::RemoteSensor0;
+        constexpr static auto pid0_kP = controlLoop::comp_bot::drive::drive::kP;
+        constexpr static auto pid0_kI = controlLoop::comp_bot::drive::drive::kI;
+        constexpr static auto pid0_kD = controlLoop::comp_bot::drive::drive::kD;
+        constexpr static auto pid0_kF = controlLoop::comp_bot::drive::drive::kF;
+        constexpr static auto pid0_iZone = controlLoop::comp_bot::drive::drive::iZone;
+        constexpr static auto pid0_allowableError = controlLoop::comp_bot::drive::drive::allowableError;
+      };
 
       // Currently just generic drive with remote sensor
       struct wrist {
@@ -221,7 +274,8 @@ namespace motorConfig {
     }  // namespace drive
     namespace lifter {
       using arm = motorConfig::comp_bot::lifter::arm;
-      using shoulder = motorConfig::comp_bot::lifter::shoulder;
+      using shoulderLeader = motorConfig::comp_bot::lifter::shoulderLeader;
+      using shoulderFollower = motorConfig::comp_bot::lifter::shoulderFollower;
 
       // Currently just generic drive with remote sensor
       struct wrist {
