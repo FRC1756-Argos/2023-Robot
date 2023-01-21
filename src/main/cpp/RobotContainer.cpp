@@ -55,37 +55,34 @@ RobotContainer::RobotContainer()
       },
       {&m_swerveDrive}));
 
-  m_lifter.SetDefaultCommand(frc2::RunCommand([this] {
-    // Gets Y as double from [-1, 1]
-    // Use interpolation map for deadband, and to cap max value
-    double shoulderSpeed = m_shoulderSpeed.Map(
-        m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kLeftHand));
-    double extensionSpeed = m_armExtenderSpeed.Map(
-        m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kRightHand));
-    double wristSpeed =
-        m_wristSpeed.Map(m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand));
+  m_lifter.SetDefaultCommand(frc2::RunCommand(
+      [this] {
+        // Gets Y as double from [-1, 1]
+        // Use interpolation map for deadband, and to cap max value
+        double shoulderSpeed = -m_shoulderSpeed.Map(
+            m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kLeftHand));
+        double extensionSpeed = -m_armExtenderSpeed.Map(
+            m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kLeftHand));
+        double wristSpeed = m_wristSpeed.Map(
+            m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand));
 
-    // DEBUG print output to smart dashboard to validate
-    frc::SmartDashboard::PutNumber("Shoulder interp speed", shoulderSpeed);
-    frc::SmartDashboard::PutNumber("Extension interp speed", extensionSpeed);
-    frc::SmartDashboard::PutNumber("Wrist interp speed", wristSpeed);
-
-    if (shoulderSpeed == 0.0) {
-      m_lifter.StopArm();
-    } else {
-      m_lifter.SetShoulderSpeed(shoulderSpeed);
-    }
-    if (extensionSpeed == 0.0) {
-      m_lifter.StopArmExtension();
-    } else {
-      m_lifter.SetArmExtensionSpeed(extensionSpeed);
-    }
-    if (wristSpeed == 0.0) {
-      m_lifter.StopWrist();
-    } else {
-      m_lifter.SetWristSpeed(wristSpeed);
-    }
-  }));
+        if (shoulderSpeed == 0.0) {
+          m_lifter.StopArm();
+        } else {
+          m_lifter.SetShoulderSpeed(shoulderSpeed);
+        }
+        if (extensionSpeed == 0.0) {
+          m_lifter.StopArmExtension();
+        } else {
+          m_lifter.SetArmExtensionSpeed(extensionSpeed);
+        }
+        if (wristSpeed == 0.0) {
+          m_lifter.StopWrist();
+        } else {
+          m_lifter.SetWristSpeed(wristSpeed);
+        }
+      },
+      {&m_lifter}));
 
   // Configure the button bindings
   ConfigureBindings();
@@ -115,10 +112,10 @@ void RobotContainer::ConfigureBindings() {
   auto fieldHome = (frc2::Trigger{
       [this]() { return m_controllers.DriverController().GetDebouncedButton(argos_lib::XboxController::Button::kY); }});
   auto intakeForwardTrigger = (frc2::Trigger{[this]() {
-    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kLeftTrigger);
+    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kRightTrigger);
   }});
   auto intakeReverseTrigger = (frc2::Trigger{[this]() {
-    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kRightTrigger);
+    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kLeftTrigger);
   }});
   // Swap controllers config
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBack, {1500_ms, 0_ms});
