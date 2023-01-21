@@ -17,6 +17,9 @@
 RobotContainer::RobotContainer()
     : m_driveSpeedMap(controllerMap::driveSpeed)
     , m_driveRotSpeed(controllerMap::driveRotSpeed)
+    , m_shoulderSpeed(controllerMap::shoulderSpeed)
+    , m_armExtenderSpeed(controllerMap::armExtensionSpeed)
+    , m_wristSpeed(controllerMap::armExtensionSpeed)
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
     , m_swerveDrive(m_instance)
@@ -52,6 +55,35 @@ RobotContainer::RobotContainer()
       },
       {&m_swerveDrive}));
 
+  m_lifter.SetDefaultCommand(frc2::RunCommand(
+      [this] {
+        // Gets Y as double from [-1, 1]
+        // Use interpolation map for deadband, and to cap max value
+        double shoulderSpeed = -m_shoulderSpeed.Map(
+            m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kLeftHand));
+        double extensionSpeed = -m_armExtenderSpeed.Map(
+            m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kLeftHand));
+        double wristSpeed = m_wristSpeed.Map(
+            m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand));
+
+        if (shoulderSpeed == 0.0) {
+          m_lifter.StopArm();
+        } else {
+          m_lifter.SetShoulderSpeed(shoulderSpeed);
+        }
+        if (extensionSpeed == 0.0) {
+          m_lifter.StopArmExtension();
+        } else {
+          m_lifter.SetArmExtensionSpeed(extensionSpeed);
+        }
+        if (wristSpeed == 0.0) {
+          m_lifter.StopWrist();
+        } else {
+          m_lifter.SetWristSpeed(wristSpeed);
+        }
+      },
+      {&m_lifter}));
+
   // Configure the button bindings
   ConfigureBindings();
 }
@@ -64,7 +96,7 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperLeft, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
 
-  // TRIGGERS ==================================================================================
+  /* —————————————————————————————— TRIGGERS ————————————————————————————— */
 
   // DRIVE TRIGGERS
   auto homeDrive = (frc2::Trigger{[this]() {
@@ -79,7 +111,12 @@ void RobotContainer::ConfigureBindings() {
 
   auto fieldHome = (frc2::Trigger{
       [this]() { return m_controllers.DriverController().GetDebouncedButton(argos_lib::XboxController::Button::kY); }});
-
+  auto intakeForwardTrigger = (frc2::Trigger{[this]() {
+    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kRightTrigger);
+  }});
+  auto intakeReverseTrigger = (frc2::Trigger{[this]() {
+    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kLeftTrigger);
+  }});
   // Swap controllers config
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBack, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kStart, {1500_ms, 0_ms});
@@ -96,7 +133,7 @@ void RobotContainer::ConfigureBindings() {
         {argos_lib::XboxController::Button::kBack, argos_lib::XboxController::Button::kStart});
   }};
 
-  // TRIGGER ACTIVATION -------------------------------------------------------------------------------------
+  /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
@@ -111,12 +148,21 @@ void RobotContainer::ConfigureBindings() {
           .ToPtr());
 
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
-
+  (intakeForwardTrigger && !intakeReverseTrigger)
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeForward(); }, {&m_intake}).ToPtr());
+  (intakeReverseTrigger && !intakeForwardTrigger)
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeReverse(); }, {&m_intake}).ToPtr());
+  (intakeForwardTrigger && intakeReverseTrigger) ||
+      (!intakeForwardTrigger && !intakeReverseTrigger)
+          .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
-
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
+}
+
+void RobotContainer::Disable() {
+  m_lifter.Disable();
 }
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {

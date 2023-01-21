@@ -23,7 +23,7 @@ namespace address {
     struct lifter {
       constexpr static argos_lib::CANAddress frontShoulder{9, "rio"};
       constexpr static argos_lib::CANAddress backShoulder{10, "rio"};
-      constexpr static argos_lib::CANAddress arm{11, "rio"};
+      constexpr static argos_lib::CANAddress armExtension{11, "rio"};
       constexpr static argos_lib::CANAddress wrist{12, "rio"};
     };
     struct intake {
