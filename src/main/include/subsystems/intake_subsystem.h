@@ -20,6 +20,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
 
   void IntakeForward();
   void IntakeReverse();
+  void IntakeFastReverse();
   void IntakeStop();
 
  private:
