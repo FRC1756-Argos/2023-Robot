@@ -20,9 +20,6 @@ jobs:
           python-version: '3.10'
       - name: Install wpiformat
         run: pip3 install wpiformat==2022.21 clang-format
-      - name: Rename branch
-        if: ${{ github.ref != 'refs/heads/main' }}
-        run: git checkout -b main HEAD
       - name: Run
         run: wpiformat
       - name: Check for modified files
@@ -46,7 +43,7 @@ jobs:
           commit-message: Automated formatting changes
           committer: GitHub <noreply@github.com>
           author: wpiformat <${{ github.actor }}@users.noreply.github.com>
-          branch: wpiformat/auto_format_changes
+          branch: wpiformat/auto_format_changes/${{ GITHUB_RUN_NUMBER }}
           delete-branch: true
           title: Formatting Changes
           labels: style
