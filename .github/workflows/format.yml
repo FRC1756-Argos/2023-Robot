@@ -43,7 +43,7 @@ jobs:
           commit-message: Automated formatting changes
           committer: GitHub <noreply@github.com>
           author: wpiformat <${{ github.actor }}@users.noreply.github.com>
-          branch: wpiformat/auto_format_changes/${{ GITHUB_RUN_NUMBER }}
+          branch: wpiformat/auto_format_changes/${{ github.run_number }}
           delete-branch: true
           title: Formatting Changes
           labels: style
