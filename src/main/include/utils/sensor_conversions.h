@@ -56,5 +56,18 @@ namespace sensor_conversions {
         return ToSensorPosition(velocity * units::decisecond_t{1});
       }
     }  // namespace drive
+    namespace lifter {
+      namespace wrist {
+        constexpr double sensorConversionFactor = 360.0 / 4096;  // Scalar for getting angle in degrees from encoder
+        constexpr units::degree_t ToAngle(const double sensorUnit) {
+          return units::make_unit<units::degree_t>(sensorUnit * sensorConversionFactor);
+        }
+
+        constexpr double ToSensorUnit(const units::degree_t degrees) {
+          return degrees.to<double>() / sensorConversionFactor;
+        }
+      }  // namespace wrist
+
+    }  // namespace lifter
   }    // namespace swerve_drive
 }  // namespace sensor_conversions
