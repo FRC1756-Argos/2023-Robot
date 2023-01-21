@@ -18,8 +18,6 @@ class IntakeSubsystem : public frc2::SubsystemBase {
    */
   void Periodic() override;
 
-  void Periodic();
-
   void IntakeForward();
   void IntakeReverse();
   void IntakeStop();
