@@ -19,3 +19,14 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
 
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {}
+
+void IntakeSubsystem::IntakeForward() {
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::PercentOutput, 1.0);
+}
+void IntakeSubsystem::IntakeReverse() {
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::PercentOutput, -1.0);
+}
+
+void IntakeSubsystem::IntakeStop() {
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::PercentOutput, 0.0);
+}

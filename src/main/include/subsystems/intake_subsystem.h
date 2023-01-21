@@ -18,6 +18,12 @@ class IntakeSubsystem : public frc2::SubsystemBase {
    */
   void Periodic() override;
 
+  void Periodic();
+
+  void IntakeForward();
+  void IntakeReverse();
+  void IntakeStop();
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
