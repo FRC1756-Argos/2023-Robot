@@ -68,8 +68,8 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Y               | Field Home (hold) |
 | LB              | Hold For Robot Centric |
 | RB              | Unused |
-| LT              | Unused |
-| RT              | Unused |
+| LT              | Intake |
+| RT              | Intake Reverse |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |
