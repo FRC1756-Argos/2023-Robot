@@ -78,9 +78,9 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 **Operator:**
 | Button          | Function |
 | --------------- | -------- |
-| Left JS X       | Unused |
-| Left JS Y       | Unused |
-| Right JS X      | Unused |
+| Left JS X       | Extend/retract arm |
+| Left JS Y       | Raise/lower arm |
+| Right JS X      | Rotate wrist CW/CCW |
 | Right JS Y      | Unused |
 | A               | Unused |
 | B               | Unused |
