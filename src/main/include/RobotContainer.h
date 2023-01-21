@@ -50,4 +50,7 @@ class RobotContainer {
   IntakeSubsystem m_intake;
 
   void ConfigureBindings();
+
+  /// @brief Called once when robot is disabled
+  void Disable();
 };

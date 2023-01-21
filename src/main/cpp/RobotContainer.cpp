@@ -154,6 +154,10 @@ void RobotContainer::ConfigureBindings() {
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
 }
 
+void RobotContainer::Disable() {
+  m_lifter.Disable();
+}
+
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
   return frc2::InstantCommand().ToPtr();
 }
