@@ -25,9 +25,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                          std::string(GetCANBus(address::comp_bot::lifter::backShoulder,
                                                address::practice_bot::lifter::backShoulder,
                                                instance))}
-    , m_armExtension{GetCANAddr(address::comp_bot::lifter::arm, address::practice_bot::lifter::arm, instance),
-                     std::string(
-                         GetCANBus(address::comp_bot::lifter::arm, address::practice_bot::lifter::arm, instance))}
+    , m_armExtension{GetCANAddr(address::comp_bot::lifter::armExtension,
+                                address::practice_bot::lifter::armExtension,
+                                instance),
+                     std::string(GetCANBus(address::comp_bot::lifter::armExtension,
+                                           address::practice_bot::lifter::armExtension,
+                                           instance))}
     , m_wrist{GetCANAddr(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance),
               std::string(GetCANBus(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance))}
     , m_armExtensionEncoder{GetCANAddr(address::comp_bot::encoders::armExtenderEncoder,
@@ -55,7 +58,8 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderFollower,
                                          motorConfig::practice_bot::lifter::shoulderFollower>(
       m_shoulderFollower, 100_ms, instance);
-  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::arm, motorConfig::practice_bot::lifter::arm>(
+  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::armExtension,
+                                         motorConfig::practice_bot::lifter::armExtension>(
       m_armExtension, 100_ms, instance);
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::wrist,
@@ -65,5 +69,40 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   m_shoulderFollower.Follow(m_shoulderLeader);
 }
 
+/* —————————————————— LifterSubsystem Member Functions ————————————————— */
+
+void LifterSubsystem::SetShoulderSpeed(double speed) {
+  m_shoulderLeader.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void LifterSubsystem::StopArm() {
+  m_shoulderLeader.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_shoulderLeader.Set(0.0);
+}
+
+void LifterSubsystem::SetArmExtensionSpeed(double speed) {
+  m_armExtension.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void LifterSubsystem::StopArmExtension() {
+  m_armExtension.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_armExtension.Set(0.0);
+}
+
+void LifterSubsystem::SetWristSpeed(double speed) {
+  m_wrist.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void LifterSubsystem::StopWrist() {
+  m_wrist.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_wrist.Set(0.0);
+}
+
 // This method will be called once per scheduler run
 void LifterSubsystem::Periodic() {}
+
+void LifterSubsystem::Disable() {
+  StopArm();
+  StopArmExtension();
+  StopWrist();
+}
