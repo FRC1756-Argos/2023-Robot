@@ -57,4 +57,16 @@ namespace sensor_conversions {
       }
     }  // namespace drive
   }    // namespace swerve_drive
+  namespace lifter {
+    namespace shoulder {
+      constexpr double sensorConversionFactor =
+          360.0 / 4096;  ///< multiply to convert raw sensor units to module degrees
+      constexpr double ToSensorUnit(const units::degree_t degrees) {
+        return degrees.to<double>() / sensorConversionFactor;
+      }
+      constexpr units::degree_t ToAngle(const double sensorUnit) {
+        return units::degree_t(sensorUnit * sensorConversionFactor);
+      }
+    }  // namespace shoulder
+  }    // namespace lifter
 }  // namespace sensor_conversions
