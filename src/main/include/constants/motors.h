@@ -27,7 +27,7 @@ namespace motorConfig {
   namespace comp_bot {
     namespace drive {
       struct genericDrive {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -42,8 +42,8 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::drive::drive::allowableError;
       };
       struct frontLeftTurn {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
-        constexpr static bool sensorPhase = false;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
+        constexpr static bool sensorPhase = true;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
@@ -60,8 +60,8 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::drive::rotate::allowableError;
       };
       struct frontRightTurn {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
-        constexpr static bool sensorPhase = false;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
+        constexpr static bool sensorPhase = true;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
@@ -78,8 +78,8 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::drive::rotate::allowableError;
       };
       struct backRightTurn {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
-        constexpr static bool sensorPhase = false;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
+        constexpr static bool sensorPhase = true;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
@@ -96,8 +96,8 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::drive::rotate::allowableError;
       };
       struct backLeftTurn {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
-        constexpr static bool sensorPhase = false;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
+        constexpr static bool sensorPhase = true;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
@@ -118,8 +118,8 @@ namespace motorConfig {
     namespace lifter {
       // TODO both of these are temporarily set to generic drive motor configs
       //  but will need their own configs and control loop values in the future
-      struct arm {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+      struct armExtension {
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::TalonFXInvertType::CounterClockwise;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -137,7 +137,7 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::armExtension::allowableError;
       };
       struct shoulderLeader {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -155,7 +155,7 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::shoulder::allowableError;
       };
       struct shoulderFollower {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::FollowMaster;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -176,7 +176,7 @@ namespace motorConfig {
 
       // Currently just generic drive with remote sensor
       struct wrist {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -196,7 +196,7 @@ namespace motorConfig {
     }  // namespace lifter
     namespace intake {
       struct intake {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -283,7 +283,7 @@ namespace motorConfig {
       };
     }  // namespace drive
     namespace lifter {
-      using arm = motorConfig::comp_bot::lifter::arm;
+      using armExtension = motorConfig::comp_bot::lifter::armExtension;
       using shoulderLeader = motorConfig::comp_bot::lifter::shoulderLeader;
       using shoulderFollower = motorConfig::comp_bot::lifter::shoulderFollower;
       using wrist = motorConfig::comp_bot::lifter::wrist;

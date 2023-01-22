@@ -68,8 +68,8 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Y               | Field Home (hold) |
 | LB              | Hold For Robot Centric |
 | RB              | Unused |
-| LT              | Unused |
-| RT              | Unused |
+| LT              | Intake |
+| RT              | Intake Reverse |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |
@@ -79,9 +79,9 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Button          | Function |
 | --------------- | -------- |
 | Left JS X       | Unused |
-| Left JS Y       | Unused |
-| Right JS X      | Unused |
-| Right JS Y      | Unused |
+| Left JS Y       | Raise arm up/down |
+| Right JS X      | Extend arm in/out |
+| Right JS Y      | Move wrist CW/CCW |
 | A               | Unused |
 | B               | Unused |
 | X               | Unused |
