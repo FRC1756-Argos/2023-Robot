@@ -94,6 +94,7 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperLeft, {50_ms, 0_ms});
+  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperRight, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
@@ -106,7 +107,7 @@ void RobotContainer::ConfigureBindings() {
   }});
 
   auto controlMode = (frc2::Trigger{[this]() {
-    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kBumperLeft);
+    return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kBumperRight);
   }});
 
   auto fieldHome = (frc2::Trigger{
