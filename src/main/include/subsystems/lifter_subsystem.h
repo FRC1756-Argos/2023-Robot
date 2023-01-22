@@ -10,16 +10,42 @@
 
 #include <string>
 
+#include "constants/interpolation_maps.h"
+
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
 class LifterSubsystem : public frc2::SubsystemBase {
  public:
   explicit LifterSubsystem(argos_lib::RobotInstance instance);
 
+  /// @brief Sets the arm speed
+  /// @param speed double, on the interval [-1, 1]
+  void SetShoulderSpeed(double speed);
+
+  /// @brief Sets the arm extension motor speed
+  /// @param speed double, on the interval [-1, 1]
+  void SetArmExtensionSpeed(double speed);
+
+  /// @brief Sets the wrist speed
+  /// @param speed double, on the interval [-1, 1]
+  void SetWristSpeed(double speed);
+
+  /// @brief Sets the arm motor to zero
+  void StopArm();
+
+  /// @brief Sets the arm extension motor to zero
+  void StopArmExtension();
+
+  /// @brief Sets the wrist speed to zero
+  void StopWrist();
+
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
   void Periodic() override;
+
+  /// @brief Handle robot disabling
+  void Disable();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
