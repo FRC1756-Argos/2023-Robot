@@ -169,6 +169,7 @@ void RobotContainer::ConfigureBindings() {
 
 void RobotContainer::Disable() {
   m_lifter.Disable();
+  m_intake.Disable();
 }
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
