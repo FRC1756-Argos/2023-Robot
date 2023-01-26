@@ -121,14 +121,14 @@ void LifterSubsystem::InitializeShoulderHome() {
     // Error check
     ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
     if (rslt != ErrorCode::OKAY) {
-      std::printf("[CRITICAL ERROR] Error code %d returned by shoulderEncoder on home set attempt\n", rslt, __LINE__);
+      std::printf("[CRITICAL ERROR]%d Error code %d returned by shoulderEncoder on home set attempt\n", __LINE__, rslt);
       m_shoulderHomed = false;
     } else {
       m_shoulderHomed = true;
     }
 
   } else {  // if homes not found
-    std::printf("[CRITICAL ERROR] Homes were unable to be initialized\n", __LINE__);
+    std::printf("[CRITICAL ERROR]%d Homes were unable to be initialized\n", __LINE__);
     m_shoulderHomed = false;
   }
 }
@@ -140,14 +140,15 @@ void LifterSubsystem::UpdateShoulderHome(units::degree_t homingAngle) {
   //  switch to addition if this is not the case
   bool saved = m_shoulderHomeStorage.Save(argos_lib::swerve::ConstrainAngle(curEncoder - homingAngle, 0_deg, 360_deg));
   if (!saved) {
-    std::printf("[CRITICAL ERROR] Homes failed to save to file system\n", __LINE__);
+    std::printf("[CRITICAL ERROR]%d Homes failed to save to file system\n", __LINE__);
     m_shoulderHomed = false;
     return;
   }
 
   ErrorCode rslt = m_shoulderEncoder.SetPosition(homingAngle.to<double>());
   if (rslt != ErrorCode::OKAY) {
-    std::printf("[CRITICAL ERROR] Error code %d returned by shoulderEncoder on position set attempt\n", rslt, __LINE__);
+    std::printf(
+        "[CRITICAL ERROR]%d Error code %d returned by shoulderEncoder on position set attempt\n", __LINE__, rslt);
     m_shoulderHomed = false;
     return;
   }
