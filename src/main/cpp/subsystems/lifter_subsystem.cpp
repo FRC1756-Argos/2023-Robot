@@ -6,6 +6,7 @@
 
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/config/falcon_config.h"
+#include "constants.h"
 #include "constants/addresses.h"
 #include "constants/motors.h"
 #include "units/time.h"
@@ -45,11 +46,14 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                         std::string(GetCANBus(address::comp_bot::encoders::shoulderEncoder,
                                               address::practice_bot::encoders::shoulderEncoder,
                                               instance))}
-    , m_wristEncoder{
-          GetCANAddr(
-              address::comp_bot::encoders::wristEncoder, address::practice_bot::encoders::wristEncoder, instance),
-          std::string(GetCANBus(
-              address::comp_bot::encoders::wristEncoder, address::practice_bot::encoders::wristEncoder, instance))} {
+    , m_wristEncoder{GetCANAddr(address::comp_bot::encoders::wristEncoder,
+                                address::practice_bot::encoders::wristEncoder,
+                                instance),
+                     std::string(GetCANBus(address::comp_bot::encoders::wristEncoder,
+                                           address::practice_bot::encoders::wristEncoder,
+                                           instance))}
+    , m_wristHomingStorage{paths::wristHomesPath}
+    , m_wristHomed{false} {
   /* ———————————————————————— MOTOR CONFIGURATION ———————————————————————— */
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderLeader,
@@ -106,3 +110,20 @@ void LifterSubsystem::Disable() {
   StopArmExtension();
   StopWrist();
 }
+
+void LifterSubsystem::InitnalizeWristHomes() {
+  const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
+  if (wristHomes) {
+    units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
+
+    units::degree_t calcValue = currentencoder - wristHomes.value();
+
+    m_wristEncoder.SetPosition(calcValue.to<double>());
+
+    m_wristHomed = true;
+  } else {
+    m_wristHomed = false;
+  }
+}
+
+void LifterSubsystem::UpdateWristHomes() {}
