@@ -37,6 +37,7 @@ namespace indexes {
 
 namespace paths {
   const std::string swerveHomesPath = "homes/swerveHomes";
+  const std::string shoulderHome = "homes/shoulderHome";
 }  // namespace paths
 
 namespace networkTables {

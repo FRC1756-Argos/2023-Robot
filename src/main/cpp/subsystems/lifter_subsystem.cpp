@@ -4,8 +4,10 @@
 
 #include "subsystems/lifter_subsystem.h"
 
+#include "Constants.h"
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/config/falcon_config.h"
+#include "argos_lib/general/swerve_utils.h"
 #include "constants/addresses.h"
 #include "constants/motors.h"
 #include "units/time.h"
@@ -45,11 +47,14 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                         std::string(GetCANBus(address::comp_bot::encoders::shoulderEncoder,
                                               address::practice_bot::encoders::shoulderEncoder,
                                               instance))}
-    , m_wristEncoder{
-          GetCANAddr(
-              address::comp_bot::encoders::wristEncoder, address::practice_bot::encoders::wristEncoder, instance),
-          std::string(GetCANBus(
-              address::comp_bot::encoders::wristEncoder, address::practice_bot::encoders::wristEncoder, instance))} {
+    , m_wristEncoder{GetCANAddr(address::comp_bot::encoders::wristEncoder,
+                                address::practice_bot::encoders::wristEncoder,
+                                instance),
+                     std::string(GetCANBus(address::comp_bot::encoders::wristEncoder,
+                                           address::practice_bot::encoders::wristEncoder,
+                                           instance))}
+    , m_shoulderHomeStorage{paths::shoulderHome}
+    , m_shoulderHomed{false} {
   /* ———————————————————————— MOTOR CONFIGURATION ———————————————————————— */
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderLeader,
@@ -105,4 +110,47 @@ void LifterSubsystem::Disable() {
   StopArm();
   StopArmExtension();
   StopWrist();
+}
+
+void LifterSubsystem::InitializeShoulderHome() {
+  const std::optional<units::degree_t> curHome = m_shoulderHomeStorage.Load();  // Try to load homes from fs
+  if (curHome) {                                                                // if homes found
+    units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
+    units::degree_t newPosition = curEncoder - curHome.value();
+
+    // Error check
+    ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
+    if (rslt != ErrorCode::OKAY) {
+      std::printf("[CRITICAL ERROR] Error code %d returned by shoulderEncoder on home set attempt\n", rslt, __LINE__);
+      m_shoulderHomed = false;
+    } else {
+      m_shoulderHomed = true;
+    }
+
+  } else {  // if homes not found
+    std::printf("[CRITICAL ERROR] Homes were unable to be initialized\n", __LINE__);
+    m_shoulderHomed = false;
+  }
+}
+
+void LifterSubsystem::UpdateShoulderHome(units::degree_t homingAngle) {
+  // save current position as home
+  const units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
+  // TODO VERY IMPORTANT!! This subtraction only works if the encoder is in phase with the arm's coordinate space
+  //  switch to addition if this is not the case
+  bool saved = m_shoulderHomeStorage.Save(argos_lib::swerve::ConstrainAngle(curEncoder - homingAngle, 0_deg, 360_deg));
+  if (!saved) {
+    std::printf("[CRITICAL ERROR] Homes failed to save to file system\n", __LINE__);
+    m_shoulderHomed = false;
+    return;
+  }
+
+  ErrorCode rslt = m_shoulderEncoder.SetPosition(homingAngle.to<double>());
+  if (rslt != ErrorCode::OKAY) {
+    std::printf("[CRITICAL ERROR] Error code %d returned by shoulderEncoder on position set attempt\n", rslt, __LINE__);
+    m_shoulderHomed = false;
+    return;
+  }
+
+  m_shoulderHomed = true;
 }
