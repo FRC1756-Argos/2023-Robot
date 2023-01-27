@@ -226,6 +226,22 @@ XboxController::UpdateStatus XboxController::UpdateButton(Button buttonIdx) {
   return retVal;
 }
 
+frc2::Trigger XboxController::TriggerRaw(Button button) {
+  return TriggerRaw({button});
+}
+
+frc2::Trigger XboxController::TriggerRaw(std::initializer_list<Button> buttonCombo) {
+  return frc2::Trigger([this, buttonCombo]() { return this->GetRawButton(buttonCombo); });
+}
+
+frc2::Trigger XboxController::TriggerDebounced(Button button) {
+  return TriggerDebounced({button});
+}
+
+frc2::Trigger XboxController::TriggerDebounced(std::initializer_list<Button> buttonCombo) {
+  return frc2::Trigger([this, buttonCombo]() { return this->GetDebouncedButton(buttonCombo); });
+}
+
 XboxController::DPadButtons XboxController::GetPOVButtons() {
   const auto povAngle{GetPOV()};
   return DPadButtons{(povAngle >= 0 && povAngle <= 45) || povAngle >= 315,
