@@ -130,10 +130,10 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Left JS Y       | Raise/lower arm |
 | Right JS X      | Rotate wrist CW/CCW |
 | Right JS Y      | Unused |
-| A               | Unused |
-| B               | Unused |
-| X               | Unused |
-| Y               | Unused |
+| A               | Home Shoulder (hold with <kbd>B</kbd>) |
+| B               | Home Shoulder (hold with <kbd>A</kbd>) |
+| X               | Home Wrist (hold with <kbd>Y</kbd>) |
+| Y               | Home Wrist (hold with <kbd>X</kbd>) |
 | DPad Up         | Unused |
 | DPad Right      | Unused |
 | DPad Down       | Unused |
