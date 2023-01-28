@@ -4,10 +4,13 @@
 
 #include "subsystems/lifter_subsystem.h"
 
+#include "argos_lib/config/cancoder_config.h"
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/config/falcon_config.h"
+#include "argos_lib/general/swerve_utils.h"
 #include "constants.h"
 #include "constants/addresses.h"
+#include "constants/encoders.h"
 #include "constants/motors.h"
 #include "units/time.h"
 
@@ -69,6 +72,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::wrist,
                                          motorConfig::practice_bot::lifter::wrist>(m_wrist, 100_ms, instance);
 
+  bool wristSuccess =
+      argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::wristEncoder>(m_wristEncoder, 100_ms);
+  if (!wristSuccess) {
+    std::printf("{CRITICAL ERROR}%d Wirst encoder configuration failed\n", __LINE__);
+  }
+
   // Make back shoulder motor follow front shoulder motor
   m_shoulderFollower.Follow(m_shoulderLeader);
 }
@@ -126,4 +135,20 @@ void LifterSubsystem::InitnalizeWristHomes() {
   }
 }
 
-void LifterSubsystem::UpdateWristHomes() {}
+void LifterSubsystem::UpdateWristHomes(const units::degree_t& homeAngle) {
+  units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
+  bool saved = m_wristHomingStorage.Save(argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg));
+  if (!saved) {
+    std::printf("[CRITICAL ERROR]%d Wrist homes failed to save to to file system\n", __LINE__);
+    m_wristHomed = false;
+    return;
+  }
+
+  ErrorCode rslt = m_wristEncoder.SetPosition(homeAngle.to<double>());
+  if (rslt != ErrorCode::OKAY) {
+    std::printf("[CRITICAL ERROR]%d Error code %d returned by wristEncoder on position set attempt\n", __LINE__, rslt);
+    m_wristHomed = false;
+    return;
+  }
+  m_wristHomed = true;
+}
