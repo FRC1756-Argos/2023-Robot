@@ -11,6 +11,7 @@
 #include <string>
 
 #include "constants/interpolation_maps.h"
+#include "utils/homing_storage_interface.h"
 
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
@@ -39,6 +40,12 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Sets the wrist speed to zero
   void StopWrist();
 
+  /// @brief initalizing wrist homes from
+  void InitnalizeWristHomes();
+
+  /// @brief updating wrist homes for encoder
+  void UpdateWristHome();
+
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
@@ -59,4 +66,6 @@ class LifterSubsystem : public frc2::SubsystemBase {
   CANCoder m_armExtensionEncoder;  // Encoder that measures arm extension
   CANCoder m_shoulderEncoder;      // Encoder that measures shoulder position
   CANCoder m_wristEncoder;         // Encoder for measuring wrist position
+  FSHomingStorage<units::degree_t> m_wristHomingStorage;
+  bool m_wristHomed;
 };
