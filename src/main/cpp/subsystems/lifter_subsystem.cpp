@@ -75,10 +75,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   bool shoulderSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::shoulderEncoderConf>(
       m_shoulderEncoder, 100_ms);
   if (!shoulderSuccess) {
-    std::printf("[CRITICAL ERROR]%d Shoulder encoder configuration failed\n", __LINE__);
+    std::printf("ERROR%d Shoulder encoder configuration failed, shoulder not homed\n", __LINE__);
+    m_shoulderHomed = false;
+  } else {
+    InitializeShoulderHome();
   }
 
-  InitializeShoulderHome();
   // Make back shoulder motor follow front shoulder motor
   m_shoulderFollower.Follow(m_shoulderLeader);
 }
