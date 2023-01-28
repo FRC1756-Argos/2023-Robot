@@ -149,7 +149,7 @@ void RobotContainer::ConfigureBindings() {
   // WRIST HOME TRIGGER ACTIVATION
   homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {&m_lifter}).ToPtr());
   // SHOULDER HOME TRIGGER ACTIVATION
-  homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(0_deg); }, {&m_lifter}).ToPtr());
+  homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(); }, {&m_lifter}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
