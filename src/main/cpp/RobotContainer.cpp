@@ -96,8 +96,17 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperLeft, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperRight, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
+  m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
+  m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
+
+  // LIFTER TRIGGERS
+  // TODO Wrist homes if x and y is held for 1 + 1/2 seconds change
+  auto homeWrist = (frc2::Trigger{[this]() {
+    return m_controllers.OperatorController().GetDebouncedButton(
+        {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
+  }});
 
   // DRIVE TRIGGERS
   auto homeDrive = (frc2::Trigger{[this]() {
@@ -138,6 +147,9 @@ void RobotContainer::ConfigureBindings() {
   }};
 
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
+
+  // LIFTER TRIGGER ACTIVATION
+  homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHomes(0_deg); }, {&m_lifter}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(

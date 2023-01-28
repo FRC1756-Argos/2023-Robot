@@ -80,6 +80,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
 
   // Make back shoulder motor follow front shoulder motor
   m_shoulderFollower.Follow(m_shoulderLeader);
+  InitnalizeWristHomes();
 }
 
 /* —————————————————— LifterSubsystem Member Functions ————————————————— */
