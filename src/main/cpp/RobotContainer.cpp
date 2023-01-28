@@ -96,8 +96,15 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperLeft, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperRight, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
+  m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
+  m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
+  // SHOULDER TRIGGERS
+  auto homeShoulder = (frc2::Trigger{[this]() {
+    return m_controllers.OperatorController().GetDebouncedButton(
+        {argos_lib::XboxController::Button::kA, argos_lib::XboxController::Button::kB});
+  }});
 
   // DRIVE TRIGGERS
   auto homeDrive = (frc2::Trigger{[this]() {
@@ -138,6 +145,9 @@ void RobotContainer::ConfigureBindings() {
   }};
 
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
+
+  // SHOULDER TRIGGER ACTIVATION
+  homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(0_deg); }, {&m_lifter}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(

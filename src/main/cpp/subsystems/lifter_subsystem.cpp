@@ -78,6 +78,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
     std::printf("[CRITICAL ERROR]%d Shoulder encoder configuration failed\n", __LINE__);
   }
 
+  InitializeShoulderHome();
   // Make back shoulder motor follow front shoulder motor
   m_shoulderFollower.Follow(m_shoulderLeader);
 }
