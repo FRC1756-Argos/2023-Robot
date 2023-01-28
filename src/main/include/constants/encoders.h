@@ -11,9 +11,15 @@ namespace encoder_conf {
       constexpr static auto direction = true;
       constexpr static auto range = ctre::phoenix::sensors::AbsoluteSensorRange::Unsigned_0_to_360;
     };
+    struct shoulderEncoderConf {
+      constexpr static auto direction = true;
+      constexpr static auto range = ctre::phoenix::sensors::AbsoluteSensorRange::Unsigned_0_to_360;
+    };
   }  // namespace comp_bot
 
   namespace practice_bot {
     using wristEncoder = encoder_conf::comp_bot::wristEncoder;
+    using shoulderEncoderConf = encoder_conf::comp_bot::shoulderEncoderConf;
   }  // namespace practice_bot
+
 }  // namespace encoder_conf

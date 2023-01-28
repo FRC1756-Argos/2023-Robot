@@ -56,7 +56,9 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                                            address::practice_bot::encoders::wristEncoder,
                                            instance))}
     , m_wristHomingStorage{paths::wristHomesPath}
-    , m_wristHomed{false} {
+    , m_wristHomed{false}
+    , m_shoulderHomeStorage{paths::shoulderHome}
+    , m_shoulderHomed{false} {
   /* ———————————————————————— MOTOR CONFIGURATION ———————————————————————— */
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderLeader,
@@ -76,11 +78,22 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
       argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::wristEncoder>(m_wristEncoder, 100_ms);
   if (!wristSuccess) {
     std::printf("{CRITICAL ERROR}%d Wirst encoder configuration failed\n", __LINE__);
+  } else {
+    InitializeWristHomes();
   }
 
   // Make back shoulder motor follow front shoulder motor
   m_shoulderFollower.Follow(m_shoulderLeader);
-  InitnalizeWristHomes();
+
+  bool shoulderSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::shoulderEncoderConf>(
+      m_shoulderEncoder, 100_ms);
+
+  if (!shoulderSuccess) {
+    std::printf("ERROR%d Shoulder encoder configuration failed, shoulder not homed\n", __LINE__);
+    m_shoulderHomed = false;
+  } else {
+    InitializeShoulderHome();
+  }
 }
 
 /* —————————————————— LifterSubsystem Member Functions ————————————————— */
@@ -121,7 +134,7 @@ void LifterSubsystem::Disable() {
   StopWrist();
 }
 
-void LifterSubsystem::InitnalizeWristHomes() {
+void LifterSubsystem::InitializeWristHomes() {
   const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
   if (wristHomes) {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
@@ -153,4 +166,46 @@ void LifterSubsystem::UpdateWristHome() {
     return;
   }
   m_wristHomed = true;
+}
+
+void LifterSubsystem::InitializeShoulderHome() {
+  const std::optional<units::degree_t> curHome = m_shoulderHomeStorage.Load();  // Try to load homes from fs
+  if (curHome) {                                                                // if homes found
+    units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
+    units::degree_t newPosition = curEncoder - curHome.value();
+
+    // Error check
+    ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
+    if (rslt != ErrorCode::OKAY) {
+      std::printf("[CRITICAL ERROR]%d Error code %d returned by shoulderEncoder on home set attempt\n", __LINE__, rslt);
+      m_shoulderHomed = false;
+    } else {
+      m_shoulderHomed = true;
+    }
+
+  } else {  // if homes not found
+    std::printf("[CRITICAL ERROR]%d Homes were unable to be initialized\n", __LINE__);
+    m_shoulderHomed = false;
+  }
+}
+
+void LifterSubsystem::UpdateShoulderHome(const units::degree_t& homingAngle) {
+  // save current position as home
+  const units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
+  bool saved = m_shoulderHomeStorage.Save(argos_lib::swerve::ConstrainAngle(curEncoder - homingAngle, 0_deg, 360_deg));
+  if (!saved) {
+    std::printf("[CRITICAL ERROR]%d Shoulder homes failed to save to file system\n", __LINE__);
+    m_shoulderHomed = false;
+    return;
+  }
+
+  ErrorCode rslt = m_shoulderEncoder.SetPosition(homingAngle.to<double>());
+  if (rslt != ErrorCode::OKAY) {
+    std::printf(
+        "[CRITICAL ERROR]%d Error code %d returned by shoulderEncoder on position set attempt\n", __LINE__, rslt);
+    m_shoulderHomed = false;
+    return;
+  }
+
+  m_shoulderHomed = true;
 }

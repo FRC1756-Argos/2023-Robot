@@ -78,11 +78,6 @@ class FSHomingStorage : public HomingStorageInterface<T> {
     try {
       bool success = true;
       std::ifstream configFile(GetFilePath(), std::ios::in);
-
-      if (configFile.peek() == std::ifstream::traits_type::eof()) {
-        return std::nullopt;
-      }
-
       double homePosition;
       configFile >> homePosition;
 
@@ -118,3 +113,5 @@ class FSHomingStorage : public HomingStorageInterface<T> {
 
   const fs::path m_homesPath;
 };
+
+class FSSwerveHomesStorage {};
