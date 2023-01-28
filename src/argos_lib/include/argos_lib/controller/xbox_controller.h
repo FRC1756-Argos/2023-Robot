@@ -5,6 +5,7 @@
 #pragma once
 
 #include <frc/GenericHID.h>
+#include <frc2/command/button/Trigger.h>
 
 #include <array>
 
@@ -225,6 +226,38 @@ namespace argos_lib {
      * @return UpdateStatus Full button state
      */
     UpdateStatus UpdateButton(Button buttonIdx);
+
+    /**
+     * @brief Generates a trigger that is true when button is true
+     *
+     * @param button Button to monitor
+     * @return frc2::Trigger Trigger to monitor button
+     */
+    [[nodiscard]] frc2::Trigger TriggerRaw(Button button);
+
+    /**
+     * @brief Generates a trigger that is true when all buttons in buttonCombo are true
+     *
+     * @param buttonCombo Buttons to monitor
+     * @return frc2::Trigger Trigger to monitor buttons
+     */
+    [[nodiscard]] frc2::Trigger TriggerRaw(std::initializer_list<Button> buttonCombo);
+
+    /**
+     * @brief Generates a trigger that is true when debounced button is true
+     *
+     * @param button Button to monitor
+     * @return frc2::Trigger Trigger to monitor debounced button
+     */
+    [[nodiscard]] frc2::Trigger TriggerDebounced(Button button);
+
+    /**
+     * @brief Generates a trigger that is true when all debounced buttons in buttonCombo are true
+     *
+     * @param buttonCombo Buttons to monitor
+     * @return frc2::Trigger Trigger to monitor debounced buttons
+     */
+    [[nodiscard]] frc2::Trigger TriggerDebounced(std::initializer_list<Button> buttonCombo);
 
    private:
     /**
