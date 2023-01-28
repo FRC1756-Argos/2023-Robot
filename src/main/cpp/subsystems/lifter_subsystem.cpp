@@ -4,11 +4,11 @@
 
 #include "subsystems/lifter_subsystem.h"
 
+#include "Constants.h"
 #include "argos_lib/config/cancoder_config.h"
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/config/falcon_config.h"
 #include "argos_lib/general/swerve_utils.h"
-#include "constants.h"
 #include "constants/addresses.h"
 #include "constants/encoders.h"
 #include "constants/motors.h"
