@@ -52,7 +52,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   void InitializeShoulderHome();
 
   /// @brief Updates shoulder home in FS, resets relative position on sensor
-  void UpdateShoulderHome(units::degree_t homingAngle);
+  void UpdateShoulderHome(const units::degree_t& homingAngle);
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be

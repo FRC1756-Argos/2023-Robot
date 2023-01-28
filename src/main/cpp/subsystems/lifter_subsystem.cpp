@@ -5,10 +5,12 @@
 #include "subsystems/lifter_subsystem.h"
 
 #include "Constants.h"
+#include "argos_lib/config/cancoder_config.h"
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/config/falcon_config.h"
 #include "argos_lib/general/swerve_utils.h"
 #include "constants/addresses.h"
+#include "constants/encoders.h"
 #include "constants/motors.h"
 #include "units/time.h"
 
@@ -69,6 +71,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::wrist,
                                          motorConfig::practice_bot::lifter::wrist>(m_wrist, 100_ms, instance);
+
+  bool shoulderSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::shoulderEncoderConf>(
+      m_shoulderEncoder, 100_ms);
+  if (!shoulderSuccess) {
+    std::printf("[CRITICAL ERROR]%d Shoulder encoder configuration failed\n", __LINE__);
+  }
 
   // Make back shoulder motor follow front shoulder motor
   m_shoulderFollower.Follow(m_shoulderLeader);
@@ -133,14 +141,12 @@ void LifterSubsystem::InitializeShoulderHome() {
   }
 }
 
-void LifterSubsystem::UpdateShoulderHome(units::degree_t homingAngle) {
+void LifterSubsystem::UpdateShoulderHome(const units::degree_t& homingAngle) {
   // save current position as home
   const units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
-  // TODO VERY IMPORTANT!! This subtraction only works if the encoder is in phase with the arm's coordinate space
-  //  switch to addition if this is not the case
   bool saved = m_shoulderHomeStorage.Save(argos_lib::swerve::ConstrainAngle(curEncoder - homingAngle, 0_deg, 360_deg));
   if (!saved) {
-    std::printf("[CRITICAL ERROR]%d Homes failed to save to file system\n", __LINE__);
+    std::printf("[CRITICAL ERROR]%d Shoulder homes failed to save to file system\n", __LINE__);
     m_shoulderHomed = false;
     return;
   }
