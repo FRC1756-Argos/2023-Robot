@@ -6,9 +6,57 @@ Robot code for 2023 FRC season
 
 ## Key Features
 
+
+## FTP
+
+* ftp://172.22.11.2 -USB only
+* ftp://roborio-1756-frc.local -USB, Wifi, or Ethernet
+* ftp://10.17.56.2 -Wifi or Ethernet
+
 ## Commissioning A Robot
 
-When commissioning a new robot, you should set the instance type to either "Competition" or "Practice" by creating a text file readable by `lvuser` on the RoboRIO at path `/home/lvuser/robotInstance`.  The content of this file should be just the text `Competition` or `Practice` with no whitespace preceding.  If no valid instance is found at runtime, competition instance will be used and an error will be generated.
+When commissioning a new robot, you should set the instance type to either "Competition" or "Practice" by creating a text file using FTP readable by `lvuser` on the RoboRIO at path `/home/lvuser/robotInstance`.  The content of this file should be just the text `Competition` or `Practice` with no whitespace preceding.  If no valid instance is found at runtime, competition instance will be used and an error will be generated.
+
+### Homing Swerve Drive
+
+1. When homing swerve modules figure out what is the front of the robot. The intake is the front.
+2. Rotate each swerve module to where each bevel gear is to the left side of the robot.
+3. Use something flat that is the length of the robot and line the swerve wheels up.
+4. Power on the robot and connect your computer. You will need one XBox controller. Make sure the controller says its controller 0(driver) in drivers station. Once connected, enable the robot and press your swerve homing buttons. We are using the buttons <kbd>A</kbd>, <kbd>B</kbd>, and <kbd>X</kbd> on the XBox controller. You have to hold the three buttons for 1.5 seconds.
+5. Once the homes have been set the homes will be put in a document. You will be able to open up the document.
+6. First open file explorer.
+7. Once you are in click in the white box at the top where you can type.
+8. Use one of the above FTP addresses.
+9. Then double click on the home folder.
+10. Then double click on the lvuser folder.
+11. Then double click on the homes folder.
+12. Then you can click on the swerveHomes file to see the homes of the swerve modules.
+
+
+### Wrist Homing
+
+1. Set up your wrist how you would like it homed. We have it where it is horizontal and the wheels are towards the ground.
+2. Power on the robot. Once it powered on connect the robot to your computer. You will need one XBox controller. Make sure the controller is controller 1(operator) in drivers station. Enable the robot and hold the buttons <kbd>X</kbd> and <kbd>Y</kbd> for 1.5 seconds. Once the homes have been set the homes will be put in a document. You will be able to open up the document.
+3. First open file explorer.
+4. Once you are in click in the white box at the top where you can type.
+5. Use one of the above FTP addresses.
+6. Then double click on the home folder.
+7. Then double click on the lvuser folder.
+8. Then double click on the homes folder.
+9. Then you can click on the wristHomes file to see the home of the wrist.
+
+### Shoulder Homing
+
+1. Set the arm to where it is perfectly horizontal over the front of the robot.
+2. Power on the robot. Once it powered on connect the robot to your computer. You will need one XBox controller. Make sure the controller is controller 1(operator) in drivers station. Enable the robot and hold the buttons <kbd>A</kbd> and <kbd>B</kbd> for 1.5 seconds. Once the homes have been set the homes will be put in a document. You will be able to open up the document.
+3. First open file explorer.
+4. Once you are in click in the white box at the top where you can type.
+5. Use one of the above FTP addresses.
+6. Then double click on the home folder.
+7. Then double click on the lvuser folder.
+8. Then double click on the homes folder.
+9. Then you can click on the shoulderHomes file to see the home of the shoulder.
+
 
 ### Vision
 
