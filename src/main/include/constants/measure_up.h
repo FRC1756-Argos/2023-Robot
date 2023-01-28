@@ -25,4 +25,11 @@ namespace measure_up {
     constexpr auto backLeftWOffset = 2.625_in;
     constexpr auto backLeftLOffset = 2.625_in;
   }  // namespace swerve_offsets
+  namespace lifter {
+    namespace wrist {
+      constexpr auto homeAngle = 0_deg;
+      constexpr auto minAngle = -180_deg;
+      constexpr auto maxAngle = 180_deg;
+    }  // namespace wrist
+  }    // namespace lifter
 }  // namespace measure_up

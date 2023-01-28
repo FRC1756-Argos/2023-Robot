@@ -44,7 +44,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   void InitnalizeWristHomes();
 
   /// @brief updating wrist homes for encoder
-  void UpdateWristHomes(const units::degree_t& homeAngle);
+  void UpdateWristHome();
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.

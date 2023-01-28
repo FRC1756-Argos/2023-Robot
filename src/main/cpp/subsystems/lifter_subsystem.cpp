@@ -136,7 +136,8 @@ void LifterSubsystem::InitnalizeWristHomes() {
   }
 }
 
-void LifterSubsystem::UpdateWristHomes(const units::degree_t& homeAngle) {
+void LifterSubsystem::UpdateWristHome() {
+  const auto homeAngle = measure_up::lifter::wrist::homeAngle;
   units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
   bool saved = m_wristHomingStorage.Save(argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg));
   if (!saved) {

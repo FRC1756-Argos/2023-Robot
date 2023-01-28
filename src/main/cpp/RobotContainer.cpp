@@ -149,7 +149,7 @@ void RobotContainer::ConfigureBindings() {
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
   // LIFTER TRIGGER ACTIVATION
-  homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHomes(0_deg); }, {&m_lifter}).ToPtr());
+  homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {&m_lifter}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
