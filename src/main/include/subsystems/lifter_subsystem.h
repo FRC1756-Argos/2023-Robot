@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "argos_lib/general/nt_motor_pid_tuner.h"
 #include "constants/interpolation_maps.h"
 #include "utils/homing_storage_interface.h"
 
@@ -43,6 +44,10 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief initalizing wrist homes from
   void InitnalizeWristHomes();
 
+  /// @brief
+  /// @param wristAngle
+  void SetWristAngle(units::degree_t wristAngle);
+
   /// @brief updating wrist homes for encoder
   void UpdateWristHome();
 
@@ -68,4 +73,6 @@ class LifterSubsystem : public frc2::SubsystemBase {
   CANCoder m_wristEncoder;         // Encoder for measuring wrist position
   FSHomingStorage<units::degree_t> m_wristHomingStorage;
   bool m_wristHomed;
+
+  argos_lib::NTMotorPIDTuner m_wristTuner;
 };
