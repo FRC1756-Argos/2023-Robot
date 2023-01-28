@@ -5,11 +5,11 @@
 #pragma once
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
-#include <subsystems/arm_extension.h>
+#include <subsystems/lifter_subsystem.h>
 
 class HomeArmExtensionCommand : public frc2::CommandHelper<frc2::CommandBase, HomeArmExtensionCommand> {
  public:
-  explicit HomeArmExtensionCommand(ArmExtensionSubsystem* subsystem);
+  explicit HomeArmExtensionCommand(LifterSubsystem& subsystem);
 
   void Initialize() override;
 
@@ -20,5 +20,6 @@ class HomeArmExtensionCommand : public frc2::CommandHelper<frc2::CommandBase, Ho
   bool IsFinished() override;
 
  private:
-  ArmExtensionSubsystem* m_ArmExtensionSubsystem;
+  LifterSubsystem& m_LifterSubsystem;
+  std::chrono::time_point<std::chrono::steady_clock> m_startTime;
 };

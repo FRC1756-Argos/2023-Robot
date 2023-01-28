@@ -4,22 +4,34 @@
 
 #include "commands/home_arm_extension_command.h"
 
-HomeArmExtensionCommand::HomeArmExtensionCommand(ArmExtensionSubsystem* subsystem) {
+#include <chrono>
+
+using namespace std::chrono_literals;
+
+HomeArmExtensionCommand::HomeArmExtensionCommand(LifterSubsystem& subsystem) : m_LifterSubsystem(subsystem) {
   // TODO //put stuff here
 }
 
 void HomeArmExtensionCommand::Initialize() {
-  // TODO //put stuff here
+  m_LifterSubsystem.SetArmExtensionSpeed(-0.07);
+  m_startTime = std::chrono::steady_clock::now();
 }
 
 void HomeArmExtensionCommand::Execute() {
-  // TODO //put stuff here
+  if (m_LifterSubsystem.IsManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 2.0s) {
+    Cancel();
+  } else {
+    m_LifterSubsystem.SetArmExtensionSpeed(-0.07);
+  }
 }
 
 void HomeArmExtensionCommand::End(bool interrupted) {
-  // TODO //put stuff here
+  if (!interrupted) {
+    m_LifterSubsystem.UpdateHookHome();
+  }
+  m_LifterSubsystem.SetArmExtensionSpeed(0.0);
 }
 
 bool HomeArmExtensionCommand::IsFinished() {
-  // TODO //put stuff here
+  return !m_hookMovingDebounce(m_LifterSubsystem.IsHookMoving());
 }

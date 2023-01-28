@@ -39,6 +39,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Sets the wrist speed to zero
   void StopWrist();
 
+  bool IsManualOverride();
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
