@@ -3,10 +3,10 @@
 ///            the license file in the root directory of this project.
 
 #pragma once
+#include <argos_lib/general/debouncer.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
 #include <subsystems/lifter_subsystem.h>
-#include <argos_lib/general/debouncer.h>
 
 class HomeArmExtensionCommand : public frc2::CommandHelper<frc2::CommandBase, HomeArmExtensionCommand> {
  public:

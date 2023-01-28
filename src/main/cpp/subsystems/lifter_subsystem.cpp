@@ -2,16 +2,14 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include <subsystems/lifter_subsystem.h>
+#include "subsystems/lifter_subsystem.h"
 
 #include <argos_lib/config/config_types.h>
 #include <argos_lib/config/falcon_config.h>
-
 #include <constants/addresses.h>
+#include <constants/measure_up.h>
 #include <constants/motors.h>
-
 #include <units/time.h>
-
 #include <utils/sensor_conversions.h>
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
@@ -112,12 +110,10 @@ void LifterSubsystem::Disable() {
 }
 
 bool LifterSubsystem::IsArmMoving() {
-  // Update onboard relative encoder to have a pre-defined value at a known position
-  return true;
+  return std::abs(m_armExtensionMotor.GetSelectedSensorPosition()) > 10;
 }
 
 void LifterSubsystem::UpdateArmHome() {
-  // Update onboard relative encoder to have a pre-defined value at a known position
-  //m_armExtensionMotor.SetSelectedSensorPosition(
-  //  sensor_conversions::arm_extention::ToSensorUnit());
+  m_armExtensionMotor.SetSelectedSensorPosition(
+      sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::arm_extension::homeExtension));
 }

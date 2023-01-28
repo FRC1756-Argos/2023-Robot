@@ -26,6 +26,7 @@ namespace units {
 
 namespace sensor_conversions {
   namespace swerve_drive {
+
     namespace turn {
       constexpr double sensorConversionFactor =
           360.0 / 4096;  ///< multiply to convert raw sensor units to module degrees
@@ -56,75 +57,44 @@ namespace sensor_conversions {
         return ToSensorPosition(velocity * units::decisecond_t{1});
       }
     }  // namespace drive
-    namespace lifter {
-      namespace armExtension {
-        constexpr double sensorToMotorRevolution = 1.0 / 2048;
-        constexpr double gearboxReduction = 1.0 / 12;
-        constexpr double driveSprocketTeeth = 15.0;
-        constexpr double extensionInchesPerTooth = 0.325 / 1;
+  }    // namespace swerve_drive
 
-        constexpr units::inch_t ToExtension(const double sensorUnit) {
-          return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRevolution * gearboxReduction *
-                                                 driveSprocketTeeth * extensionInchesPerTooth);
-        }
+  namespace lifter {
+    namespace arm_extension {
+      constexpr double sensorToMotorRevolution = 1.0 / 2048;
+      constexpr double gearboxReduction = 1.0 / 12;
+      constexpr double driveSprocketTeeth = 15.0;
+      constexpr double extensionInchesPerTooth = 0.325 / 1;
 
-        constexpr double ToSensorUnit(const units::inch_t extension) {
-          return extension.to<double>() / driveSprocketTeeth / gearboxReduction / sensorToMotorRevolution /
-                 sensorToMotorRevolution;
-        }
-      }  // namespace armExtension
-      namespace wrist {
-        constexpr double sensorConversionFactor = 360.0 / 4096;  // Scalar for getting angle in degrees from encoder
-        constexpr units::degree_t ToAngle(const double sensorUnit) {
-          return units::make_unit<units::degree_t>(sensorUnit * sensorConversionFactor);
-        }
+      constexpr units::inch_t ToExtension(const double sensorUnit) {
+        return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRevolution * gearboxReduction *
+                                               driveSprocketTeeth * extensionInchesPerTooth);
+      }
 
-        constexpr double ToSensorUnit(const units::degree_t degrees) {
-          return degrees.to<double>() / sensorConversionFactor;
-        }
-      }  // namespace wrist
-      namespace shoulder {
-        constexpr double sensorConversionFactor =
-            360.0 / 4096;  ///< multiply to convert raw sensor units to module degrees
-        constexpr double ToSensorUnit(const units::degree_t degrees) {
-          return degrees.to<double>() / sensorConversionFactor;
-        }
-        constexpr units::degree_t ToAngle(const double sensorUnit) {
-          return units::degree_t(sensorUnit * sensorConversionFactor);
-        }
-      }  // namespace shoulder
-    }    // namespace lifter
-  }      // namespace swerve_drive
-  namespace arm_extention {
-    constexpr double sensorToMotorRev = 1.0 / 2048;                    //update
-    constexpr double gearboxReduction = 1.0 / 12;                      //Update
-    constexpr double driveSprocketTeethPerRevolution = 18.0;           //Update
-    constexpr double extensionInchesPerDriveSprocketTooth = 0.25 / 1;  //Update
-    constexpr double fudgeFactor = 1.0;                                //Update
-    constexpr units::inch_t ToExtension(const double sensorUnit) {
-      return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRev * gearboxReduction *
-                                             driveSprocketTeethPerRevolution * extensionInchesPerDriveSprocketTooth *
-                                             fudgeFactor);
-    }
-    constexpr double ToSensorUnit(const units::inch_t extension) {
-      return extension.to<double>() / fudgeFactor / extensionInchesPerDriveSprocketTooth /
-             driveSprocketTeethPerRevolution / gearboxReduction / sensorToMotorRev;
-    }
+      constexpr double ToSensorUnit(const units::inch_t extension) {
+        return extension.to<double>() / driveSprocketTeeth / gearboxReduction / sensorToMotorRevolution /
+               sensorToMotorRevolution;
+      }
+    }  // namespace arm_extension
+    namespace wrist {
+      constexpr double sensorConversionFactor = 360.0 / 4096;  // Scalar for getting angle in degrees from encoder
+      constexpr units::degree_t ToAngle(const double sensorUnit) {
+        return units::make_unit<units::degree_t>(sensorUnit * sensorConversionFactor);
+      }
 
-    constexpr double ToSensorVelocity(const units::meters_per_second_t velocity) {
-      return ToSensorUnit(velocity * units::decisecond_t{1});
-    }
-
-    constexpr units::meters_per_second_t ToVelocity(double sensorVelocity) {
-      return units::meters_per_second_t{ToExtension(sensorVelocity) / units::decisecond_t{1}};
-    }
-
-    constexpr double ToSensorAccel(const units::meters_per_second_squared_t accel) {
-      return ToSensorVelocity(accel * 1_s);
-    }
-
-    constexpr units::meters_per_second_squared_t ToAccel(double sensorAccel) {
-      return ToVelocity(sensorAccel) / 1_s;
-    }
-  }  // namespace arm_extention
+      constexpr double ToSensorUnit(const units::degree_t degrees) {
+        return degrees.to<double>() / sensorConversionFactor;
+      }
+    }  // namespace wrist
+    namespace shoulder {
+      constexpr double sensorConversionFactor =
+          360.0 / 4096;  ///< multiply to convert raw sensor units to module degrees
+      constexpr double ToSensorUnit(const units::degree_t degrees) {
+        return degrees.to<double>() / sensorConversionFactor;
+      }
+      constexpr units::degree_t ToAngle(const double sensorUnit) {
+        return units::degree_t(sensorUnit * sensorConversionFactor);
+      }
+    }  // namespace shoulder
+  }    // namespace lifter
 }  // namespace sensor_conversions

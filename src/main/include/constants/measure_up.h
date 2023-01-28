@@ -25,4 +25,10 @@ namespace measure_up {
     constexpr auto backLeftWOffset = 2.625_in;
     constexpr auto backLeftLOffset = 2.625_in;
   }  // namespace swerve_offsets
+  namespace arm_extension {
+    constexpr auto homeExtension = 35.25_in;
+    constexpr auto maxExtension = 35.00_in;
+    constexpr auto minExtension = 1_in;
+
+  }  // namespace arm_extension
 }  // namespace measure_up

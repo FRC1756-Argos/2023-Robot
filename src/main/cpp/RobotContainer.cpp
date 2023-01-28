@@ -110,6 +110,9 @@ void RobotContainer::ConfigureBindings() {
     return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kBumperRight);
   }});
 
+  auto armHome = (frc2::Trigger{
+      [this]() { return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kY); }});
+
   auto fieldHome = (frc2::Trigger{
       [this]() { return m_controllers.DriverController().GetDebouncedButton(argos_lib::XboxController::Button::kY); }});
   auto intakeForwardTrigger = (frc2::Trigger{[this]() {
