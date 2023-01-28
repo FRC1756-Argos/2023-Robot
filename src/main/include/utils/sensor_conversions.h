@@ -3,13 +3,13 @@
 ///            the license file in the root directory of this project.
 
 #pragma once
-#include "units/acceleration.h"
-#include "units/angle.h"
-#include "units/angular_velocity.h"
-#include "units/base.h"
-#include "units/length.h"
-#include "units/time.h"
-#include "units/velocity.h"
+#include <units/acceleration.h>
+#include <units/angle.h>
+#include <units/angular_velocity.h>
+#include <units/base.h>
+#include <units/length.h>
+#include <units/time.h>
+#include <units/velocity.h>
 
 namespace units {
   UNIT_ADD(velocity,
@@ -95,4 +95,36 @@ namespace sensor_conversions {
       }  // namespace shoulder
     }    // namespace lifter
   }      // namespace swerve_drive
+  namespace arm_extention {
+    constexpr double sensorToMotorRev = 1.0 / 2048;                    //update
+    constexpr double gearboxReduction = 1.0 / 12;                      //Update
+    constexpr double driveSprocketTeethPerRevolution = 18.0;           //Update
+    constexpr double extensionInchesPerDriveSprocketTooth = 0.25 / 1;  //Update
+    constexpr double fudgeFactor = 1.0;                                //Update
+    constexpr units::inch_t ToExtension(const double sensorUnit) {
+      return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRev * gearboxReduction *
+                                             driveSprocketTeethPerRevolution * extensionInchesPerDriveSprocketTooth *
+                                             fudgeFactor);
+    }
+    constexpr double ToSensorUnit(const units::inch_t extension) {
+      return extension.to<double>() / fudgeFactor / extensionInchesPerDriveSprocketTooth /
+             driveSprocketTeethPerRevolution / gearboxReduction / sensorToMotorRev;
+    }
+
+    constexpr double ToSensorVelocity(const units::meters_per_second_t velocity) {
+      return ToSensorUnit(velocity * units::decisecond_t{1});
+    }
+
+    constexpr units::meters_per_second_t ToVelocity(double sensorVelocity) {
+      return units::meters_per_second_t{ToExtension(sensorVelocity) / units::decisecond_t{1}};
+    }
+
+    constexpr double ToSensorAccel(const units::meters_per_second_squared_t accel) {
+      return ToSensorVelocity(accel * 1_s);
+    }
+
+    constexpr units::meters_per_second_squared_t ToAccel(double sensorAccel) {
+      return ToVelocity(sensorAccel) / 1_s;
+    }
+  }  // namespace arm_extention
 }  // namespace sensor_conversions

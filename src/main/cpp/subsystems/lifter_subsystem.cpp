@@ -2,13 +2,17 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include "subsystems/lifter_subsystem.h"
+#include <subsystems/lifter_subsystem.h>
 
-#include "argos_lib/config/config_types.h"
-#include "argos_lib/config/falcon_config.h"
-#include "constants/addresses.h"
-#include "constants/motors.h"
-#include "units/time.h"
+#include <argos_lib/config/config_types.h>
+#include <argos_lib/config/falcon_config.h>
+
+#include <constants/addresses.h>
+#include <constants/motors.h>
+
+#include <units/time.h>
+
+#include <utils/sensor_conversions.h>
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
@@ -25,12 +29,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                          std::string(GetCANBus(address::comp_bot::lifter::backShoulder,
                                                address::practice_bot::lifter::backShoulder,
                                                instance))}
-    , m_armExtension{GetCANAddr(address::comp_bot::lifter::armExtension,
-                                address::practice_bot::lifter::armExtension,
-                                instance),
-                     std::string(GetCANBus(address::comp_bot::lifter::armExtension,
-                                           address::practice_bot::lifter::armExtension,
-                                           instance))}
+    , m_armExtensionMotor{GetCANAddr(address::comp_bot::lifter::armExtension,
+                                     address::practice_bot::lifter::armExtension,
+                                     instance),
+                          std::string(GetCANBus(address::comp_bot::lifter::armExtension,
+                                                address::practice_bot::lifter::armExtension,
+                                                instance))}
     , m_wrist{GetCANAddr(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance),
               std::string(GetCANBus(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance))}
     , m_armExtensionEncoder{GetCANAddr(address::comp_bot::encoders::armExtenderEncoder,
@@ -60,7 +64,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
       m_shoulderFollower, 100_ms, instance);
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::armExtension,
                                          motorConfig::practice_bot::lifter::armExtension>(
-      m_armExtension, 100_ms, instance);
+      m_armExtensionMotor, 100_ms, instance);
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::wrist,
                                          motorConfig::practice_bot::lifter::wrist>(m_wrist, 100_ms, instance);
@@ -75,18 +79,18 @@ void LifterSubsystem::SetShoulderSpeed(double speed) {
   m_shoulderLeader.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
-void LifterSubsystem::StopArm() {
+void LifterSubsystem::StopShoulder() {
   m_shoulderLeader.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
   m_shoulderLeader.Set(0.0);
 }
 
 void LifterSubsystem::SetArmExtensionSpeed(double speed) {
-  m_armExtension.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+  m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
 void LifterSubsystem::StopArmExtension() {
-  m_armExtension.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
-  m_armExtension.Set(0.0);
+  m_armExtensionMotor.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_armExtensionMotor.Set(0.0);
 }
 
 void LifterSubsystem::SetWristSpeed(double speed) {
@@ -102,7 +106,18 @@ void LifterSubsystem::StopWrist() {
 void LifterSubsystem::Periodic() {}
 
 void LifterSubsystem::Disable() {
-  StopArm();
+  StopShoulder();
   StopArmExtension();
   StopWrist();
+}
+
+bool LifterSubsystem::IsArmMoving() {
+  // Update onboard relative encoder to have a pre-defined value at a known position
+  return true;
+}
+
+void LifterSubsystem::UpdateArmHome() {
+  // Update onboard relative encoder to have a pre-defined value at a known position
+  //m_armExtensionMotor.SetSelectedSensorPosition(
+  //  sensor_conversions::arm_extention::ToSensorUnit());
 }

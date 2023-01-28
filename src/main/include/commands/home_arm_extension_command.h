@@ -6,6 +6,7 @@
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
 #include <subsystems/lifter_subsystem.h>
+#include <argos_lib/general/debouncer.h>
 
 class HomeArmExtensionCommand : public frc2::CommandHelper<frc2::CommandBase, HomeArmExtensionCommand> {
  public:
@@ -21,5 +22,6 @@ class HomeArmExtensionCommand : public frc2::CommandHelper<frc2::CommandBase, Ho
 
  private:
   LifterSubsystem& m_LifterSubsystem;
+  argos_lib::Debouncer m_hookMovingDebounce;
   std::chrono::time_point<std::chrono::steady_clock> m_startTime;
 };
