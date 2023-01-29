@@ -1,19 +1,15 @@
-/// \copyright Copyright (c) Argos FRC Team 1756.
-///            Open Source Software; you can modify and/or share it under the terms of
-///            the license file in the root directory of this project.
-
-#include "utils/file_system_homing_storage.h"
-
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 
 #include "wpi/fs.h"
+#include "argos_lib/homing/fs_homing.h"
 
-FileSystemHomingStorage::FileSystemHomingStorage(const fs::path& swerveHomesPath)
-    : m_swerveHomesPath{swerveHomesPath} {}
+using argos_lib::SwerveFSHomingStorage;
 
-bool FileSystemHomingStorage::Save(const argos_lib::swerve::SwerveModulePositions& homePosition) {
+SwerveFSHomingStorage::SwerveFSHomingStorage(const fs::path& swerveHomesPath) : m_swerveHomesPath{swerveHomesPath} {}
+
+bool SwerveFSHomingStorage::Save(const argos_lib::swerve::SwerveModulePositions& homePosition) {
   try {
     std::ofstream configFile(GetFilePath(), std::ios::out);
     configFile << homePosition.FrontLeft.to<double>() << ' ' << homePosition.FrontRight.to<double>() << ' '
@@ -27,7 +23,7 @@ bool FileSystemHomingStorage::Save(const argos_lib::swerve::SwerveModulePosition
   }
 }
 
-std::optional<argos_lib::swerve::SwerveModulePositions> FileSystemHomingStorage::Load() {
+std::optional<argos_lib::swerve::SwerveModulePositions> SwerveFSHomingStorage::Load() {
   try {
     std::ifstream configFile(GetFilePath(), std::ios::in);
     double frontLeft, frontRight, rearRight, rearLeft;
@@ -45,7 +41,7 @@ std::optional<argos_lib::swerve::SwerveModulePositions> FileSystemHomingStorage:
   }
 }
 
-fs::path FileSystemHomingStorage::GetFilePath() {
+fs::path SwerveFSHomingStorage::GetFilePath() {
   static const fs::path homeDir{"/home/lvuser"};
   static const fs::path configFile{homeDir / m_swerveHomesPath};
 
