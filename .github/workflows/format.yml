@@ -20,10 +20,10 @@ jobs:
           python-version: '3.10'
       - name: Install wpiformat
         run: pip3 install wpiformat==2022.21 clang-format
-      - name: Rename branch
+      - name: Create main branch
         # This is only necessary because wpiformat refuses to run without a main branch
         if: ${{ github.ref != 'refs/heads/main' }}
-        run: git checkout -b main HEAD
+        run: git branch main
       - name: Run
         run: wpiformat
       - name: Check for modified files

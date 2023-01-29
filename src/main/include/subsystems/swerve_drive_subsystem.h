@@ -17,8 +17,8 @@
 
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/general/nt_motor_pid_tuner.h"
+#include "argos_lib/homing/fs_homing.h"
 #include "ctre/Phoenix.h"
-#include "utils/file_system_homing_storage.h"
 #include "utils/swerve_trapezoidal_profile.h"
 
 class SwerveModule {
@@ -221,7 +221,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   units::degree_t m_continuousOdometryOffset;  ///< Offset to convert [-180,180] odometry angle to continuous angle
 
   // std::FILE SYSTEM HOMING STORAGE
-  FileSystemHomingStorage m_fsStorage;  ///< Roborio filesystem access for homes
+  argos_lib::SwerveFSHomingStorage m_fsStorage;  ///< Roborio filesystem access for homes
 
   bool m_followingProfile;  ///< True when an incomplete drive profile is being run
   bool m_profileComplete;   ///< True once a drive profile has been completed

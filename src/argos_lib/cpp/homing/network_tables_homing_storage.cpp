@@ -2,7 +2,7 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include "argos_lib/general/network_tables_homing_storage.h"
+#include "argos_lib/homing/network_tables_homing_storage.h"
 
 #include <networktables/NetworkTableInstance.h>
 

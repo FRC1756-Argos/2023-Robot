@@ -10,8 +10,8 @@
 
 #include <string>
 
+#include "argos_lib/homing/fs_homing.h"
 #include "constants/interpolation_maps.h"
-#include "utils/homing_storage_interface.h"
 
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
@@ -72,8 +72,8 @@ class LifterSubsystem : public frc2::SubsystemBase {
   CANCoder m_armExtensionEncoder;  ///< Encoder that measures arm extension
   CANCoder m_shoulderEncoder;      ///< Encoder that measures shoulder position
   CANCoder m_wristEncoder;         ///< Encoder for measuring wrist position
-  FSHomingStorage<units::degree_t> m_wristHomingStorage;
+  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
   bool m_wristHomed;
-  FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
+  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
   bool m_shoulderHomed;
 };
