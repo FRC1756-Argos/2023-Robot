@@ -1,9 +1,14 @@
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
+
+#include "argos_lib/homing/fs_homing.h"
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 
 #include "wpi/fs.h"
-#include "argos_lib/homing/fs_homing.h"
 
 using argos_lib::SwerveFSHomingStorage;
 

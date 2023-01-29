@@ -7,10 +7,10 @@
 #include <fstream>
 #include <iostream>
 
-#include "units/base.h"
-#include "wpi/fs.h"
 #include "argos_lib/general/swerve_utils.h"
 #include "argos_lib/homing/homing_interface.h"
+#include "units/base.h"
+#include "wpi/fs.h"
 
 namespace argos_lib {
 

@@ -10,8 +10,8 @@
 
 #include <string>
 
-#include "constants/interpolation_maps.h"
 #include "argos_lib/homing/fs_homing.h"
+#include "constants/interpolation_maps.h"
 
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 

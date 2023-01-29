@@ -17,8 +17,8 @@
 
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/general/nt_motor_pid_tuner.h"
-#include "ctre/Phoenix.h"
 #include "argos_lib/homing/fs_homing.h"
+#include "ctre/Phoenix.h"
 #include "utils/swerve_trapezoidal_profile.h"
 
 class SwerveModule {
