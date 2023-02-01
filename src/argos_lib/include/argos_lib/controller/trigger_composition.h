@@ -6,7 +6,7 @@
 
 #include <frc2/command/button/Trigger.h>
 
-#include <initializer_list>
+#include <vector>
 
 namespace argos_lib {
   namespace triggers {
@@ -16,7 +16,7 @@ namespace argos_lib {
      * @param triggers Triggers to check
      * @return frc2::Trigger Composite trigger
      */
-    frc2::Trigger OneOf(std::initializer_list<frc2::Trigger> triggers);
+    frc2::Trigger OneOf(std::vector<frc2::Trigger> triggers);
 
     /**
      * @brief Generates composite trigger that is true when none of the triggers is true
@@ -24,7 +24,7 @@ namespace argos_lib {
      * @param triggers Triggers to check
      * @return frc2::Trigger Composite trigger
      */
-    frc2::Trigger NoneOf(std::initializer_list<frc2::Trigger> triggers);
+    frc2::Trigger NoneOf(std::vector<frc2::Trigger> triggers);
 
     /**
      * @brief Generates composite trigger that is true when any of the triggers is true
@@ -32,7 +32,7 @@ namespace argos_lib {
      * @param triggers Triggers to check
      * @return frc2::Trigger Composite trigger
      */
-    frc2::Trigger AnyOf(std::initializer_list<frc2::Trigger> triggers);
+    frc2::Trigger AnyOf(std::vector<frc2::Trigger> triggers);
 
     /**
      * @brief Generates composite trigger that is true when all of the triggers are true
@@ -40,6 +40,6 @@ namespace argos_lib {
      * @param triggers Triggers to check
      * @return frc2::Trigger Composite trigger
      */
-    frc2::Trigger AllOf(std::initializer_list<frc2::Trigger> triggers);
+    frc2::Trigger AllOf(std::vector<frc2::Trigger> triggers);
   }  // namespace triggers
 }  // namespace argos_lib

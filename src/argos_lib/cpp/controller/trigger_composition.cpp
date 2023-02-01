@@ -32,28 +32,34 @@ namespace {
 
 }  // namespace
 
-frc2::Trigger argos_lib::triggers::OneOf(std::initializer_list<frc2::Trigger> triggers) {
-  std::vector<frc2::Trigger> mutableTriggers{triggers};
+frc2::Trigger argos_lib::triggers::OneOf(std::vector<frc2::Trigger> triggers) {
+  if (triggers.size() == 1) {
+    return triggers.front();
+  }
   std::vector<frc2::Trigger> allExclusiveChecks;
-  allExclusiveChecks.reserve(mutableTriggers.size());
+  allExclusiveChecks.reserve(triggers.size());
 
-  for (size_t i = 0; i < mutableTriggers.size(); ++i) {
-    auto newTrigger = *mutableTriggers.begin();
-    allExclusiveChecks.push_back(newTrigger && NoneOfIt(std::next(mutableTriggers.begin()), mutableTriggers.end()));
-    std::rotate(mutableTriggers.begin(), mutableTriggers.end(), std::next(mutableTriggers.begin()));
+  for (size_t exclusiveTrueIdx = 0; exclusiveTrueIdx < triggers.size(); ++exclusiveTrueIdx) {
+    allExclusiveChecks.emplace_back(triggers.at(exclusiveTrueIdx));
+    for (size_t otherIdx = 0; otherIdx < triggers.size(); ++otherIdx) {
+      if (exclusiveTrueIdx != otherIdx) {
+        auto tempTrigger = allExclusiveChecks.back() && !triggers.at(otherIdx);
+        std::swap(allExclusiveChecks.back(), tempTrigger);
+      }
+    }
   }
 
   return std::reduce(std::next(allExclusiveChecks.begin()), allExclusiveChecks.end(), *allExclusiveChecks.begin(), Or);
 }
 
-frc2::Trigger argos_lib::triggers::NoneOf(std::initializer_list<frc2::Trigger> triggers) {
+frc2::Trigger argos_lib::triggers::NoneOf(std::vector<frc2::Trigger> triggers) {
   return NoneOfIt(triggers.begin(), triggers.end());
 }
 
-frc2::Trigger argos_lib::triggers::AnyOf(std::initializer_list<frc2::Trigger> triggers) {
+frc2::Trigger argos_lib::triggers::AnyOf(std::vector<frc2::Trigger> triggers) {
   return AnyOfIt(triggers.begin(), triggers.end());
 }
 
-frc2::Trigger argos_lib::triggers::AllOf(std::initializer_list<frc2::Trigger> triggers) {
+frc2::Trigger argos_lib::triggers::AllOf(std::vector<frc2::Trigger> triggers) {
   return AllOfIt(triggers.begin(), triggers.end());
 }

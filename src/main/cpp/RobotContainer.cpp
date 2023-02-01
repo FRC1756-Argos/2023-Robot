@@ -170,7 +170,7 @@ void RobotContainer::ConfigureBindings() {
       .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeReverse(); }, {&m_intake}).ToPtr());
   (intakeFastReverse && exclusiveIntakeTrigger)
       .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeFastReverse(); }, {&m_intake}).ToPtr());
-  !exclusiveIntakeTrigger.OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
+  exclusiveIntakeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
