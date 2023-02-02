@@ -99,8 +99,15 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
+  m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
+  m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
+  // SHOULDER TRIGGERS
+  auto homeShoulder = (frc2::Trigger{[this]() {
+    return m_controllers.OperatorController().GetDebouncedButton(
+        {argos_lib::XboxController::Button::kA, argos_lib::XboxController::Button::kB});
+  }});
 
   // LIFTER TRIGGERS
   // TODO Wrist homes if x and y is held for 1 + 1/2 seconds change
@@ -139,8 +146,10 @@ void RobotContainer::ConfigureBindings() {
 
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
-  // LIFTER TRIGGER ACTIVATION
+  // WRIST HOME TRIGGER ACTIVATION
   homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {&m_lifter}).ToPtr());
+  // SHOULDER HOME TRIGGER ACTIVATION
+  homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(); }, {&m_lifter}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
@@ -161,7 +170,7 @@ void RobotContainer::ConfigureBindings() {
       .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeReverse(); }, {&m_intake}).ToPtr());
   (intakeFastReverse && exclusiveIntakeTrigger)
       .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeFastReverse(); }, {&m_intake}).ToPtr());
-  !exclusiveIntakeTrigger.OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
+  exclusiveIntakeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)

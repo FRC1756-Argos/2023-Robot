@@ -7,7 +7,8 @@
 #include <optional>
 #include <string>
 
-#include "swerve_utils.h"
+#include "argos_lib/general/swerve_utils.h"
+#include "argos_lib/homing/homing_interface.h"
 
 namespace argos_lib {
   namespace swerve {

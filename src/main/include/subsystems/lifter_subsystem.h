@@ -11,8 +11,8 @@
 #include <string>
 
 #include "argos_lib/general/nt_motor_pid_tuner.h"
+#include "argos_lib/homing/fs_homing.h"
 #include "constants/interpolation_maps.h"
-#include "utils/homing_storage_interface.h"
 
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
@@ -41,8 +41,8 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Sets the wrist speed to zero
   void StopWrist();
 
-  /// @brief initalizing wrist homes from
-  void InitnalizeWristHomes();
+  /// @brief initializing wrist homes from
+  void InitializeWristHomes();
 
   /// @brief
   /// @param wristAngle
@@ -59,20 +59,28 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Handle robot disabling
   void Disable();
 
+  /// @brief Initializes the homed shoulder value from FS
+  void InitializeShoulderHome();
+
+  /// @brief Updates shoulder home in FS, resets relative position on sensor
+  void UpdateShoulderHome();
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
 
   // Shoulder motors are attached in parallel mechanically to operate shoulder, back motor follows front motor
-  WPI_TalonFX m_shoulderLeader;    // Shoulder motor closest to front of robot
-  WPI_TalonFX m_shoulderFollower;  // Shoulder motor closest to back of robot
-  WPI_TalonFX m_armExtension;      // Motor that controls extension of arm
-  WPI_TalonFX m_wrist;             // Motor that controls wrist movement
-  CANCoder m_armExtensionEncoder;  // Encoder that measures arm extension
-  CANCoder m_shoulderEncoder;      // Encoder that measures shoulder position
-  CANCoder m_wristEncoder;         // Encoder for measuring wrist position
-  FSHomingStorage<units::degree_t> m_wristHomingStorage;
+  WPI_TalonFX m_shoulderLeader;    ///< Shoulder motor closest to front of robot
+  WPI_TalonFX m_shoulderFollower;  ///< Shoulder motor closest to back of robot
+  WPI_TalonFX m_armExtension;      ///< Motor that controls extension of arm
+  WPI_TalonFX m_wrist;             ///< Motor that controls wrist movement
+  CANCoder m_armExtensionEncoder;  ///< Encoder that measures arm extension
+  CANCoder m_shoulderEncoder;      ///< Encoder that measures shoulder position
+  CANCoder m_wristEncoder;         ///< Encoder for measuring wrist position
+  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
   bool m_wristHomed;
 
   argos_lib::NTMotorPIDTuner m_wristTuner;
+  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
+  bool m_shoulderHomed;
 };
