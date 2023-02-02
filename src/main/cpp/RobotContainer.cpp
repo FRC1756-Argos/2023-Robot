@@ -8,6 +8,7 @@
 #include <argos_lib/controller/trigger_composition.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
+#include <frc/shuffleboard/Shuffleboard.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/RunCommand.h>
@@ -90,7 +91,8 @@ RobotContainer::RobotContainer()
 }
 
 void RobotContainer::ConfigureBindings() {
-  // CONFIGURE DEBOUNCING
+  /* ———————————————————————— CONFIGURE DEBOUNCING ——————————————————————— */
+
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
@@ -101,6 +103,29 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
+
+  /* ———————— TUNING SETPOINTS, TRIGGERS, TRIGGER ACTIVATION, ETC ———————— */
+
+  p_wristSetpoint = frc::Shuffleboard::GetTab("WristTuning").Add("Setpoint", 0.0).GetEntry();
+
+  auto wristToSetpoint = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kX);
+
+  wristToSetpoint.OnTrue(frc2::InstantCommand(
+                             [this]() {
+                               m_lifter.SetWristAngle(
+                                   units::make_unit<units::degree_t>(p_wristSetpoint->GetDouble(0.0)));
+                               frc::SmartDashboard::PutBoolean("Wrist Setpoint Trigger Active", true);
+                             },
+                             {&m_lifter})
+                             .ToPtr());
+
+  wristToSetpoint.OnFalse(frc2::InstantCommand(
+                              [this]() {
+                                m_lifter.Disable();
+                                frc::SmartDashboard::PutBoolean("Wrist Setpoint Trigger Active", false);
+                              },
+                              {&m_lifter})
+                              .ToPtr());
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
   // SHOULDER TRIGGERS

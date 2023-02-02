@@ -8,6 +8,8 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
 
+#include <span>
+
 using argos_lib::NTSubscriber;
 
 NTSubscriber::NTSubscriber(const std::string& tableName)
@@ -22,9 +24,10 @@ void NTSubscriber::AddMonitor(const std::string& keyName,
   } else {
     m_pntTable->SetDefaultNumber(keyName, defaultValue);
   }
+
   auto subscriber = m_pntTable->GetDoubleTopic(keyName).Subscribe(defaultValue);
   m_pntTable->GetInstance().AddListener(
-      subscriber, NT_EventFlags::NT_EVENT_VALUE_ALL, [onUpdateCallback](const nt::Event& e) {
+      {{keyName}}, NT_EventFlags::NT_EVENT_VALUE_ALL, [onUpdateCallback](const nt::Event& e) {
         onUpdateCallback(e.GetValueEventData()->value.GetDouble());
       });
 }

@@ -13,6 +13,7 @@
 #include "constants/encoders.h"
 #include "constants/measure_up.h"
 #include "constants/motors.h"
+#include "frc/smartdashboard/SmartDashboard.h"
 #include "units/time.h"
 #include "utils/sensor_conversions.h"
 
@@ -58,8 +59,6 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                                            address::practice_bot::encoders::wristEncoder,
                                            instance))}
     , m_wristHomingStorage{paths::wristHomesPath}
-    , m_shoulderHomeStorage{paths::shoulderHome}
-    , m_shoulderHomed{false} {
     , m_wristHomed{false}
     , m_wristTuner{"argos/wristTune",
                    {&m_wrist},
@@ -67,7 +66,9 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                    argos_lib::ClosedLoopSensorConversions{
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle),
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToVelocity),
-                       argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle)}} {
+                       argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle)}}
+    , m_shoulderHomeStorage{paths::shoulderHome}
+    , m_shoulderHomed{false} {
   /* ———————————————————————— MOTOR CONFIGURATION ———————————————————————— */
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderLeader,
@@ -135,6 +136,9 @@ void LifterSubsystem::StopWrist() {
 }
 
 void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
+  // REMOVEME
+  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint", wristAngle.to<double>());
+
   if (!m_wristHomed) {
     Disable();
     return;
@@ -142,11 +146,17 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
 
   wristAngle = argos_lib::swerve::ConstrainAngle(wristAngle, -180_deg, 180_deg);
 
+  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint (constrained)", wristAngle.to<double>());
+
   if (wristAngle < measure_up::lifter::wrist::minAngle) {
     wristAngle = measure_up::lifter::wrist::minAngle;
   } else if (wristAngle > measure_up::lifter::wrist::maxAngle) {
     wristAngle = measure_up::lifter::wrist::maxAngle;
   }
+
+  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint (SensorUnits)",
+                                 sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
+
   m_wrist.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
               sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
 }
