@@ -9,17 +9,18 @@
 using namespace std::chrono_literals;
 
 HomeArmExtensionCommand::HomeArmExtensionCommand(LifterSubsystem& subsystem)
-    : m_LifterSubsystem(subsystem), m_hookMovingDebounce{{0_ms, 500_ms}, true} {}
+    : m_LifterSubsystem(subsystem), m_armMovingDebounce{{0_ms, 500_ms}, true} {}
 
 // Called when the command is initially scheduled.
 void HomeArmExtensionCommand::Initialize() {
   m_LifterSubsystem.SetArmExtensionSpeed(-0.1);
+  m_LifterSubsystem.SetExtentionManualOverride(false);
   m_startTime = std::chrono::steady_clock::now();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void HomeArmExtensionCommand::Execute() {
-  if (m_LifterSubsystem.IsManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 2.0s) {
+  if (m_LifterSubsystem.IsExtensionManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 2.0s) {
     Cancel();
   } else {
     m_LifterSubsystem.SetArmExtensionSpeed(-0.1);
@@ -36,5 +37,5 @@ void HomeArmExtensionCommand::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool HomeArmExtensionCommand::IsFinished() {
-  return !m_hookMovingDebounce(m_LifterSubsystem.IsArmMoving());
+  return !m_armMovingDebounce(m_LifterSubsystem.IsArmMoving());
 }

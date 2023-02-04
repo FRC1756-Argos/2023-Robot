@@ -128,8 +128,12 @@ void LifterSubsystem::StopWrist() {
   m_wrist.Set(0.0);
 }
 
-bool LifterSubsystem::IsManualOverride() {
-  return false;
+bool LifterSubsystem::IsExtensionManualOverride() {
+  return m_extensionManualOverride;
+}
+
+void LifterSubsystem::SetExtentionManualOverride(bool overrideState) {
+  m_extensionManualOverride = overrideState;
 }
 
 // This method will be called once per scheduler run
@@ -142,7 +146,7 @@ void LifterSubsystem::Disable() {
 }
 
 bool LifterSubsystem::IsArmMoving() {
-  return std::abs(m_armExtensionMotor.GetSelectedSensorPosition()) > 10;
+  return std::abs(m_armExtensionMotor.GetSelectedSensorVelocity()) > 10;
 }
 
 void LifterSubsystem::UpdateArmHome() {

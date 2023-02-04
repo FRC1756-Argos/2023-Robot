@@ -81,6 +81,7 @@ RobotContainer::RobotContainer()
         if (wristSpeed == 0.0) {
           m_lifter.StopWrist();
         } else {
+          m_lifter.SetExtentionManualOverride(true);
           m_lifter.SetWristSpeed(wristSpeed);
         }
       },

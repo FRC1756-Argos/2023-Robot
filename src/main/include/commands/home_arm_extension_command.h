@@ -22,6 +22,6 @@ class HomeArmExtensionCommand : public frc2::CommandHelper<frc2::CommandBase, Ho
 
  private:
   LifterSubsystem& m_LifterSubsystem;
-  argos_lib::Debouncer m_hookMovingDebounce;
+  argos_lib::Debouncer m_armMovingDebounce;
   std::chrono::time_point<std::chrono::steady_clock> m_startTime;
 };

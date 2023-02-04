@@ -40,7 +40,12 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Sets the wrist speed to zero
   void StopWrist();
 
-  bool IsManualOverride();
+  /// @brief
+  /// @return
+  bool IsExtensionManualOverride();
+
+  /// @brief
+  void SetExtentionManualOverride(bool overrideState);
 
   /// @brief initializing wrist homes from
   void InitializeWristHomes();
@@ -85,4 +90,5 @@ class LifterSubsystem : public frc2::SubsystemBase {
   bool m_wristHomed;
   argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
   bool m_shoulderHomed;
+  bool m_extensionManualOverride;
 };
