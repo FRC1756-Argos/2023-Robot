@@ -62,9 +62,9 @@ namespace sensor_conversions {
   namespace lifter {
     namespace arm_extension {
       constexpr double sensorToMotorRevolution = 1.0 / 2048;
-      constexpr double gearboxReduction = 1.0 / 12;
+      constexpr double gearboxReduction = 1.0 / 20;
       constexpr double driveSprocketTeeth = 15.0;
-      constexpr double extensionInchesPerTooth = 0.325 / 1;
+      constexpr double extensionInchesPerTooth = 0.375 / 1;
 
       constexpr units::inch_t ToExtension(const double sensorUnit) {
         return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRevolution * gearboxReduction *
@@ -72,8 +72,8 @@ namespace sensor_conversions {
       }
 
       constexpr double ToSensorUnit(const units::inch_t extension) {
-        return extension.to<double>() / driveSprocketTeeth / gearboxReduction / sensorToMotorRevolution /
-               sensorToMotorRevolution;
+        return extension.to<double>() / sensorToMotorRevolution / gearboxReduction / driveSprocketTeeth /
+               extensionInchesPerTooth;
       }
     }  // namespace arm_extension
     namespace wrist {

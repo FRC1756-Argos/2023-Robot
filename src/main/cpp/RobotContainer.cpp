@@ -67,23 +67,29 @@ RobotContainer::RobotContainer()
         // Use interpolation map for deadband, and to cap max value
         double shoulderSpeed = -m_shoulderSpeed.Map(
             m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kLeftHand));
-        double extensionSpeed = -m_armExtenderSpeed.Map(
+        double extensionSpeed = m_armExtenderSpeed.Map(
             m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kLeftHand));
         double wristSpeed = m_wristSpeed.Map(
             m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand));
 
         if (shoulderSpeed == 0.0) {
-          m_lifter.StopArmExtension();
+          if (m_lifter.IsShoulderManualOverride()) {
+            m_lifter.StopArmExtension();
+          }
         } else {
           m_lifter.SetShoulderSpeed(shoulderSpeed);
         }
         if (extensionSpeed == 0.0) {
-          m_lifter.StopArmExtension();
+          if (m_lifter.IsExtensionManualOverride()) {
+            m_lifter.StopArmExtension();
+          }
         } else {
           m_lifter.SetArmExtensionSpeed(extensionSpeed);
         }
         if (wristSpeed == 0.0) {
-          m_lifter.StopWrist();
+          if (m_lifter.IsWristManualOverride()) {
+            m_lifter.StopWrist();
+          }
         } else {
           m_lifter.SetWristSpeed(wristSpeed);
         }
@@ -156,26 +162,6 @@ void RobotContainer::ConfigureBindings() {
   auto exclusiveIntakeTrigger =
       argos_lib::triggers::OneOf({intakeForwardTrigger, intakeReverseTrigger, intakeFastReverse});
 
-  auto manualArmExtensionHomeTrigger = (frc2::Trigger{
-      [this]() { return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kY); }});
-
-  // armExtensionToSetpoint.OnTrue(
-  //     frc2::InstantCommand(
-  //         [this]() {
-  //           m_lifter.SetArmExtension(units::make_unit<units::inch_t>(
-  //               frc::Shuffleboard::GetTab("ArmExtensionTuning").Add("Setpoint", 0.0).GetEntry()->GetDouble(0.0)));
-  //           frc::SmartDashboard::PutBoolean("Arm Extension Setpoint Trigger Active", true);
-  //         },
-  //         {&m_lifter})
-  //         .ToPtr());
-  // armExtensionToSetpoint.OnFalse(frc2::InstantCommand(
-  //                                    [this]() {
-  //                                      m_lifter.StopArmExtension();
-  //                                      frc::SmartDashboard::PutBoolean("Arm Extension Setpoint Trigger Active", false);
-  //                                    },
-  //                                    {&m_lifter})
-  //                                    .ToPtr());
-
   // Swap controllers config
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBack, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kStart, {1500_ms, 0_ms});
@@ -228,8 +214,8 @@ void RobotContainer::ConfigureBindings() {
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
 
-  manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
-  // startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+  //   manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+  startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 }
 
 void RobotContainer::Disable() {

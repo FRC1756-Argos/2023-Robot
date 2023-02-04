@@ -27,9 +27,9 @@ namespace measure_up {
   }  // namespace swerve_offsets
   namespace lifter {
     namespace arm_extension {
-      constexpr auto homeExtension = 35.25_in;
-      constexpr auto maxExtension = 35.00_in;
-      constexpr auto minExtension = 1_in;
+      constexpr auto homeExtension = 37.50_in;
+      constexpr auto maxExtension = 74.00_in;
+      constexpr auto minExtension = 38.00_in;
 
     }  // namespace arm_extension
     namespace wrist {

@@ -41,7 +41,7 @@ namespace controlLoop {
     }     // namespace drive
     namespace lifter {
       struct armExtension {
-        constexpr static double kP = 0;
+        constexpr static double kP = 0.2;
         constexpr static double kI = 0;
         constexpr static double kD = 0;
         constexpr static double kF = 0;

@@ -122,6 +122,7 @@ void LifterSubsystem::SetArmExtensionSpeed(double speed) {
 
 void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   if (IsArmExtensionHomed()) {
+    SetExtensionManualOverride(false);
     m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
                             sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
   }
