@@ -8,26 +8,35 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
 
-#include <span>
+#include "fmt/format.h"
 
 using argos_lib::NTSubscriber;
 
-NTSubscriber::NTSubscriber(const std::string& tableName)
-    : m_pntTable{nt::NetworkTableInstance::GetDefault().GetTable(tableName)} {}
+NTSubscriber::NTSubscriber(const std::string& tableName) : m_tableName{tableName} {}
+
+NTSubscriber::~NTSubscriber() {
+  // Need to release all handles
+  for (auto listenerIt = m_ntListeners.begin(); listenerIt != m_ntListeners.end(); ++listenerIt) {
+    nt::RemoveListener(*listenerIt);
+  }
+  for (auto entryIt = m_ntEntries.begin(); entryIt != m_ntEntries.end(); ++entryIt) {
+    nt::ReleaseEntry(*entryIt);
+  }
+}
 
 void NTSubscriber::AddMonitor(const std::string& keyName,
                               std::function<void(double)> onUpdateCallback,
                               const double defaultValue,
                               const bool forceUpdate) {
+  NT_Topic topic = nt::GetTopic(NT_GetDefaultInstance(), fmt::format("{}/{}", m_tableName, keyName));
+  m_ntEntries.push_back(nt::GetEntry(topic, NT_DOUBLE, "double"));
   if (forceUpdate) {
-    m_pntTable->PutNumber(keyName, defaultValue);
+    nt::SetDouble(m_ntEntries.back(), defaultValue);
   } else {
-    m_pntTable->SetDefaultNumber(keyName, defaultValue);
+    nt::SetDefaultDouble(m_ntEntries.back(), defaultValue);
   }
 
-  auto subscriber = m_pntTable->GetDoubleTopic(keyName).Subscribe(defaultValue);
-  m_pntTable->GetInstance().AddListener(
-      {{keyName}}, NT_EventFlags::NT_EVENT_VALUE_ALL, [onUpdateCallback](const nt::Event& e) {
-        onUpdateCallback(e.GetValueEventData()->value.GetDouble());
-      });
+  nt::AddListener(m_ntEntries.back(), nt::EventFlags::kValueAll, [onUpdateCallback](const nt::Event& e) {
+    onUpdateCallback(e.GetValueEventData()->value.GetDouble());
+  });
 }

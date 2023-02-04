@@ -4,10 +4,11 @@
 
 #pragma once
 
+#include <networktables/DoubleTopic.h>
 #include <networktables/NetworkTableInstance.h>
 
-#include <memory>
 #include <string>
+#include <vector>
 
 namespace argos_lib {
   /**
@@ -21,6 +22,8 @@ namespace argos_lib {
      * @param tableName Name of the table containing keys to watch
      */
     explicit NTSubscriber(const std::string& tableName);
+
+    ~NTSubscriber();
 
     /**
      * @brief Register a new listener for the specified key and send values to callback on update
@@ -36,7 +39,9 @@ namespace argos_lib {
                     const bool forceUpdate = true);
 
    private:
-    std::shared_ptr<nt::NetworkTable> m_pntTable;  ///< Table with monitored keys
+    const std::string m_tableName;           ///< Table containing keys to monitor
+    std::vector<NT_Entry> m_ntEntries;       ///< Publish/subscribe entries
+    std::vector<NT_Listener> m_ntListeners;  ///< Entry listeners
   };
 
 }  // namespace argos_lib
