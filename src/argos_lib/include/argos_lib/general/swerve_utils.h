@@ -109,28 +109,5 @@ namespace argos_lib {
       return TranslationSpeeds{mappedMagnitude * std::cos(angle), mappedMagnitude * std::sin(angle)};
     }
 
-    /**
-     * @brief Interface capable of saving and loading module home positions from persistent storage
-     */
-    class SwerveHomeStorageInterface {
-     public:
-      /**
-       * @brief Save home position to persistent storage
-       *
-       * @param homePosition Positions to store
-       * @return true Save successful
-       * @return false Error saving
-       */
-      virtual bool Save(const SwerveModulePositions& homePosition) = 0;
-
-      /**
-       * @brief Load home position from persistent storage
-       *
-       * @return Poisitions from persistent storage or std::nullopt if load failed or no positions were
-       *         previously stored
-       */
-      [[nodiscard]] virtual std::optional<SwerveModulePositions> Load() = 0;
-    };
-
   }  // namespace swerve
 }  // namespace argos_lib

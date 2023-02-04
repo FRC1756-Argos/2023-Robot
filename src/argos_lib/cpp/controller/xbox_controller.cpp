@@ -52,7 +52,7 @@ bool XboxController::GetDebouncedButtonReleased(Button buttonIdx) {
   return UpdateButton(buttonIdx).debounceRelease;
 }
 
-bool XboxController::GetDebouncedButton(std::initializer_list<Button> buttonCombo) {
+bool XboxController::GetDebouncedButton(std::vector<Button> buttonCombo) {
   std::vector<UpdateStatus> updates;
   updates.reserve(buttonCombo.size());
   std::transform(buttonCombo.begin(), buttonCombo.end(), std::back_inserter(updates), [this](Button buttonIdx) {
@@ -62,7 +62,7 @@ bool XboxController::GetDebouncedButton(std::initializer_list<Button> buttonComb
   return std::all_of(updates.begin(), updates.end(), [](UpdateStatus newState) { return newState.debounceActive; });
 }
 
-bool XboxController::GetDebouncedButtonPressed(std::initializer_list<Button> buttonCombo) {
+bool XboxController::GetDebouncedButtonPressed(std::vector<Button> buttonCombo) {
   std::vector<UpdateStatus> updates;
   updates.reserve(buttonCombo.size());
   std::transform(buttonCombo.begin(), buttonCombo.end(), std::back_inserter(updates), [this](Button buttonIdx) {
@@ -73,7 +73,7 @@ bool XboxController::GetDebouncedButtonPressed(std::initializer_list<Button> but
          std::any_of(updates.begin(), updates.end(), [](UpdateStatus newState) { return newState.debouncePress; });
 }
 
-bool XboxController::GetDebouncedButtonReleased(std::initializer_list<Button> buttonCombo) {
+bool XboxController::GetDebouncedButtonReleased(std::vector<Button> buttonCombo) {
   std::vector<UpdateStatus> updates;
   updates.reserve(buttonCombo.size());
   std::transform(buttonCombo.begin(), buttonCombo.end(), std::back_inserter(updates), [this](Button buttonIdx) {
@@ -96,7 +96,7 @@ bool XboxController::GetRawButtonReleased(Button buttonIdx) {
   return UpdateButton(buttonIdx).released;
 }
 
-bool XboxController::GetRawButton(std::initializer_list<Button> buttonCombo) {
+bool XboxController::GetRawButton(std::vector<Button> buttonCombo) {
   std::vector<UpdateStatus> updates;
   updates.reserve(buttonCombo.size());
   std::transform(buttonCombo.begin(), buttonCombo.end(), std::back_inserter(updates), [this](Button buttonIdx) {
@@ -106,7 +106,7 @@ bool XboxController::GetRawButton(std::initializer_list<Button> buttonCombo) {
   return std::all_of(updates.begin(), updates.end(), [](UpdateStatus newState) { return newState.rawActive; });
 }
 
-bool XboxController::GetRawButtonPressed(std::initializer_list<Button> buttonCombo) {
+bool XboxController::GetRawButtonPressed(std::vector<Button> buttonCombo) {
   std::vector<UpdateStatus> updates;
   updates.reserve(buttonCombo.size());
   std::transform(buttonCombo.begin(), buttonCombo.end(), std::back_inserter(updates), [this](Button buttonIdx) {
@@ -117,7 +117,7 @@ bool XboxController::GetRawButtonPressed(std::initializer_list<Button> buttonCom
          std::any_of(updates.begin(), updates.end(), [](UpdateStatus newState) { return newState.pressed; });
 }
 
-bool XboxController::GetRawButtonReleased(std::initializer_list<Button> buttonCombo) {
+bool XboxController::GetRawButtonReleased(std::vector<Button> buttonCombo) {
   std::vector<UpdateStatus> updates;
   updates.reserve(buttonCombo.size());
   std::transform(buttonCombo.begin(), buttonCombo.end(), std::back_inserter(updates), [this](Button buttonIdx) {
@@ -224,6 +224,121 @@ XboxController::UpdateStatus XboxController::UpdateButton(Button buttonIdx) {
   m_rawButtonStatus.at(static_cast<int>(buttonIdx)) = newVal;
 
   return retVal;
+}
+
+frc2::Trigger XboxController::TriggerRaw(Button button) {
+  return TriggerRaw(std::vector{button});
+}
+
+frc2::Trigger XboxController::TriggerRaw(std::vector<Button> buttonCombo) {
+  return frc2::Trigger([this, buttonCombo]() { return this->GetRawButton(buttonCombo); });
+}
+
+frc2::Trigger XboxController::TriggerRawAnyOf(std::vector<Button> buttonCombo) {
+  return TriggerAnyOf(buttonCombo, [this](Button button) { return this->GetRawButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerRawAllOf(std::vector<Button> buttonCombo) {
+  return TriggerAllOf(buttonCombo, [this](Button button) { return this->GetRawButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerRawNoneOf(std::vector<Button> buttonCombo) {
+  return TriggerNoneOf(buttonCombo, [this](Button button) { return this->GetRawButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerRawOneOf(std::vector<Button> buttonCombo) {
+  return TriggerOneOf(buttonCombo, [this](Button button) { return this->GetRawButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerDebounced(Button button) {
+  return TriggerDebounced(std::vector{button});
+}
+
+frc2::Trigger XboxController::TriggerDebounced(std::vector<Button> buttonCombo) {
+  return frc2::Trigger([this, buttonCombo]() { return this->GetDebouncedButton(buttonCombo); });
+}
+
+frc2::Trigger XboxController::TriggerDebouncedAnyOf(std::vector<Button> buttonCombo) {
+  return TriggerAnyOf(buttonCombo, [this](Button button) { return this->GetDebouncedButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerDebouncedAllOf(std::vector<Button> buttonCombo) {
+  return TriggerAllOf(buttonCombo, [this](Button button) { return this->GetDebouncedButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerDebouncedNoneOf(std::vector<Button> buttonCombo) {
+  return TriggerNoneOf(buttonCombo, [this](Button button) { return this->GetDebouncedButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerDebouncedOneOf(std::vector<Button> buttonCombo) {
+  return TriggerOneOf(buttonCombo, [this](Button button) { return this->GetDebouncedButton(button); });
+}
+
+frc2::Trigger XboxController::TriggerAnyOf(std::vector<Button> buttonCombo,
+                                           std::function<bool(Button)> buttonGetterFunc) {
+  std::function<bool()> compoundConditional{[]() { return false; }};
+  for (auto button : buttonCombo) {
+    compoundConditional = [compoundConditional, button, buttonGetterFunc]() {
+      return compoundConditional() || buttonGetterFunc(button);
+    };
+  }
+  return frc2::Trigger{compoundConditional};
+}
+
+frc2::Trigger XboxController::TriggerAllOf(std::vector<Button> buttonCombo,
+                                           std::function<bool(Button)> buttonGetterFunc) {
+  std::function<bool()> compoundConditional{[]() { return false; }};
+  for (auto button : buttonCombo) {
+    compoundConditional = [compoundConditional, button, buttonGetterFunc]() {
+      return compoundConditional() && buttonGetterFunc(button);
+    };
+  }
+  return frc2::Trigger{compoundConditional};
+}
+
+frc2::Trigger XboxController::TriggerNoneOf(std::vector<Button> buttonCombo,
+                                            std::function<bool(Button)> buttonGetterFunc) {
+  std::function<bool()> compoundConditional{[]() { return true; }};
+  for (auto button : buttonCombo) {
+    compoundConditional = [compoundConditional, button, buttonGetterFunc]() {
+      return compoundConditional() && !buttonGetterFunc(button);
+    };
+  }
+  return frc2::Trigger{compoundConditional};
+}
+
+frc2::Trigger XboxController::TriggerOneOf(std::vector<Button> buttonCombo,
+                                           std::function<bool(Button)> buttonGetterFunc) {
+  if (buttonCombo.size() < 2) {
+    return TriggerRawAnyOf(buttonCombo);
+  }
+
+  std::vector<std::function<bool()>> compositeConditionals;
+  compositeConditionals.reserve(buttonCombo.size());
+
+  for (auto exclusiveTrueItr = buttonCombo.begin(); exclusiveTrueItr != buttonCombo.end(); ++exclusiveTrueItr) {
+    auto button = *exclusiveTrueItr;
+    std::function<bool()> newCompositeConditional = ([button, buttonGetterFunc]() { return buttonGetterFunc(button); });
+    for (auto otherItr = buttonCombo.begin(); otherItr != buttonCombo.end(); ++otherItr) {
+      if (exclusiveTrueItr != otherItr) {
+        auto otherButton = *otherItr;
+        newCompositeConditional = [newCompositeConditional, otherButton, buttonGetterFunc]() {
+          return newCompositeConditional() && !buttonGetterFunc(otherButton);
+        };
+      }
+    }
+    compositeConditionals.emplace_back(newCompositeConditional);
+  }
+
+  std::function<bool()> exclusiveConditional = []() { return false; };
+
+  for (auto compositeCheck : compositeConditionals) {
+    exclusiveConditional = [exclusiveConditional, compositeCheck]() {
+      return exclusiveConditional() || compositeCheck();
+    };
+  }
+
+  return frc2::Trigger{exclusiveConditional};
 }
 
 XboxController::DPadButtons XboxController::GetPOVButtons() {
