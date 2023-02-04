@@ -144,10 +144,6 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
     return;
   }
 
-  wristAngle = argos_lib::swerve::ConstrainAngle(wristAngle, -180_deg, 180_deg);
-
-  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint (constrained)", wristAngle.to<double>());
-
   if (wristAngle < measure_up::lifter::wrist::minAngle) {
     wristAngle = measure_up::lifter::wrist::minAngle;
   } else if (wristAngle > measure_up::lifter::wrist::maxAngle) {
@@ -175,7 +171,7 @@ void LifterSubsystem::InitializeWristHomes() {
   if (wristHomes) {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
 
-    units::degree_t calcValue = currentencoder - wristHomes.value();
+    units::degree_t calcValue = argos_lib::swerve::ConstrainAngle(currentencoder - wristHomes.value(), 0_deg, 360_deg);
 
     m_wristEncoder.SetPosition(calcValue.to<double>());
 
@@ -188,7 +184,8 @@ void LifterSubsystem::InitializeWristHomes() {
 void LifterSubsystem::UpdateWristHome() {
   const auto homeAngle = measure_up::lifter::wrist::homeAngle;
   units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-  bool saved = m_wristHomingStorage.Save(argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg));
+  auto valToSave = argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg);
+  bool saved = m_wristHomingStorage.Save(valToSave);
   if (!saved) {
     std::printf("[CRITICAL ERROR]%d Wrist homes failed to save to to file system\n", __LINE__);
     m_wristHomed = false;
