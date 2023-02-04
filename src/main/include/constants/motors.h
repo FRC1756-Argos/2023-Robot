@@ -205,6 +205,23 @@ namespace motorConfig {
         constexpr static auto continuousCurrentLimit = 20_A;
       };
     }  // namespace intake
+    namespace bash_guard {
+      struct extension {
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static bool sensorPhase = false;
+        constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
+        constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
+        constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
+        constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::IntegratedSensor;
+        constexpr static auto pid0_kP = controlLoop::comp_bot::bash_guard::extension::kP;
+        constexpr static auto pid0_kI = controlLoop::comp_bot::bash_guard::extension::kI;
+        constexpr static auto pid0_kD = controlLoop::comp_bot::bash_guard::extension::kD;
+        constexpr static auto pid0_kF = controlLoop::comp_bot::bash_guard::extension::kF;
+        constexpr static auto pid0_iZone = controlLoop::comp_bot::bash_guard::extension::iZone;
+        constexpr static auto pid0_allowableError = controlLoop::comp_bot::bash_guard::extension::allowableError;
+      };
+    }  // namespace bash_guard
   }    // namespace comp_bot
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,5 +309,8 @@ namespace motorConfig {
     namespace intake {
       using intake = motorConfig::comp_bot::intake::intake;
     }  // namespace intake
+    namespace bash_guard {
+      using extension = motorConfig::comp_bot::bash_guard::extension;
+    }  // namespace bash_guard
   }    // namespace practice_bot
 }  // namespace motorConfig

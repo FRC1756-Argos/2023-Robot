@@ -65,6 +65,16 @@ namespace controlLoop {
         constexpr static double allowableError = 0;
       };
     }  // namespace lifter
+    namespace bash_guard {
+      struct extension {
+        constexpr static double kP = 0;
+        constexpr static double kI = 0;
+        constexpr static double kD = 0;
+        constexpr static double kF = 0;
+        constexpr static double iZone = 0;
+        constexpr static double allowableError = 0;
+      };
+    }  // namespace bash_guard
   }    // namespace comp_bot
   namespace practice_bot {
     namespace drive {
@@ -78,5 +88,8 @@ namespace controlLoop {
       using shoulder = comp_bot::lifter::shoulder;
       using write = comp_bot::lifter::wrist;
     }  // namespace lifter
+    namespace bash_guard {
+      using extension = comp_bot::bash_guard::extension;
+    }  // namespace bash_guard
   }    // namespace practice_bot
 }  // namespace controlLoop
