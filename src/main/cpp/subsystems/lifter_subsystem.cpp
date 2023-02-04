@@ -4,15 +4,18 @@
 
 #include "subsystems/lifter_subsystem.h"
 
+#include <argos_lib/config/cancoder_config.h>
+#include <argos_lib/config/config_types.h>
+#include <argos_lib/config/falcon_config.h>
+#include <argos_lib/general/swerve_utils.h>
+#include <constants/addresses.h>
+#include <constants/encoders.h>
+#include <constants/measure_up.h>
+#include <constants/motors.h>
+#include <units/time.h>
+#include <utils/sensor_conversions.h>
+
 #include "Constants.h"
-#include "argos_lib/config/cancoder_config.h"
-#include "argos_lib/config/config_types.h"
-#include "argos_lib/config/falcon_config.h"
-#include "argos_lib/general/swerve_utils.h"
-#include "constants/addresses.h"
-#include "constants/encoders.h"
-#include "constants/motors.h"
-#include "units/time.h"
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
@@ -29,20 +32,14 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                          std::string(GetCANBus(address::comp_bot::lifter::backShoulder,
                                                address::practice_bot::lifter::backShoulder,
                                                instance))}
-    , m_armExtension{GetCANAddr(address::comp_bot::lifter::armExtension,
-                                address::practice_bot::lifter::armExtension,
-                                instance),
-                     std::string(GetCANBus(address::comp_bot::lifter::armExtension,
-                                           address::practice_bot::lifter::armExtension,
-                                           instance))}
+    , m_armExtensionMotor{GetCANAddr(address::comp_bot::lifter::armExtension,
+                                     address::practice_bot::lifter::armExtension,
+                                     instance),
+                          std::string(GetCANBus(address::comp_bot::lifter::armExtension,
+                                                address::practice_bot::lifter::armExtension,
+                                                instance))}
     , m_wrist{GetCANAddr(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance),
               std::string(GetCANBus(address::comp_bot::lifter::wrist, address::practice_bot::lifter::wrist, instance))}
-    , m_armExtensionEncoder{GetCANAddr(address::comp_bot::encoders::armExtenderEncoder,
-                                       address::practice_bot::encoders::armExtenderEncoder,
-                                       instance),
-                            std::string(GetCANBus(address::comp_bot::encoders::armExtenderEncoder,
-                                                  address::practice_bot::encoders::armExtenderEncoder,
-                                                  instance))}
     , m_shoulderEncoder{GetCANAddr(address::comp_bot::encoders::shoulderEncoder,
                                    address::practice_bot::encoders::shoulderEncoder,
                                    instance),
@@ -55,10 +52,22 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                      std::string(GetCANBus(address::comp_bot::encoders::wristEncoder,
                                            address::practice_bot::encoders::wristEncoder,
                                            instance))}
-    , m_wristHomingStorage{paths::wristHomesPath}
-    , m_wristHomed{false}
     , m_shoulderHomeStorage{paths::shoulderHome}
-    , m_shoulderHomed{false} {
+    , m_wristHomingStorage{paths::wristHomesPath}
+    , m_extensionTuner{"argos/lifter/extension",
+                       {&m_armExtensionMotor},
+                       0,
+                       {
+                           argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::arm_extension::ToExtension),
+                           1.0,
+                           argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::arm_extension::ToExtension),
+                       }}
+    , m_shoulderHomed{false}
+    , m_extensionHomed{false}
+    , m_wristHomed{false}
+    , m_shoulderManualOverride{false}
+    , m_extensionManualOverride{false}
+    , m_wristManualOverride{false} {
   /* ———————————————————————— MOTOR CONFIGURATION ———————————————————————— */
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderLeader,
@@ -69,7 +78,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
       m_shoulderFollower, 100_ms, instance);
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::armExtension,
                                          motorConfig::practice_bot::lifter::armExtension>(
-      m_armExtension, 100_ms, instance);
+      m_armExtensionMotor, 100_ms, instance);
 
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::wrist,
                                          motorConfig::practice_bot::lifter::wrist>(m_wrist, 100_ms, instance);
@@ -102,18 +111,26 @@ void LifterSubsystem::SetShoulderSpeed(double speed) {
   m_shoulderLeader.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
-void LifterSubsystem::StopArm() {
+void LifterSubsystem::StopShoulder() {
   m_shoulderLeader.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
   m_shoulderLeader.Set(0.0);
 }
 
 void LifterSubsystem::SetArmExtensionSpeed(double speed) {
-  m_armExtension.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+  m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void LifterSubsystem::SetArmExtension(units::inch_t extension) {
+  if (IsArmExtensionHomed()) {
+    SetExtensionManualOverride(false);
+    m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
+                            sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
+  }
 }
 
 void LifterSubsystem::StopArmExtension() {
-  m_armExtension.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
-  m_armExtension.Set(0.0);
+  m_armExtensionMotor.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_armExtensionMotor.Set(0.0);
 }
 
 void LifterSubsystem::SetWristSpeed(double speed) {
@@ -125,13 +142,47 @@ void LifterSubsystem::StopWrist() {
   m_wrist.Set(0.0);
 }
 
+bool LifterSubsystem::IsShoulderManualOverride() {
+  return m_shoulderManualOverride;
+}
+
+void LifterSubsystem::SetShoulderManualOverride(bool overrideState) {
+  m_shoulderManualOverride = overrideState;
+}
+
+bool LifterSubsystem::IsExtensionManualOverride() {
+  return m_extensionManualOverride;
+}
+
+void LifterSubsystem::SetExtensionManualOverride(bool overrideState) {
+  m_extensionManualOverride = overrideState;
+}
+
+bool LifterSubsystem::IsWristManualOverride() {
+  return m_wristManualOverride;
+}
+
+void LifterSubsystem::SetWristManualOverride(bool overrideState) {
+  m_wristManualOverride = overrideState;
+}
+
 // This method will be called once per scheduler run
 void LifterSubsystem::Periodic() {}
 
 void LifterSubsystem::Disable() {
-  StopArm();
+  StopShoulder();
   StopArmExtension();
   StopWrist();
+}
+
+bool LifterSubsystem::IsArmExtensionMoving() {
+  return std::abs(m_armExtensionMotor.GetSelectedSensorVelocity()) > 10;
+}
+
+void LifterSubsystem::UpdateArmExtensionHome() {
+  m_armExtensionMotor.SetSelectedSensorPosition(
+      sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
+  m_extensionHomed = true;
 }
 
 void LifterSubsystem::InitializeWristHomes() {
@@ -209,4 +260,8 @@ void LifterSubsystem::UpdateShoulderHome() {
   }
 
   m_shoulderHomed = true;
+}
+
+bool LifterSubsystem::IsArmExtensionHomed() {
+  return m_extensionHomed;
 }

@@ -26,6 +26,12 @@ namespace measure_up {
     constexpr auto backLeftLOffset = 2.625_in;
   }  // namespace swerve_offsets
   namespace lifter {
+    namespace arm_extension {
+      constexpr auto homeExtension = 37.50_in;
+      constexpr auto maxExtension = 74.00_in;
+      constexpr auto minExtension = 38.00_in;
+
+    }  // namespace arm_extension
     namespace wrist {
       constexpr auto homeAngle = 0_deg;
       constexpr auto minAngle = -180_deg;
