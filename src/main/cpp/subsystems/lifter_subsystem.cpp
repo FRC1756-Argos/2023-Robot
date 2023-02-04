@@ -12,6 +12,7 @@
 #include <constants/encoders.h>
 #include <constants/measure_up.h>
 #include <constants/motors.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <units/time.h>
 #include <utils/sensor_conversions.h>
 
@@ -62,6 +63,13 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                            1.0,
                            argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::arm_extension::ToExtension),
                        }}
+    , m_wristTuner{"argos/wristTune",
+                   {&m_wrist},
+                   0,
+                   argos_lib::ClosedLoopSensorConversions{
+                       argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle),
+                       argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToVelocity),
+                       argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle)}}
     , m_shoulderHomed{false}
     , m_extensionHomed{false}
     , m_wristHomed{false}
@@ -166,6 +174,28 @@ void LifterSubsystem::SetWristManualOverride(bool overrideState) {
   m_wristManualOverride = overrideState;
 }
 
+void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
+  // REMOVEME
+  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint", wristAngle.to<double>());
+
+  if (!m_wristHomed) {
+    Disable();
+    return;
+  }
+
+  if (wristAngle < measure_up::lifter::wrist::minAngle) {
+    wristAngle = measure_up::lifter::wrist::minAngle;
+  } else if (wristAngle > measure_up::lifter::wrist::maxAngle) {
+    wristAngle = measure_up::lifter::wrist::maxAngle;
+  }
+
+  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint (SensorUnits)",
+                                 sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
+
+  m_wrist.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
+              sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
+}
+
 // This method will be called once per scheduler run
 void LifterSubsystem::Periodic() {}
 
@@ -190,7 +220,7 @@ void LifterSubsystem::InitializeWristHomes() {
   if (wristHomes) {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
 
-    units::degree_t calcValue = currentencoder - wristHomes.value();
+    units::degree_t calcValue = argos_lib::swerve::ConstrainAngle(currentencoder - wristHomes.value(), 0_deg, 360_deg);
 
     m_wristEncoder.SetPosition(calcValue.to<double>());
 
@@ -203,7 +233,8 @@ void LifterSubsystem::InitializeWristHomes() {
 void LifterSubsystem::UpdateWristHome() {
   const auto homeAngle = measure_up::lifter::wrist::homeAngle;
   units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-  bool saved = m_wristHomingStorage.Save(argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg));
+  auto valToSave = argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg);
+  bool saved = m_wristHomingStorage.Save(valToSave);
   if (!saved) {
     std::printf("[CRITICAL ERROR]%d Wrist homes failed to save to to file system\n", __LINE__);
     m_wristHomed = false;

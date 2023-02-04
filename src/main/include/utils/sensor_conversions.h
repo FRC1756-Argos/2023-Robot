@@ -84,6 +84,11 @@ namespace sensor_conversions {
       constexpr double ToSensorUnit(const units::degree_t degrees) {
         return degrees.to<double>() / sensorConversionFactor;
       }
+
+      constexpr units::degrees_per_second_t ToVelocity(const double sensorVelocity) {
+        return units::degrees_per_second_t{ToAngle(sensorVelocity) / units::decasecond_t{1}};
+      }
+
     }  // namespace wrist
     namespace shoulder {
       constexpr double sensorConversionFactor =

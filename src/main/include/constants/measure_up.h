@@ -35,7 +35,7 @@ namespace measure_up {
     namespace wrist {
       constexpr auto homeAngle = 0_deg;
       constexpr auto minAngle = -180_deg;
-      constexpr auto maxAngle = 180_deg;
+      constexpr auto maxAngle = 90_deg;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 180_deg;

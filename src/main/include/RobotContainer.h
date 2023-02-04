@@ -59,4 +59,8 @@ class RobotContainer {
 
   /// @brief Called once when robot is disabled
   void Disable();
+
+  /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
+
+  nt::GenericEntry* p_wristSetpoint;
 };

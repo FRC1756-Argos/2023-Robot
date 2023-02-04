@@ -67,6 +67,10 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief initializing wrist homes from
   void InitializeWristHomes();
 
+  /// @brief
+  /// @param wristAngle
+  void SetWristAngle(units::degree_t wristAngle);
+
   /// @brief updating wrist homes for encoder
   void UpdateWristHome();
 
@@ -107,6 +111,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
   argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
   argos_lib::NTMotorPIDTuner m_extensionTuner;
+  argos_lib::NTMotorPIDTuner m_wristTuner;
   bool m_shoulderHomed;
   bool m_extensionHomed;
   bool m_wristHomed;
