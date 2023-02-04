@@ -21,11 +21,13 @@ RobotContainer::RobotContainer()
     , m_shoulderSpeed(controllerMap::shoulderSpeed)
     , m_armExtenderSpeed(controllerMap::armExtensionSpeed)
     , m_wristSpeed(controllerMap::armExtensionSpeed)
+    , m_bashSpeed(controllerMap::bashSpeed)
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
     , m_swerveDrive(m_instance)
     , m_lifter(m_instance)
-    , m_intake(m_instance) {
+    , m_intake(m_instance)
+    , m_bash(m_instance) {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
@@ -84,6 +86,19 @@ RobotContainer::RobotContainer()
         }
       },
       {&m_lifter}));
+
+  m_bash.SetDefaultCommand(frc2::RunCommand(
+      [this] {
+        double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
+                               argos_lib::XboxController::JoystickHand::kLeftHand))) ?
+                               -1 * m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
+                                        argos_lib::XboxController::JoystickHand::kLeftHand)) :
+                               m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
+                                   argos_lib::XboxController::JoystickHand::kRightHand));
+
+        m_bash.SetExtensionSpeed(bashSpeed);
+      },
+      {&m_bash}));
 
   // Configure the button bindings
   ConfigureBindings();

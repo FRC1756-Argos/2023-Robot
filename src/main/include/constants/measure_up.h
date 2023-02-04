@@ -35,6 +35,10 @@ namespace measure_up {
       constexpr auto homeAngle = 180_deg;
       constexpr auto minAngle = 135_deg;
       constexpr auto maxAngle = 225_deg;
-    }  // namespace shoulder
-  }    // namespace lifter
+    }               // namespace shoulder
+  }                 // namespace lifter
+  namespace bash {  // TODO: These are placeholder values
+    constexpr auto minExtension = 3_in;
+    constexpr auto maxExtension = 7_in;
+  }  // namespace bash
 }  // namespace measure_up

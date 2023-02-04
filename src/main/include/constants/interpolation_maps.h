@@ -29,4 +29,6 @@ namespace controllerMap {
       InterpMapPoint{-1.0, -0.1}, InterpMapPoint{-0.2, 0.0}, InterpMapPoint{0.2, 0.0}, InterpMapPoint{1.0, 0.1}};
   [[maybe_unused]] constexpr std::array wristSpeed{
       InterpMapPoint{-1.0, -0.1}, InterpMapPoint{-0.2, 0.2}, InterpMapPoint{0.2, 0.0}, InterpMapPoint{1.0, 0.1}};
+  [[maybe_unused]] constexpr std::array bashSpeed{
+      InterpMapPoint{-1.0, -0.25}, InterpMapPoint{-0.2, 0.0}, InterpMapPoint{0.2, 0.0}, InterpMapPoint{1.0, 0.25}};
 }  // namespace controllerMap

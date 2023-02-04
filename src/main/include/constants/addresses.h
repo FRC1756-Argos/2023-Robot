@@ -29,6 +29,9 @@ namespace address {
     struct intake {
       constexpr static argos_lib::CANAddress intakeMotor{13, "rio"};
     };
+    struct bash_guard {
+      constexpr static argos_lib::CANAddress extension{14, "rio"};
+    };
     struct encoders {
       constexpr static argos_lib::CANAddress frontLeftEncoder{1, "drive"};
       constexpr static argos_lib::CANAddress frontRightEncoder{2, "drive"};
@@ -53,6 +56,7 @@ namespace address {
     using drive = address::comp_bot::drive;
     using lifter = address::comp_bot::lifter;
     using intake = address::comp_bot::intake;
+    using bash_guard = address::comp_bot::bash_guard;
     using encoders = address::comp_bot::encoders;
     using controllers = address::comp_bot::controllers;
     using solenoids = address::comp_bot::solenoids;
