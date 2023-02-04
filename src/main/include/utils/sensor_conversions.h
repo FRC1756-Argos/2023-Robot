@@ -100,7 +100,7 @@ namespace sensor_conversions {
     constexpr double sensorToMotorRevolution = 1.0 / 2048;
     constexpr double gearboxReduction = 1.0 / 20;
     constexpr double driveSprocketTeeth = 15.0;
-    constexpr double extensionInchesPerTooth = 0.325 / 1;
+    constexpr double extensionInchesPerTooth = 0.375 / 1;
     constexpr units::inch_t ToExtension(const double sensorUnit) {
       return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRevolution * gearboxReduction *
                                              driveSprocketTeeth * extensionInchesPerTooth);
