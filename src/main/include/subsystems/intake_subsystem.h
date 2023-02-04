@@ -20,7 +20,9 @@ class IntakeSubsystem : public frc2::SubsystemBase {
 
   void IntakeForward();
   void IntakeReverse();
+  void IntakeFastReverse();
   void IntakeStop();
+  void Disable();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be

@@ -138,6 +138,18 @@ namespace argos_lib {
         argos_lib::status_frame_config::SetMotorStatusFrameRates(motorController, T::statusFrameMotorMode);
       }
 
+      // enable current limiting if any current limiting option is set, disable if none are
+      if (has_continuousCurrentLimit<T>() || has_peakCurrentLimit<T>() || has_peakCurrentDuration<T>()) {
+        motorController.EnableCurrentLimit(true);
+      } else {
+        motorController.EnableCurrentLimit(false);
+      }
+
+      // ensure using single threshold if peakCurrentLimit is not set but continuousCurrentLimit is
+      if (!has_peakCurrentLimit<T>() && has_continuousCurrentLimit<T>()) {
+        config.peakCurrentLimit = 0;
+      }
+
       return 0 != motorController.ConfigAllSettings(config, timeout);
     }
 
