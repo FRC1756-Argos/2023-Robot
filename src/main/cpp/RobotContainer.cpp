@@ -8,10 +8,14 @@
 #include <argos_lib/controller/trigger_composition.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
+#include <frc/RobotState.h>
+#include <frc/shuffleboard/Shuffleboard.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc2/command/CommandScheduler.h>
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/button/Trigger.h>
+#include <units/length.h>
 
 #include <memory>
 
@@ -81,7 +85,6 @@ RobotContainer::RobotContainer()
         if (wristSpeed == 0.0) {
           m_lifter.StopWrist();
         } else {
-          m_lifter.SetExtentionManualOverride(true);
           m_lifter.SetWristSpeed(wristSpeed);
         }
       },
@@ -105,6 +108,25 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
+
+  auto overrideShoulderTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
+  }});
+
+  auto overrideArmExtensionTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
+  }});
+
+  auto overrideWristTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand)) > 0.2;
+  }});
+
+  auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::RobotState::IsEnabled(); }});
+
+  auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
+
+  auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
+
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {
     return m_controllers.OperatorController().GetDebouncedButton(
@@ -134,8 +156,25 @@ void RobotContainer::ConfigureBindings() {
   auto exclusiveIntakeTrigger =
       argos_lib::triggers::OneOf({intakeForwardTrigger, intakeReverseTrigger, intakeFastReverse});
 
-  auto armHome = (frc2::Trigger{
+  auto manualArmExtensionHomeTrigger = (frc2::Trigger{
       [this]() { return m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kY); }});
+
+  // armExtensionToSetpoint.OnTrue(
+  //     frc2::InstantCommand(
+  //         [this]() {
+  //           m_lifter.SetArmExtension(units::make_unit<units::inch_t>(
+  //               frc::Shuffleboard::GetTab("ArmExtensionTuning").Add("Setpoint", 0.0).GetEntry()->GetDouble(0.0)));
+  //           frc::SmartDashboard::PutBoolean("Arm Extension Setpoint Trigger Active", true);
+  //         },
+  //         {&m_lifter})
+  //         .ToPtr());
+  // armExtensionToSetpoint.OnFalse(frc2::InstantCommand(
+  //                                    [this]() {
+  //                                      m_lifter.StopArmExtension();
+  //                                      frc::SmartDashboard::PutBoolean("Arm Extension Setpoint Trigger Active", false);
+  //                                    },
+  //                                    {&m_lifter})
+  //                                    .ToPtr());
 
   // Swap controllers config
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBack, {1500_ms, 0_ms});
@@ -155,6 +194,14 @@ void RobotContainer::ConfigureBindings() {
   homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {&m_lifter}).ToPtr());
   // SHOULDER HOME TRIGGER ACTIVATION
   homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(); }, {&m_lifter}).ToPtr());
+
+  overrideShoulderTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_lifter.SetShoulderManualOverride(true); }, {}).ToPtr());
+
+  overrideArmExtensionTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_lifter.SetExtensionManualOverride(true); }, {}).ToPtr());
+
+  overrideWristTrigger.OnTrue(frc2::InstantCommand([this]() { m_lifter.SetWristManualOverride(true); }, {}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
@@ -180,6 +227,9 @@ void RobotContainer::ConfigureBindings() {
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
+
+  manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+  // startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 }
 
 void RobotContainer::Disable() {

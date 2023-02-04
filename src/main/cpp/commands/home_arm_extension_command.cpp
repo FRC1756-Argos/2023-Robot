@@ -14,7 +14,7 @@ HomeArmExtensionCommand::HomeArmExtensionCommand(LifterSubsystem& subsystem)
 // Called when the command is initially scheduled.
 void HomeArmExtensionCommand::Initialize() {
   m_LifterSubsystem.SetArmExtensionSpeed(-0.1);
-  m_LifterSubsystem.SetExtentionManualOverride(false);
+  m_LifterSubsystem.SetExtensionManualOverride(false);
   m_startTime = std::chrono::steady_clock::now();
 }
 
@@ -30,12 +30,12 @@ void HomeArmExtensionCommand::Execute() {
 // Called once the command ends or is interrupted.
 void HomeArmExtensionCommand::End(bool interrupted) {
   if (!interrupted) {
-    m_LifterSubsystem.UpdateArmHome();
+    m_LifterSubsystem.UpdateArmExtensionHome();
   }
   m_LifterSubsystem.SetArmExtensionSpeed(0.0);
 }
 
 // Returns true when the command should end.
 bool HomeArmExtensionCommand::IsFinished() {
-  return !m_armMovingDebounce(m_LifterSubsystem.IsArmMoving());
+  return !m_armMovingDebounce(m_LifterSubsystem.IsArmExtensionMoving());
 }
