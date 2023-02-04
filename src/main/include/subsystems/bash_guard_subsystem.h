@@ -11,6 +11,10 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
  public:
   explicit BashGuardSubsystem(argos_lib::RobotInstance instance);
 
+  /// @brief Sets bash guard extension speed
+  /// @param speed double, on the interval [-1, 1]
+  void SetExtensionSpeed(double speed);
+
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
@@ -19,5 +23,5 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
-  WPI_TalonFX m_bashGaurd;
+  WPI_TalonFX m_bashGuard;
 };
