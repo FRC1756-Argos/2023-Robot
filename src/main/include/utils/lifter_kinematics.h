@@ -20,13 +20,13 @@ class LifterKinematics {
   /// @param state Desired effector position in lifter coordinate space
   /// @param effectorOffset Offset of effector from rotation center in lifter coordinate space
   /// @return LifterState object describing the state of the joint to get to desired point
-  LifterState GetJoints(frc::Translation2d pose, frc::Transform2d effectorOffset);
+  static LifterState GetJoints(frc::Translation2d pose, units::meter_t effectorOffset);
 
   /// @brief Solves for effector position based off of the lifter state
   /// @param state LifterState struct containing current lifter state
   /// @param effectorOffset Offset of effector from rotation center in lifter coordinate space
   /// @return Translation2d object describing position of effector in lifter coordinate space
-  frc::Translation2d GetPose(LifterState state, frc::Transform2d effectorOffset);
+  static frc::Translation2d GetPose(LifterState state, frc::Translation2d effectorOffset);
 
  private:
 };

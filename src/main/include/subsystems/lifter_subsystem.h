@@ -6,12 +6,14 @@
 
 #include <argos_lib/config/config_types.h>
 #include <ctre/Phoenix.h>
+#include <frc/geometry/Translation2d.h>
 #include <frc2/command/SubsystemBase.h>
 
 #include <string>
 
 #include "argos_lib/homing/fs_homing.h"
 #include "constants/interpolation_maps.h"
+#include "utils/lifter_kinematics.h"
 
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
@@ -59,6 +61,28 @@ class LifterSubsystem : public frc2::SubsystemBase {
 
   /// @brief Updates shoulder home in FS, resets relative position on sensor
   void UpdateShoulderHome();
+
+  void SetShoulderAngle(units::degree_t angle);
+
+  /// @brief Gets the shoulder's current angle relative to the arm's frame
+  /// @return A units::degree_t representing the angle from zero
+  units::degree_t GetShoulderAngle();
+
+  /// @brief Retrieves the arm length
+  /// @return A units::inch_t representing the length of the arm (from rotation center to end of arm)
+  units::inch_t GetArmLen();
+
+  /// @brief Uses current lifter state to give a pose of end effector
+  /// @param state
+  /// @return A Translation2d representing the position of the middle of the effector
+  frc::Translation2d GetEffectorPos(LifterState state);
+
+  /// @brief Gets the point on the very tip of the arm, without any effector offset
+  /// @param state The current state of the arm system (len and angle)
+  /// @return The point sitting on the end of the arm, in the middle
+  frc::Translation2d GetArmEndPos(LifterState state);
+
+  LifterState GetLifterState(frc::Translation2d desiredPose, bool effector);
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be

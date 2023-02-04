@@ -13,26 +13,27 @@
 
 #include "units/math.h"
 
-auto Squared(auto val) {
-  return units::math::pow<2, decltype(val)>(val);
-}
+namespace {
+  auto Squared(auto val) {
+    return units::math::pow<2, decltype(val)>(val);
+  }
+}  // namespace
 
 LifterKinematics::LifterKinematics() = default;
 
-LifterState LifterKinematics::GetJoints(frc::Translation2d pose, frc::Transform2d effectorOffset) {
+// effectorYOffset is the effector pose offset from rotation center
+LifterState LifterKinematics::GetJoints(frc::Translation2d pose, units::meter_t effectorYOffset) {
   units::meter_t poseMagnitude = pose.Distance(frc::Translation2d(0_m, 0_m));
+  units::meter_t sideB = units::math::sqrt(Squared(poseMagnitude) + Squared(effectorYOffset));
+  units::meter_t sideA = units::math::abs(effectorYOffset);
+  units::angle::radian_t alpha = units::math::atan(sideB / sideA);
+  units::angle::radian_t phi = units::math::atan2(pose.Y(), pose.X());
+  units::angle::radian_t theta = phi - alpha;
 
-  auto arm_len = units::math::sqrt(Squared(poseMagnitude) - Squared(effectorOffset.Y()));
-  auto shoulderAngle = units::math::atan2(pose.Y(), pose.X()) -
-                       units::math::atan(units::math::sqrt(Squared(poseMagnitude) - Squared(effectorOffset.Y())) /
-                                         units::math::abs(effectorOffset.Y()));
-
-  LifterState lift_state{arm_len, shoulderAngle};
-
-  return lift_state;
+  return LifterState{sideB, theta};
 }
 
-frc::Translation2d LifterKinematics::GetPose(LifterState state, frc::Transform2d effectorOffset) {
+frc::Translation2d LifterKinematics::GetPose(LifterState state, frc::Translation2d effectorOffset) {
   units::radian_t rotation =
       (units::radian_t(std::numbers::pi_v<double> * 2) - units::math::atan2(effectorOffset.Y(), state.armLen)) +
       state.shoulderAngle + units::math::atan(state.armLen / units::math::abs(effectorOffset.Y()));

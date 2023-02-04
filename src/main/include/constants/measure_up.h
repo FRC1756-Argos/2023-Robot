@@ -36,5 +36,12 @@ namespace measure_up {
       constexpr auto minAngle = 135_deg;
       constexpr auto maxAngle = 225_deg;
     }  // namespace shoulder
+    namespace armBar {
+      constexpr auto centerOfRotDis = -1.35_in;
+    }  // namespace armBar
+    namespace effector {
+      constexpr auto yDisFromArmEnd = -1.5_in;
+      constexpr auto xDisFromArmEnd = 2.25_in;
+    }  // namespace effector
   }    // namespace lifter
 }  // namespace measure_up

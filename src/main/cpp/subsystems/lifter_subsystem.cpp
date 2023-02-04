@@ -13,6 +13,7 @@
 #include "constants/encoders.h"
 #include "constants/motors.h"
 #include "units/time.h"
+#include "utils/sensor_conversions.h"
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
@@ -209,4 +210,54 @@ void LifterSubsystem::UpdateShoulderHome() {
   }
 
   m_shoulderHomed = true;
+}
+
+void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
+  if (!m_shoulderHomed) {  // If shoulder is not homed, return and do nothing
+    return;
+  }
+
+  angle = argos_lib::swerve::ConstrainAngle(angle, 0_deg, 360_deg);  // Constrain to 0 to 360
+
+  if (angle < measure_up::lifter::shoulder::minAngle) {  // Handle angle below bound, clamp to min
+    angle = measure_up::lifter::shoulder::minAngle;
+    std::printf("ERROR Shoulder commanded to angle below min of [%f]\n",
+                measure_up::lifter::shoulder::minAngle.to<double>());
+  } else if (angle > measure_up::lifter::shoulder::maxAngle) {  // Handle angle above bound, clamp to max
+    angle = measure_up::lifter::shoulder::maxAngle;
+    std::printf("ERROR Shoulder commanded to angle above bound of [%f]\n",
+                measure_up::lifter::shoulder::maxAngle.to<double>());
+  }
+
+  m_shoulderLeader.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
+}
+
+units::degree_t LifterSubsystem::GetShoulderAngle() {
+  return units::make_unit<units::degree_t>(m_shoulderEncoder.GetPosition());
+}
+
+units::inch_t LifterSubsystem::GetArmLen() {
+  return sensor_conversions::lifter::armExtension::ToExtension(m_armExtensionEncoder.GetAbsolutePosition());
+}
+
+frc::Translation2d LifterSubsystem::GetEffectorPos(LifterState state) {
+  LifterKinematics::GetPose(
+      state,
+      frc::Translation2d{state.armLen + measure_up::lifter::effector::xDisFromArmEnd,
+                         measure_up::lifter::armBar::centerOfRotDis + measure_up::lifter::effector::yDisFromArmEnd});
+}
+
+frc::Translation2d LifterSubsystem::GetArmEndPos(LifterState state) {
+  LifterKinematics::GetPose(state, frc::Translation2d{state.armLen, measure_up::lifter::armBar::centerOfRotDis});
+}
+
+LifterState LifterSubsystem::GetLifterState(frc::Translation2d desiredPose, bool effector) {
+  units::inch_t effectorDisFromCenter;
+  if (effector) {
+    effectorDisFromCenter = measure_up::lifter::armBar::centerOfRotDis + measure_up::lifter::effector::yDisFromArmEnd;
+  } else {
+    effectorDisFromCenter = measure_up::lifter::armBar::centerOfRotDis;
+  }
+
+  LifterState state = LifterKinematics::GetJoints(desiredPose, effectorDisFromCenter);
 }
