@@ -296,3 +296,16 @@ void LifterSubsystem::UpdateShoulderHome() {
 bool LifterSubsystem::IsArmExtensionHomed() {
   return m_extensionHomed;
 }
+
+units::degree_t LifterSubsystem::GetWristAngle() {
+  return sensor_conversions::lifter::wrist::ToAngle(m_wrist.GetSelectedSensorPosition());
+}
+units::inch_t LifterSubsystem::GetArmExtension() {
+  return sensor_conversions::lifter::arm_extension::ToExtension(m_armExtensionMotor.GetSelectedSensorPosition());
+}
+units::degree_t LifterSubsystem::GetShoulderAngle() {
+  return sensor_conversions::lifter::shoulder::ToAngle(m_shoulderLeader.GetSelectedSensorPosition());
+}
+LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
+  return {GetWristAngle(), GetArmExtension(), GetShoulderAngle()};
+}
