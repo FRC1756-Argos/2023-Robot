@@ -18,6 +18,11 @@
 
 class LifterSubsystem : public frc2::SubsystemBase {
  public:
+  struct LifterPosition {
+    units::degree_t wristAngle;
+    units::inch_t armEXtension;
+    units::degree_t shoulderAngle;
+  };
   explicit LifterSubsystem(argos_lib::RobotInstance instance);
 
   /// @brief Sets the arm speed
@@ -96,6 +101,11 @@ class LifterSubsystem : public frc2::SubsystemBase {
   void UpdateShoulderHome();
 
   bool IsArmExtensionHomed();
+
+  units::degree_t GetWristAngle();
+  units::inch_t GetArmExtension();
+  units::degree_t GetShoulderAngle();
+  LifterPosition GetLifterPosition();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
