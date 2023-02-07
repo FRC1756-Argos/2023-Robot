@@ -23,5 +23,9 @@ void BashGuardSubsystem::SetExtensionSpeed(double speed) {
   m_bashGuard.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
+void BashGuardSubsystem::SetBashGuardManualOverride(bool overrideState) {
+  m_bashGuardManualOverride = overrideState;
+}
+
 // This method will be called once per scheduler run
 void BashGuardSubsystem::Periodic() {}

@@ -3,9 +3,10 @@
 ///            the license file in the root directory of this project.
 
 #pragma once
-
+#include <argos_lib/general/debouncer.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
+#include <subsystems/bash_guard_subsystem.h>
 
 /**
  * An example command.
@@ -16,7 +17,7 @@
  */
 class BashguardHomingCommand : public frc2::CommandHelper<frc2::CommandBase, BashguardHomingCommand> {
  public:
-  BashguardHomingCommand();
+  explicit BashguardHomingCommand(BashGuardSubsystem& subsystem);
 
   void Initialize() override;
 
@@ -25,4 +26,9 @@ class BashguardHomingCommand : public frc2::CommandHelper<frc2::CommandBase, Bas
   void End(bool interrupted) override;
 
   bool IsFinished() override;
+
+ private:
+  BashGuardSubsystem& m_bashGuardSubsytem;
+  argos_lib::Debouncer m_bashGuardMovingDebounce;
+  std::chrono::time_point<std::chrono::steady_clock> m_startTime;
 };

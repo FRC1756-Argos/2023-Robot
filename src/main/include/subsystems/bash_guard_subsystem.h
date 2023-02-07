@@ -10,7 +10,7 @@
 class BashGuardSubsystem : public frc2::SubsystemBase {
  public:
   explicit BashGuardSubsystem(argos_lib::RobotInstance instance);
-
+  void SetBashGuardManualOverride(bool overrideState);
   /// @brief Sets bash guard extension speed
   /// @param speed double, on the interval [-1, 1]
   void SetExtensionSpeed(double speed);
@@ -20,8 +20,15 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
    */
   void Periodic() override;
 
+  void UpdateExtensionHome();
+
+  bool IsBashGuardManualOverride();
+
+  bool IsBashGuardMoving();
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
   WPI_TalonFX m_bashGuard;
+  bool m_bashGuardManualOverride;
 };
