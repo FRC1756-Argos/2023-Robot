@@ -3,13 +3,15 @@
 ///            the license file in the root directory of this project.
 
 #pragma once
-#include "units/acceleration.h"
-#include "units/angle.h"
-#include "units/angular_velocity.h"
-#include "units/base.h"
-#include "units/length.h"
-#include "units/time.h"
-#include "units/velocity.h"
+#include <units/acceleration.h>
+#include <units/angle.h>
+#include <units/angular_velocity.h>
+#include <units/base.h>
+#include <units/length.h>
+#include <units/time.h>
+#include <units/velocity.h>
+
+#include <numbers>
 
 namespace units {
   UNIT_ADD(velocity,
@@ -26,6 +28,7 @@ namespace units {
 
 namespace sensor_conversions {
   namespace swerve_drive {
+
     namespace turn {
       constexpr double sensorConversionFactor =
           360.0 / 4096;  ///< multiply to convert raw sensor units to module degrees
@@ -38,7 +41,7 @@ namespace sensor_conversions {
     }  // namespace turn
     namespace drive {
       constexpr auto wheelDiameter = 4_in;
-      constexpr auto wheelCircumference = wheelDiameter * M_PI;
+      constexpr auto wheelCircumference = wheelDiameter * std::numbers::pi;
       constexpr double sensorUnitsPerMotorRevolution = 2048;
       constexpr double driveGearRatio = 8.16;
 
@@ -57,23 +60,23 @@ namespace sensor_conversions {
       }
     }  // namespace drive
   }    // namespace swerve_drive
+
   namespace lifter {
-    namespace armExtension {
+    namespace arm_extension {
       constexpr double sensorToMotorRevolution = 1.0 / 2048;
-      constexpr double gearboxReduction = 1.0 / 12;
+      constexpr double gearboxReduction = 1.0 / 20;
       constexpr double driveSprocketTeeth = 15.0;
-      constexpr double extensionInchesPerTooth = 0.325 / 1;
+      constexpr double extensionInchesPerTooth = 0.375 / 1;
 
       constexpr units::inch_t ToExtension(const double sensorUnit) {
         return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRevolution * gearboxReduction *
                                                driveSprocketTeeth * extensionInchesPerTooth);
       }
-
       constexpr double ToSensorUnit(const units::inch_t extension) {
-        return extension.to<double>() / driveSprocketTeeth / gearboxReduction / sensorToMotorRevolution /
-               sensorToMotorRevolution;
+        return extension.to<double>() / sensorToMotorRevolution / gearboxReduction / driveSprocketTeeth /
+               extensionInchesPerTooth;
       }
-    }  // namespace armExtension
+    }  // namespace arm_extension
     namespace wrist {
       constexpr double sensorConversionFactor = 360.0 / 4096;  // Scalar for getting angle in degrees from encoder
       constexpr units::degree_t ToAngle(const double sensorUnit) {
@@ -83,6 +86,11 @@ namespace sensor_conversions {
       constexpr double ToSensorUnit(const units::degree_t degrees) {
         return degrees.to<double>() / sensorConversionFactor;
       }
+
+      constexpr units::degrees_per_second_t ToVelocity(const double sensorVelocity) {
+        return units::degrees_per_second_t{ToAngle(sensorVelocity) / units::decasecond_t{1}};
+      }
+
     }  // namespace wrist
     namespace shoulder {
       constexpr double sensorConversionFactor =
@@ -95,4 +103,18 @@ namespace sensor_conversions {
       }
     }  // namespace shoulder
   }    // namespace lifter
+  namespace bashguard {
+    constexpr double sensorToMotorRevolution = 1.0 / 2048;
+    constexpr double gearboxReduction = 1.0 / 20;
+    constexpr double driveSprocketTeeth = 15.0;
+    constexpr double extensionInchesPerTooth = 0.375 / 1;
+    constexpr units::inch_t ToExtension(const double sensorUnit) {
+      return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRevolution * gearboxReduction *
+                                             driveSprocketTeeth * extensionInchesPerTooth);
+    }
+    constexpr double ToSensorUnit(const units::inch_t extension) {
+      return extension.to<double>() / driveSprocketTeeth / gearboxReduction / sensorToMotorRevolution /
+             sensorToMotorRevolution;
+    }
+  }  // namespace bashguard
 }  // namespace sensor_conversions

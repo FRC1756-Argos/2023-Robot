@@ -26,10 +26,16 @@ namespace measure_up {
     constexpr auto backLeftLOffset = 2.625_in;
   }  // namespace swerve_offsets
   namespace lifter {
+    namespace arm_extension {
+      constexpr auto homeExtension = 37.50_in;
+      constexpr auto maxExtension = 74.00_in;
+      constexpr auto minExtension = 38.00_in;
+
+    }  // namespace arm_extension
     namespace wrist {
       constexpr auto homeAngle = 0_deg;
       constexpr auto minAngle = -180_deg;
-      constexpr auto maxAngle = 180_deg;
+      constexpr auto maxAngle = 90_deg;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 180_deg;
@@ -42,6 +48,10 @@ namespace measure_up {
     namespace effector {
       constexpr auto yDisFromArmEnd = -1.5_in;
       constexpr auto xDisFromArmEnd = 2.25_in;
-    }  // namespace effector
-  }    // namespace lifter
+    }               // namespace effector
+  }                 // namespace lifter
+  namespace bash {  // TODO: These are placeholder values
+    constexpr auto minExtension = 3_in;
+    constexpr auto maxExtension = 7_in;
+  }  // namespace bash
 }  // namespace measure_up

@@ -123,5 +123,6 @@
     "[ ]",
     "[x]",
     "@todo"
-  ]
+  ],
+  "wpilib.skipTests": true
 }

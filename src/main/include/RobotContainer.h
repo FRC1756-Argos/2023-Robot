@@ -6,10 +6,12 @@
 
 #include <argos_lib/config/config_types.h>
 #include <argos_lib/subsystems/swappable_controllers_subsystem.h>
+#include <commands/home_arm_extension_command.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
@@ -40,6 +42,8 @@ class RobotContainer {
       m_armExtenderSpeed;
   argos_lib::InterpolationMap<decltype(controllerMap::wristSpeed.front().inVal), controllerMap::wristSpeed.size()>
       m_wristSpeed;
+  argos_lib::InterpolationMap<decltype(controllerMap::bashSpeed.front().inVal), controllerMap::bashSpeed.size()>
+      m_bashSpeed;
 
   const argos_lib::RobotInstance m_instance;
 
@@ -48,9 +52,15 @@ class RobotContainer {
   SwerveDriveSubsystem m_swerveDrive;
   LifterSubsystem m_lifter;
   IntakeSubsystem m_intake;
+  BashGuardSubsystem m_bash;
+  HomeArmExtensionCommand m_homeArmExtensionCommand;
 
   void ConfigureBindings();
 
   /// @brief Called once when robot is disabled
   void Disable();
+
+  /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
+
+  nt::GenericEntry* p_wristSetpoint;
 };

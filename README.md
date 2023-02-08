@@ -140,8 +140,8 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | DPad Left       | Unused |
 | LB              | Unused |
 | RB              | Unused |
-| LT              | Unused |
-| RT              | Unused |
+| LT              | Retract bash guard |
+| RT              | Extend bash guard |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |

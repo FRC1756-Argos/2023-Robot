@@ -57,7 +57,7 @@ namespace argos_lib {
      */
     NTMotorPIDTuner(const std::string& tableName,
                     std::initializer_list<ctre::phoenix::motorcontrol::can::BaseTalon*> motors,
-                    uint pidSlot,
+                    unsigned pidSlot,
                     ClosedLoopSensorConversions sensorConversions = {});
 
     /**
@@ -70,7 +70,7 @@ namespace argos_lib {
         m_updateSubscriber;  ///< Subscriber to manage all updates from user inputs through network tables
     const std::vector<ctre::phoenix::motorcontrol::can::BaseTalon*>
         m_pMotors;                                 ///< Motors being configured and monitored
-    const uint m_pidSlot;                          ///< PID slot index actively used on motors
+    const unsigned m_pidSlot;                      ///< PID slot index actively used on motors
     std::shared_ptr<nt::NetworkTable> m_pntTable;  ///< Network table containing status and tuning keys
     ClosedLoopSensorConversions
         m_sensorConversions;  ///< Sensor conversion factors used to translate raw sensor readings

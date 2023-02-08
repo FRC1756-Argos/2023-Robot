@@ -64,7 +64,7 @@ void LEDSubsystem::StockAnimateIntegratedLEDs(ctre::phoenix::led::Animation& ani
 void LEDSubsystem::CustomAnimateAuxLEDs(argos_lib::led::Animation animation) {
   // Ensure we stay within the number of LEDs in this subsystem
   animation.offset += numIntegratedLEDs;
-  animation.numLEDs = std::min(std::max(0U, m_currentLEDs.size() - animation.offset), animation.numLEDs);
+  animation.numLEDs = std::min<size_t>(std::max<size_t>(0, m_currentLEDs.size() - animation.offset), animation.numLEDs);
   std::fill_n(std::next(m_currentLEDs.begin(), animation.offset), animation.numLEDs, LEDState{false, {}});
   m_customAnimations.push_back(animation);
 }

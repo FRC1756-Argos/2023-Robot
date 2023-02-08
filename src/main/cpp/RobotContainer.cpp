@@ -8,10 +8,14 @@
 #include <argos_lib/controller/trigger_composition.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
+#include <frc/RobotState.h>
+#include <frc/shuffleboard/Shuffleboard.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc2/command/CommandScheduler.h>
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/button/Trigger.h>
+#include <units/length.h>
 
 #include <memory>
 
@@ -21,11 +25,14 @@ RobotContainer::RobotContainer()
     , m_shoulderSpeed(controllerMap::shoulderSpeed)
     , m_armExtenderSpeed(controllerMap::armExtensionSpeed)
     , m_wristSpeed(controllerMap::armExtensionSpeed)
+    , m_bashSpeed(controllerMap::bashSpeed)
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
     , m_swerveDrive(m_instance)
     , m_lifter(m_instance)
-    , m_intake(m_instance) {
+    , m_intake(m_instance)
+    , m_bash(m_instance)
+    , m_homeArmExtensionCommand(m_lifter) {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
@@ -62,35 +69,55 @@ RobotContainer::RobotContainer()
         // Use interpolation map for deadband, and to cap max value
         double shoulderSpeed = -m_shoulderSpeed.Map(
             m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kLeftHand));
-        double extensionSpeed = -m_armExtenderSpeed.Map(
+        double extensionSpeed = m_armExtenderSpeed.Map(
             m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kLeftHand));
         double wristSpeed = m_wristSpeed.Map(
             m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand));
 
         if (shoulderSpeed == 0.0) {
-          m_lifter.StopArm();
+          if (m_lifter.IsShoulderManualOverride()) {
+            m_lifter.StopArmExtension();
+          }
         } else {
           m_lifter.SetShoulderSpeed(shoulderSpeed);
         }
         if (extensionSpeed == 0.0) {
-          m_lifter.StopArmExtension();
+          if (m_lifter.IsExtensionManualOverride()) {
+            m_lifter.StopArmExtension();
+          }
         } else {
           m_lifter.SetArmExtensionSpeed(extensionSpeed);
         }
         if (wristSpeed == 0.0) {
-          m_lifter.StopWrist();
+          if (m_lifter.IsWristManualOverride()) {
+            m_lifter.StopWrist();
+          }
         } else {
           m_lifter.SetWristSpeed(wristSpeed);
         }
       },
       {&m_lifter}));
 
+  m_bash.SetDefaultCommand(frc2::RunCommand(
+      [this] {
+        double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
+                               argos_lib::XboxController::JoystickHand::kLeftHand))) ?
+                               -1 * m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
+                                        argos_lib::XboxController::JoystickHand::kLeftHand)) :
+                               m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
+                                   argos_lib::XboxController::JoystickHand::kRightHand));
+
+        m_bash.SetExtensionSpeed(bashSpeed);
+      },
+      {&m_bash}));
+
   // Configure the button bindings
   ConfigureBindings();
 }
 
 void RobotContainer::ConfigureBindings() {
-  // CONFIGURE DEBOUNCING
+  /* ———————————————————————— CONFIGURE DEBOUNCING ——————————————————————— */
+
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
@@ -103,6 +130,25 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
+
+  auto overrideShoulderTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
+  }});
+
+  auto overrideArmExtensionTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
+  }});
+
+  auto overrideWristTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand)) > 0.2;
+  }});
+
+  auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::RobotState::IsEnabled(); }});
+
+  auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
+
+  auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
+
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {
     return m_controllers.OperatorController().GetDebouncedButton(
@@ -151,6 +197,14 @@ void RobotContainer::ConfigureBindings() {
   // SHOULDER HOME TRIGGER ACTIVATION
   homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(); }, {&m_lifter}).ToPtr());
 
+  overrideShoulderTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_lifter.SetShoulderManualOverride(true); }, {}).ToPtr());
+
+  overrideArmExtensionTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_lifter.SetExtensionManualOverride(true); }, {}).ToPtr());
+
+  overrideWristTrigger.OnTrue(frc2::InstantCommand([this]() { m_lifter.SetWristManualOverride(true); }, {}).ToPtr());
+
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
       frc2::InstantCommand(
@@ -175,6 +229,9 @@ void RobotContainer::ConfigureBindings() {
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
+
+  //   manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+  startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 }
 
 void RobotContainer::Disable() {

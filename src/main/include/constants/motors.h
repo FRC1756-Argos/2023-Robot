@@ -119,16 +119,15 @@ namespace motorConfig {
       // TODO both of these are temporarily set to generic drive motor configs
       //  but will need their own configs and control loop values in the future
       struct armExtension {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::TalonFXInvertType::CounterClockwise;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::TalonFXInvertType::Clockwise;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
         constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
-        constexpr static auto remoteFilter0_addr = address::comp_bot::encoders::armExtenderEncoder;
-        constexpr static auto remoteFilter0_type =
-            ctre::phoenix::motorcontrol::RemoteSensorSource::RemoteSensorSource_CANCoder;
-        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::RemoteSensor0;
+        constexpr static auto peakOutputForward = 1.0;
+        constexpr static auto peakOutputReverse = -1.0;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::IntegratedSensor;
         constexpr static auto pid0_kP = controlLoop::comp_bot::lifter::armExtension::kP;
         constexpr static auto pid0_kI = controlLoop::comp_bot::lifter::armExtension::kI;
         constexpr static auto pid0_kD = controlLoop::comp_bot::lifter::armExtension::kD;
@@ -137,7 +136,7 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::armExtension::allowableError;
       };
       struct shoulderLeader {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -177,7 +176,9 @@ namespace motorConfig {
       // Currently just generic drive with remote sensor
       struct wrist {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
-        constexpr static bool sensorPhase = false;
+        constexpr static bool sensorPhase = true;
+        constexpr static double peakOutputForward = 0.7;
+        constexpr static double peakOutputReverse = -0.7;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
@@ -205,6 +206,23 @@ namespace motorConfig {
         constexpr static auto continuousCurrentLimit = 20_A;
       };
     }  // namespace intake
+    namespace bash_guard {
+      struct extension {
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static bool sensorPhase = false;
+        constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
+        constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
+        constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
+        constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::IntegratedSensor;
+        constexpr static auto pid0_kP = controlLoop::comp_bot::bash_guard::extension::kP;
+        constexpr static auto pid0_kI = controlLoop::comp_bot::bash_guard::extension::kI;
+        constexpr static auto pid0_kD = controlLoop::comp_bot::bash_guard::extension::kD;
+        constexpr static auto pid0_kF = controlLoop::comp_bot::bash_guard::extension::kF;
+        constexpr static auto pid0_iZone = controlLoop::comp_bot::bash_guard::extension::iZone;
+        constexpr static auto pid0_allowableError = controlLoop::comp_bot::bash_guard::extension::allowableError;
+      };
+    }  // namespace bash_guard
   }    // namespace comp_bot
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,5 +310,8 @@ namespace motorConfig {
     namespace intake {
       using intake = motorConfig::comp_bot::intake::intake;
     }  // namespace intake
+    namespace bash_guard {
+      using extension = motorConfig::comp_bot::bash_guard::extension;
+    }  // namespace bash_guard
   }    // namespace practice_bot
 }  // namespace motorConfig
