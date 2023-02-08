@@ -11,6 +11,8 @@
 #include <units/time.h>
 #include <units/velocity.h>
 
+#include <numbers>
+
 namespace units {
   UNIT_ADD(velocity,
            inches_per_second,
@@ -39,7 +41,7 @@ namespace sensor_conversions {
     }  // namespace turn
     namespace drive {
       constexpr auto wheelDiameter = 4_in;
-      constexpr auto wheelCircumference = wheelDiameter * M_PI;
+      constexpr auto wheelCircumference = wheelDiameter * std::numbers::pi;
       constexpr double sensorUnitsPerMotorRevolution = 2048;
       constexpr double driveGearRatio = 8.16;
 

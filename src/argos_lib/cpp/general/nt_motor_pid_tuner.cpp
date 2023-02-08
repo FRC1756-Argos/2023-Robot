@@ -16,7 +16,7 @@ using argos_lib::NTMotorPIDTuner;
 
 NTMotorPIDTuner::NTMotorPIDTuner(const std::string& tableName,
                                  std::initializer_list<ctre::phoenix::motorcontrol::can::BaseTalon*> motors,
-                                 uint pidSlot,
+                                 unsigned pidSlot,
                                  ClosedLoopSensorConversions sensorConversions)
     : m_updateSubscriber{tableName}
     , m_pMotors{motors}
