@@ -8,11 +8,11 @@
 
 using namespace std::chrono_literals;
 
-BashguardHomingCommand::BashguardHomingCommand(BashGuardSubsystem& subsystem)
+BashGuardHomingCommand::BashGuardHomingCommand(BashGuardSubsystem& subsystem)
     : m_bashGuardSubsytem(subsystem), m_bashGuardMovingDebounce{{0_ms, 250_ms}, true} {}
 
 // Called when the command is initially scheduled.
-void BashguardHomingCommand::Initialize() {
+void BashGuardHomingCommand::Initialize() {
   m_bashGuardSubsytem.SetExtensionSpeed(-0.1);
   m_bashGuardSubsytem.SetBashGuardManualOverride(false);
   m_startTime = std::chrono::steady_clock::now();
@@ -20,7 +20,7 @@ void BashguardHomingCommand::Initialize() {
 }
 
 // Called repeatedly when this Command is scheduled to run
-void BashguardHomingCommand::Execute() {
+void BashGuardHomingCommand::Execute() {
   if (m_bashGuardSubsytem.IsBashGuardManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 4.0s) {
     Cancel();
   } else {
@@ -29,14 +29,14 @@ void BashguardHomingCommand::Execute() {
 }
 
 // Called once the command ends or is interrupted.
-void BashguardHomingCommand::End(bool interrupted) {
+void BashGuardHomingCommand::End(bool interrupted) {
   if (!interrupted) {
-    m_bashGuardSubsytem.UpdateExtensionHome();
+    m_bashGuardSubsytem.UpdateBashGuardHome();
   }
   m_bashGuardSubsytem.SetExtensionSpeed(0.0);
 }
 
 // Returns true when the command should end.
-bool BashguardHomingCommand::IsFinished() {
+bool BashGuardHomingCommand::IsFinished() {
   return !m_bashGuardMovingDebounce(m_bashGuardSubsytem.IsBashGuardMoving());
 }

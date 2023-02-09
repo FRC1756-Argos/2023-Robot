@@ -15,9 +15,9 @@
  * directly; this is crucially important, or else the decorator functions in
  * Command will *not* work!
  */
-class BashguardHomingCommand : public frc2::CommandHelper<frc2::CommandBase, BashguardHomingCommand> {
+class BashGuardHomingCommand : public frc2::CommandHelper<frc2::CommandBase, BashGuardHomingCommand> {
  public:
-  explicit BashguardHomingCommand(BashGuardSubsystem& subsystem);
+  explicit BashGuardHomingCommand(BashGuardSubsystem& subsystem);
 
   void Initialize() override;
 
