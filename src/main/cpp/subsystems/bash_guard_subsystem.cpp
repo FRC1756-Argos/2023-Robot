@@ -5,6 +5,7 @@
 #include "subsystems/bash_guard_subsystem.h"
 
 #include <argos_lib/config/falcon_config.h>
+#include <utils/sensor_conversions.h>
 
 #include "constants/addresses.h"
 #include "constants/motors.h"
@@ -21,6 +22,17 @@ BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
 
 void BashGuardSubsystem::SetExtensionSpeed(double speed) {
   m_bashGuard.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+}
+
+void BashGuardSubsystem::SetExtensionLength(units::inch_t length) {
+  if (IsBashGuardHomed()) {
+    SetBashGuardManualOverride(false);
+    m_bashGuard.Set(phoenix::motorcontrol::ControlMode::Position, sensor_conversions::bashguard::ToSensorUnit(length));
+  }
+}
+
+bool BashGuardSubsystem::IsBashGuardHomed() {
+  return m_bashGuardHomed;
 }
 
 void BashGuardSubsystem::SetBashGuardManualOverride(bool overrideState) {
