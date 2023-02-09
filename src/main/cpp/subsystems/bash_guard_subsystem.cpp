@@ -34,8 +34,7 @@ bool BashGuardSubsystem::IsBashGuardManualOverride() {
 }
 
 void BashGuardSubsystem::UpdateBashGuardHome() {
-  m_bashGuard.SetSelectedSensorPosition(
-      sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
+  m_bashGuard.SetSelectedSensorPosition(sensor_conversions::bashguard::ToSensorUnit(measure_up::bash::homeExtension));
   m_bashguardHomed = true;
 }
 
