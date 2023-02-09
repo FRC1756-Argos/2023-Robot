@@ -135,7 +135,7 @@ namespace motorConfig {
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::armExtension::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::armExtension::allowableError;
       };
-      struct shoulderLeader {
+      struct shoulderDrive {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
@@ -303,8 +303,7 @@ namespace motorConfig {
     }  // namespace drive
     namespace lifter {
       using armExtension = motorConfig::comp_bot::lifter::armExtension;
-      using shoulderLeader = motorConfig::comp_bot::lifter::shoulderLeader;
-      using shoulderFollower = motorConfig::comp_bot::lifter::shoulderFollower;
+      using shoulderDrive = motorConfig::comp_bot::lifter::shoulderDrive;
       using wrist = motorConfig::comp_bot::lifter::wrist;
     }  // namespace lifter
     namespace intake {

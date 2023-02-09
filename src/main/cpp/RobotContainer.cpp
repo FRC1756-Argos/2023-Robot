@@ -76,7 +76,7 @@ RobotContainer::RobotContainer()
 
         if (shoulderSpeed == 0.0) {
           if (m_lifter.IsShoulderManualOverride()) {
-            m_lifter.StopArmExtension();
+            m_lifter.StopShoulder();
           }
         } else {
           m_lifter.SetShoulderSpeed(shoulderSpeed);
@@ -95,6 +95,10 @@ RobotContainer::RobotContainer()
         } else {
           m_lifter.SetWristSpeed(wristSpeed);
         }
+
+        // REMOVEME PRINT OUT CURRENT SHOULDER ANGLE
+        frc::SmartDashboard::PutNumber("ExtensionDistance", m_lifter.GetArmExtension().to<double>());
+        frc::SmartDashboard::PutNumber("ShoulderAngle", m_lifter.GetShoulderAngle().to<double>());
       },
       {&m_lifter}));
 
@@ -128,6 +132,21 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
+
+  /* —————————————————————————— TUNINT TRIGGERS —————————————————————————— */
+
+  frc::SmartDashboard::PutNumber("ShoulderSetpoint", 0.0);
+
+  auto shoulderSetPosition = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kY);
+
+  shoulderSetPosition.OnTrue(frc2::InstantCommand(
+                                 [this]() {
+                                   m_lifter.SetShoulderAngle(units::make_unit<units::degree_t>(
+                                       frc::SmartDashboard::GetNumber("ShoulderSetpoint", 0.0)));
+                                 },
+                                 {&m_lifter})
+                                 .ToPtr());
+  shoulderSetPosition.OnFalse(frc2::InstantCommand([this]() { m_lifter.StopShoulder(); }, {&m_lifter}).ToPtr());
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
 

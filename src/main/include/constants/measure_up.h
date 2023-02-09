@@ -39,8 +39,8 @@ namespace measure_up {
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 180_deg;
-      constexpr auto minAngle = 135_deg;
-      constexpr auto maxAngle = 225_deg;
+      constexpr auto minAngle = 56_deg;
+      constexpr auto maxAngle = 164_deg;
     }  // namespace shoulder
     namespace armBar {
       constexpr auto centerOfRotDis = -1.35_in;

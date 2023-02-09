@@ -102,6 +102,8 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Updates shoulder home in FS, resets relative position on sensor
   void UpdateShoulderHome();
 
+  /// @brief Sets the shoulder joint's angle (see GetShoulderAngle or docs for convention)
+  /// @param angle The target angle the shoulder should go to, in an units::degree_t
   void SetShoulderAngle(units::degree_t angle);
 
   /// @brief Uses current lifter state to give a pose of end effector
@@ -113,11 +115,25 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param state The current state of the arm system (len and angle)
   /// @return The point sitting on the end of the arm, in the middle
   frc::Translation2d GetArmEndPos(LifterState state);
+
+  /// @brief Is the arm extension homed?
+  /// @return True -> Arm extension is homed False -> Arm extension did not home
   bool IsArmExtensionHomed();
 
+  /// @brief Gets the wrist angle (right handle rule with axis towards front of robot)
+  /// @return Angle in units::degree_t representing angle of effector
   units::degree_t GetWristAngle();
+
+  /// @brief Gets the arm extension (positive is extend out)
+  /// @return Extension of arm from shoulder rotation center as an units::inch_t
   units::inch_t GetArmExtension();
+
+  /// @brief Gets the shoulder's angle with positive being rotating down into the robot, and 0 being strait out behind the robot
+  /// @return The shoulder's current angle as an units::degree_t
   units::degree_t GetShoulderAngle();
+
+  /// @brief Gets the lifter's current shoulder position represented as a collection of joint states
+  /// @return A LifterPosition containing the state of the shoulder system's joints
   LifterPosition GetLifterPosition();
 
  private:
@@ -125,8 +141,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   // declared private and exposed only through public methods.
 
   // Shoulder motors are attached in parallel mechanically to operate shoulder, back motor follows front motor
-  WPI_TalonFX m_shoulderLeader;     ///< Shoulder motor closest to front of robot
-  WPI_TalonFX m_shoulderFollower;   ///< Shoulder motor closest to back of robot
+  WPI_TalonFX m_shoulderDrive;      ///< Shoulder motor closest to front of robot
   WPI_TalonFX m_armExtensionMotor;  ///< Motor that controls extension of arm
   WPI_TalonFX m_wrist;              ///< Motor that controls wrist movement
   CANCoder m_shoulderEncoder;       ///< Encoder that measures shoulder position
@@ -135,6 +150,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
   argos_lib::NTMotorPIDTuner m_extensionTuner;
   argos_lib::NTMotorPIDTuner m_wristTuner;
+  argos_lib::NTMotorPIDTuner m_shoulderTuner;
   bool m_shoulderHomed;
   bool m_extensionHomed;
   bool m_wristHomed;

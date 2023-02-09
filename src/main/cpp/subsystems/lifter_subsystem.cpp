@@ -30,18 +30,12 @@
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
 LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
-    : m_shoulderLeader{GetCANAddr(address::comp_bot::lifter::frontShoulder,
-                                  address::practice_bot::lifter::frontShoulder,
-                                  instance),
-                       std::string(GetCANBus(address::comp_bot::lifter::frontShoulder,
-                                             address::practice_bot::lifter::frontShoulder,
-                                             instance))}
-    , m_shoulderFollower{GetCANAddr(address::comp_bot::lifter::backShoulder,
-                                    address::practice_bot::lifter::backShoulder,
-                                    instance),
-                         std::string(GetCANBus(address::comp_bot::lifter::backShoulder,
-                                               address::practice_bot::lifter::backShoulder,
-                                               instance))}
+    : m_shoulderDrive{GetCANAddr(address::comp_bot::lifter::frontShoulder,
+                                 address::practice_bot::lifter::frontShoulder,
+                                 instance),
+                      std::string(GetCANBus(address::comp_bot::lifter::frontShoulder,
+                                            address::practice_bot::lifter::frontShoulder,
+                                            instance))}
     , m_armExtensionMotor{GetCANAddr(address::comp_bot::lifter::armExtension,
                                      address::practice_bot::lifter::armExtension,
                                      instance),
@@ -62,7 +56,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                      std::string(GetCANBus(address::comp_bot::encoders::wristEncoder,
                                            address::practice_bot::encoders::wristEncoder,
                                            instance))}
-    , m_shoulderHomeStorage{paths::shoulderHome}
+    , m_shoulderHomeStorage{"homes/shoulderHome"}
     , m_wristHomingStorage{paths::wristHomesPath}
     , m_extensionTuner{"argos/lifter/extension",
                        {&m_armExtensionMotor},
@@ -79,6 +73,13 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle),
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToVelocity),
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle)}}
+    , m_shoulderTuner{"argos/shoulderTune",
+                      {&m_shoulderDrive},
+                      0,
+                      argos_lib::ClosedLoopSensorConversions{
+                          argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::shoulder::ToAngle),
+                          1.0,
+                          argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::shoulder::ToAngle)}}
     , m_shoulderHomed{false}
     , m_extensionHomed{false}
     , m_wristHomed{false}
@@ -87,12 +88,9 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
     , m_wristManualOverride{false} {
   /* ———————————————————————— MOTOR CONFIGURATION ———————————————————————— */
 
-  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderLeader,
-                                         motorConfig::practice_bot::lifter::shoulderLeader>(
-      m_shoulderLeader, 100_ms, instance);
-  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderFollower,
-                                         motorConfig::practice_bot::lifter::shoulderFollower>(
-      m_shoulderFollower, 100_ms, instance);
+  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderDrive,
+                                         motorConfig::practice_bot::lifter::shoulderDrive>(
+      m_shoulderDrive, 100_ms, instance);
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::armExtension,
                                          motorConfig::practice_bot::lifter::armExtension>(
       m_armExtensionMotor, 100_ms, instance);
@@ -108,9 +106,6 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
     InitializeWristHomes();
   }
 
-  // Make back shoulder motor follow front shoulder motor
-  m_shoulderFollower.Follow(m_shoulderLeader);
-
   bool shoulderSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::shoulderEncoderConf>(
       m_shoulderEncoder, 100_ms);
 
@@ -125,12 +120,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
 /* —————————————————— LifterSubsystem Member Functions ————————————————— */
 
 void LifterSubsystem::SetShoulderSpeed(double speed) {
-  m_shoulderLeader.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+  m_shoulderDrive.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
 void LifterSubsystem::StopShoulder() {
-  m_shoulderLeader.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
-  m_shoulderLeader.Set(0.0);
+  m_shoulderDrive.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_shoulderDrive.Set(0.0);
 }
 
 void LifterSubsystem::SetArmExtensionSpeed(double speed) {
@@ -263,7 +258,7 @@ void LifterSubsystem::InitializeShoulderHome() {
   const std::optional<units::degree_t> curHome = m_shoulderHomeStorage.Load();  // Try to load homes from fs
   if (curHome) {                                                                // if homes found
     units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
-    units::degree_t newPosition = curEncoder - curHome.value();
+    units::degree_t newPosition = argos_lib::swerve::ConstrainAngle(curEncoder - curHome.value(), 0_deg, 360_deg);
 
     // Error check
     ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
@@ -319,18 +314,18 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
                 measure_up::lifter::shoulder::maxAngle.to<double>());
   }
 
-  m_shoulderLeader.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
+  m_shoulderDrive.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
 }
 
 frc::Translation2d LifterSubsystem::GetEffectorPos(LifterState state) {
-  LifterKinematics::GetPose(
+  return LifterKinematics::GetPose(
       state,
       frc::Translation2d{state.armLen + measure_up::lifter::effector::xDisFromArmEnd,
                          measure_up::lifter::armBar::centerOfRotDis + measure_up::lifter::effector::yDisFromArmEnd});
 }
 
 frc::Translation2d LifterSubsystem::GetArmEndPos(LifterState state) {
-  LifterKinematics::GetPose(state, frc::Translation2d{state.armLen, measure_up::lifter::armBar::centerOfRotDis});
+  return LifterKinematics::GetPose(state, frc::Translation2d{state.armLen, measure_up::lifter::armBar::centerOfRotDis});
 }
 
 bool LifterSubsystem::IsArmExtensionHomed() {
@@ -344,7 +339,7 @@ units::inch_t LifterSubsystem::GetArmExtension() {
   return sensor_conversions::lifter::arm_extension::ToExtension(m_armExtensionMotor.GetSelectedSensorPosition());
 }
 units::degree_t LifterSubsystem::GetShoulderAngle() {
-  return sensor_conversions::lifter::shoulder::ToAngle(m_shoulderLeader.GetSelectedSensorPosition());
+  return sensor_conversions::lifter::shoulder::ToAngle(m_shoulderDrive.GetSelectedSensorPosition());
 }
 LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
   return {GetWristAngle(), GetArmExtension(), GetShoulderAngle()};
