@@ -44,6 +44,7 @@ namespace measure_up {
     }               // namespace shoulder
   }                 // namespace lifter
   namespace bash {  // TODO: These are placeholder values
+    constexpr auto homeExtension = 2_in;
     constexpr auto minExtension = 3_in;
     constexpr auto maxExtension = 7_in;
   }  // namespace bash

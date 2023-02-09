@@ -12,8 +12,6 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
  public:
   explicit BashGuardSubsystem(argos_lib::RobotInstance instance);
 
-  void SetBashGuardManualOverride(bool overrideState);
-
   /// @brief Sets bash guard extension speed
   /// @param speed double, on the interval [-1, 1]
   void SetExtensionSpeed(double speed);
@@ -30,6 +28,8 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   void UpdateBashGuardHome();
 
   bool IsBashGuardManualOverride();
+
+  void SetBashGuardManualOverride(bool overrideState);
 
   bool IsBashGuardMoving();
 
