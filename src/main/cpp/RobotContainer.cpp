@@ -32,7 +32,8 @@ RobotContainer::RobotContainer()
     , m_lifter(m_instance)
     , m_intake(m_instance)
     , m_bash(m_instance)
-    , m_homeArmExtensionCommand(m_lifter) {
+    , m_homeArmExtensionCommand(m_lifter)
+    , m_bashGuardHomingCommand(m_bashGuardHomingCommand) {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================

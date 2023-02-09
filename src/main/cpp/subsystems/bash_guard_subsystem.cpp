@@ -5,6 +5,8 @@
 #include "subsystems/bash_guard_subsystem.h"
 
 #include <argos_lib/config/falcon_config.h>
+#include <constants/measure_up.h>
+#include <utils/sensor_conversions.h>
 
 #include "constants/addresses.h"
 #include "constants/motors.h"
@@ -19,12 +21,26 @@ BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
       m_bashGuard, 100_ms, instance);
 }
 
-void BashGuardSubsystem::SetExtensionSpeed(double speed) {
-  m_bashGuard.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+bool BashGuardSubsystem::IsBashGuardMoving() {
+  return std::abs(m_bashGuard.GetSelectedSensorVelocity()) > 10;
 }
 
 void BashGuardSubsystem::SetBashGuardManualOverride(bool overrideState) {
   m_bashGuardManualOverride = overrideState;
+}
+
+bool BashGuardSubsystem::IsBashGuardManualOverride() {
+  return m_bashGuardManualOverride;
+}
+
+void BashGuardSubsystem::UpdateBashGuardHome() {
+  m_bashGuard.SetSelectedSensorPosition(
+      sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
+  m_bashguardHomed = true;
+}
+
+void BashGuardSubsystem::SetExtensionSpeed(double speed) {
+  m_bashGuard.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
 // This method will be called once per scheduler run
