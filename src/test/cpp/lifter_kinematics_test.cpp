@@ -31,7 +31,7 @@ TEST(LifterKinematicsTest, LineArm_IK) {
     frc::Translation2d pose{1_m, 0_m};
     auto joints = kinematics.GetJoints(pose, false);
     EXPECT_TRUE(UnitEqual(joints.shoulderAngle, 0_rad));
-    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m, 0.1_m));
+    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));
   }
   {
     LifterKinematics kinematics({0_m, 0_m}, 0_m, {0_m, 0_m});
@@ -50,6 +50,65 @@ TEST(LifterKinematicsTest, LineArm_IK) {
   {
     LifterKinematics kinematics({0_m, 0_m}, 0_m, {0_m, 0_m});
     frc::Translation2d pose{-1_m, 0_m};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, units::radian_t(std::numbers::pi)));
+    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));
+  }
+}
+
+TEST(LifterKinematicsTest, OffsetLineArm_IK) {
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{1_m, -0.1_m};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, 0_rad));
+    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{1_m, 0.1_m};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, 0_rad));
+    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{0.1_m, 1_m};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, units::radian_t(std::numbers::pi) / 2));
+    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{-0.1_m, 1_m};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, units::radian_t(std::numbers::pi) / 2));
+    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{1_m + (0.1_m / std::numbers::sqrt2), 1_m - (0.1_m / std::numbers::sqrt2)};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, units::radian_t(std::numbers::pi) / 4));
+    EXPECT_TRUE(UnitEqual(joints.armLen, units::meter_t(std::numbers::sqrt2)));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{1_m - (0.1_m / std::numbers::sqrt2), 1_m + (0.1_m / std::numbers::sqrt2)};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, units::radian_t(std::numbers::pi) / 4));
+    EXPECT_TRUE(UnitEqual(joints.armLen, units::meter_t(std::numbers::sqrt2)));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{-1_m, 0.1_m};
+    auto joints = kinematics.GetJoints(pose, false);
+    EXPECT_TRUE(UnitEqual(joints.shoulderAngle, units::radian_t(std::numbers::pi)));
+    EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));
+  }
+  {  /// @todo fix this case because failing at straight forward angle discontinuity
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    frc::Translation2d pose{-1_m, -0.1_m};
     auto joints = kinematics.GetJoints(pose, false);
     EXPECT_TRUE(UnitEqual(joints.shoulderAngle, units::radian_t(std::numbers::pi)));
     EXPECT_TRUE(UnitEqual(joints.armLen, 1_m));

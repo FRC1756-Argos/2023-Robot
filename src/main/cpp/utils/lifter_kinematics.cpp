@@ -28,9 +28,9 @@ LifterKinematics::LifterKinematics(const frc::Translation2d& fulcrumPosition,
 // effectorYOffset is the effector pose offset from rotation center
 LifterState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorInverted) {
   units::meter_t poseMagnitude = pose.Distance(frc::Translation2d(0_m, 0_m));
-  units::meter_t sideB = units::math::sqrt(Squared(poseMagnitude + m_effectorOffset.X()) +
-                                           Squared(m_effectorOffset.Y() + m_armRotationOffset));
-  units::meter_t sideA = units::math::abs(m_armRotationOffset + m_effectorOffset.Y());
+  units::meter_t sideB =
+      units::math::sqrt(Squared(poseMagnitude) - Squared(m_effectorOffset.Y() + m_armRotationOffset));
+  units::meter_t sideA = m_armRotationOffset + m_effectorOffset.Y();
   units::angle::radian_t alpha = units::math::atan2(sideA, sideB);
   units::angle::radian_t phi = units::math::atan2(pose.Y(), pose.X());
   units::angle::radian_t theta = phi - alpha;
