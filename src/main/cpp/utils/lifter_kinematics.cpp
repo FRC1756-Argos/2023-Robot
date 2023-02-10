@@ -34,9 +34,7 @@ LifterState LifterKinematics::GetJoints(frc::Translation2d pose, units::meter_t 
 }
 
 frc::Translation2d LifterKinematics::GetPose(LifterState state, frc::Translation2d effectorOffset) {
-  units::radian_t rotation =
-      (units::radian_t(std::numbers::pi_v<double> * 2) - units::math::atan2(effectorOffset.Y(), state.armLen)) +
-      state.shoulderAngle + units::math::atan(state.armLen / units::math::abs(effectorOffset.Y()));
+  units::radian_t rotation = state.shoulderAngle;
 
   frc::Translation2d initPosition{effectorOffset.X(), effectorOffset.Y()};
 
