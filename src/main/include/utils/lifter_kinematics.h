@@ -14,19 +14,24 @@ struct LifterState {
 
 class LifterKinematics {
  public:
-  LifterKinematics();
+  LifterKinematics(const frc::Translation2d& fulcrumPosition,
+                   const units::meter_t armRotationOffset,
+                   const frc::Translation2d& effectorOffset);
 
   /// @brief Solves for the lifter joint from a desired effector state
-  /// @param state Desired effector position in lifter coordinate space
-  /// @param effectorOffset Offset of effector from rotation center in lifter coordinate space
+  /// @param pose Desired effector position in lifter coordinate space
+  /// @param effectorInverted True indicates the wrist is rotated so end effector offsets are opposite y
   /// @return LifterState object describing the state of the joint to get to desired point
-  static LifterState GetJoints(frc::Translation2d pose, units::meter_t effectorOffset);
+  LifterState GetJoints(frc::Translation2d pose, bool effectorInverted = false);
 
   /// @brief Solves for effector position based off of the lifter state
   /// @param state LifterState struct containing current lifter state
-  /// @param effectorOffset Offset of effector from rotation center in lifter coordinate space
+  /// @param effectorInverted True indicates the wrist is rotated so end effector offsets are opposite y
   /// @return Translation2d object describing position of effector in lifter coordinate space
-  static frc::Translation2d GetPose(LifterState state, frc::Translation2d effectorOffset);
+  frc::Translation2d GetPose(LifterState state, bool effectorInverted = false);
 
  private:
+  const frc::Translation2d m_fulcrumPosition;
+  const units::meter_t m_armRotationOffset;
+  const frc::Translation2d& m_effectorOffset;
 };

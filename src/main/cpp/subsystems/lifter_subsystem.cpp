@@ -317,16 +317,16 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
   m_shoulderDrive.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
 }
 
-frc::Translation2d LifterSubsystem::GetEffectorPos(LifterState state) {
-  return LifterKinematics::GetPose(
-      state,
-      frc::Translation2d{state.armLen + measure_up::lifter::effector::xDisFromArmEnd,
-                         measure_up::lifter::armBar::centerOfRotDis + measure_up::lifter::effector::yDisFromArmEnd});
-}
+// frc::Translation2d LifterSubsystem::GetEffectorPos(LifterState state) {
+//   return LifterKinematics::GetPose(
+//       state,
+//       frc::Translation2d{state.armLen + measure_up::lifter::effector::xDisFromArmEnd,
+//                          measure_up::lifter::armBar::centerOfRotDis + measure_up::lifter::effector::yDisFromArmEnd});
+// }
 
-frc::Translation2d LifterSubsystem::GetArmEndPos(LifterState state) {
-  return LifterKinematics::GetPose(state, frc::Translation2d{state.armLen, measure_up::lifter::armBar::centerOfRotDis});
-}
+// frc::Translation2d LifterSubsystem::GetArmEndPos(LifterState state) {
+//   return LifterKinematics::GetPose(state, frc::Translation2d{state.armLen, measure_up::lifter::armBar::centerOfRotDis});
+// }
 
 bool LifterSubsystem::IsArmExtensionHomed() {
   return m_extensionHomed;

@@ -106,15 +106,15 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param angle The target angle the shoulder should go to, in an units::degree_t
   void SetShoulderAngle(units::degree_t angle);
 
-  /// @brief Uses current lifter state to give a pose of end effector
-  /// @param state
-  /// @return A Translation2d representing the position of the middle of the effector
-  frc::Translation2d GetEffectorPos(LifterState state);
+  // /// @brief Uses current lifter state to give a pose of end effector
+  // /// @param state
+  // /// @return A Translation2d representing the position of the middle of the effector
+  // frc::Translation2d GetEffectorPos(LifterState state);
 
-  /// @brief Gets the point on the very tip of the arm, without any effector offset
-  /// @param state The current state of the arm system (len and angle)
-  /// @return The point sitting on the end of the arm, in the middle
-  frc::Translation2d GetArmEndPos(LifterState state);
+  // /// @brief Gets the point on the very tip of the arm, without any effector offset
+  // /// @param state The current state of the arm system (len and angle)
+  // /// @return The point sitting on the end of the arm, in the middle
+  // frc::Translation2d GetArmEndPos(LifterState state);
 
   /// @brief Is the arm extension homed?
   /// @return True -> Arm extension is homed False -> Arm extension did not home
