@@ -33,7 +33,6 @@ LifterState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorIn
   units::meter_t sideA = units::math::abs(m_armRotationOffset + m_effectorOffset.Y());
   units::angle::radian_t alpha = units::math::atan2(sideA, sideB);
   units::angle::radian_t phi = units::math::atan2(pose.Y(), pose.X());
-  // std::cout << fmt::format("a: {}, b: {}, alpha: {}, phi: {}\n", sideA, sideB, alpha, phi);
   units::angle::radian_t theta = phi - alpha;
 
   return LifterState{sideB, theta};

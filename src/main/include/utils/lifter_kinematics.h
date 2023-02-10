@@ -33,5 +33,5 @@ class LifterKinematics {
  private:
   const frc::Translation2d m_fulcrumPosition;
   const units::meter_t m_armRotationOffset;
-  const frc::Translation2d& m_effectorOffset;
+  const frc::Translation2d m_effectorOffset;
 };
