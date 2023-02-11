@@ -22,7 +22,7 @@ LifterKinematics::LifterKinematics(const frc::Translation2d& fulcrumPosition,
     : m_fulcrumPosition(fulcrumPosition), m_armRotationOffset(armRotationOffset), m_effectorOffset(effectorOffset) {}
 
 // effectorYOffset is the effector pose offset from rotation center
-LifterState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorInverted) const {
+ArmState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorInverted) const {
   const auto endEffectorOffset =
       effectorInverted ? frc::Translation2d{m_effectorOffset.X(), -m_effectorOffset.Y()} : m_effectorOffset;
   units::meter_t poseMagnitude = pose.Distance(m_fulcrumPosition);
@@ -33,10 +33,10 @@ LifterState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorIn
   units::angle::radian_t phi = units::math::atan2(pose.Y() - m_fulcrumPosition.Y(), pose.X() - m_fulcrumPosition.X());
   units::angle::radian_t theta = phi - alpha;
 
-  return LifterState{sideB, theta};
+  return ArmState{sideB, theta};
 }
 
-frc::Translation2d LifterKinematics::GetPose(LifterState state, bool effectorInverted) const {
+frc::Translation2d LifterKinematics::GetPose(ArmState state, bool effectorInverted) const {
   units::radian_t rotation = state.shoulderAngle;
 
   frc::Translation2d initPosition{state.armLen + m_effectorOffset.X(), m_effectorOffset.Y() + m_armRotationOffset};

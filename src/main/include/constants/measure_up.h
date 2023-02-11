@@ -6,6 +6,7 @@
 
 #include <units/angle.h>
 #include <units/length.h>
+#include <frc/geometry/Translation2d.h>
 
 #include <array>
 
@@ -26,9 +27,10 @@ namespace measure_up {
     constexpr auto backLeftLOffset = 2.625_in;
   }  // namespace swerve_offsets
   namespace lifter {
+    constexpr auto fulcrumPosition = frc::Translation2d{-12_in, 50_in};
     namespace arm_extension {
       constexpr auto homeExtension = 37.50_in;
-      constexpr auto maxExtension = 74.00_in;
+      constexpr auto maxExtension = 73.00_in;
       constexpr auto minExtension = 38.00_in;
 
     }  // namespace arm_extension
@@ -43,11 +45,10 @@ namespace measure_up {
       constexpr auto maxAngle = 11_deg;
     }  // namespace shoulder
     namespace armBar {
-      constexpr auto centerOfRotDis = -1.35_in;
+      constexpr auto centerOfRotDis = 1.35_in;
     }  // namespace armBar
     namespace effector {
-      constexpr auto yDisFromArmEnd = -1.5_in;
-      constexpr auto xDisFromArmEnd = 2.25_in;
+      constexpr auto effectorFromArm = frc::Translation2d{4_in, 1_in};
     }               // namespace effector
   }                 // namespace lifter
   namespace bash {  // TODO: These are placeholder values

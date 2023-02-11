@@ -7,7 +7,7 @@
 #include <frc/geometry/Translation2d.h>
 #include <units/length.h>
 
-struct LifterState {
+struct ArmState {
   units::meter_t armLen;
   units::radian_t shoulderAngle;
 };
@@ -30,13 +30,13 @@ class LifterKinematics {
   /// @param pose Desired effector position in robot coordinate space
   /// @param effectorInverted True indicates the wrist is rotated so end effector offsets are opposite y
   /// @return LifterState object describing the state of the joint to get to desired point
-  LifterState GetJoints(frc::Translation2d pose, bool effectorInverted = false) const;
+  ArmState GetJoints(frc::Translation2d pose, bool effectorInverted = false) const;
 
   /// @brief Solves for effector position based off of the lifter state
-  /// @param state LifterState struct containing current lifter state
+  /// @param state ArmState struct containing current lifter state
   /// @param effectorInverted True indicates the wrist is rotated so end effector offsets are opposite y
   /// @return Translation2d object describing position of effector in robot coordinate space
-  frc::Translation2d GetPose(LifterState state, bool effectorInverted = false) const;
+  frc::Translation2d GetPose(ArmState state, bool effectorInverted = false) const;
 
  private:
   const frc::Translation2d m_fulcrumPosition;  ///< Fulcrum position in robot coordinate space (y is actually z)

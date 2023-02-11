@@ -99,6 +99,12 @@ RobotContainer::RobotContainer()
         // REMOVEME PRINT OUT CURRENT SHOULDER ANGLE
         frc::SmartDashboard::PutNumber("ExtensionDistance", m_lifter.GetArmExtension().to<double>());
         frc::SmartDashboard::PutNumber("ShoulderAngle", m_lifter.GetShoulderAngle().to<double>());
+
+        // Print out forward kinematics
+        frc::Translation2d curPose = m_lifter.GetArmPose();
+
+        frc::SmartDashboard::PutNumber("PoseX", units::inch_t(curPose.X()).to<double>());
+        frc::SmartDashboard::PutNumber("PoseY", units::inch_t(curPose.Y()).to<double>());
       },
       {&m_lifter}));
 

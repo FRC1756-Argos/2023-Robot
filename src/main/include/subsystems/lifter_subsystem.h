@@ -22,8 +22,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
  public:
   struct LifterPosition {
     units::degree_t wristAngle;
-    units::inch_t armEXtension;
-    units::degree_t shoulderAngle;
+    ArmState state;
   };
   explicit LifterSubsystem(argos_lib::RobotInstance instance);
 
@@ -106,15 +105,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param angle The target angle the shoulder should go to, in an units::degree_t
   void SetShoulderAngle(units::degree_t angle);
 
-  // /// @brief Uses current lifter state to give a pose of end effector
-  // /// @param state
-  // /// @return A Translation2d representing the position of the middle of the effector
-  // frc::Translation2d GetEffectorPos(LifterState state);
-
-  // /// @brief Gets the point on the very tip of the arm, without any effector offset
-  // /// @param state The current state of the arm system (len and angle)
-  // /// @return The point sitting on the end of the arm, in the middle
-  // frc::Translation2d GetArmEndPos(LifterState state);
+  frc::Translation2d GetArmPose();
 
   /// @brief Is the arm extension homed?
   /// @return True -> Arm extension is homed False -> Arm extension did not home
@@ -146,6 +137,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   WPI_TalonFX m_wrist;              ///< Motor that controls wrist movement
   CANCoder m_shoulderEncoder;       ///< Encoder that measures shoulder position
   CANCoder m_wristEncoder;          ///< Encoder for measuring wrist position
+  LifterKinematics m_kinematics;    ///< Kinematic model for solving arm joints & position
   argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
   argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
   argos_lib::NTMotorPIDTuner m_extensionTuner;
