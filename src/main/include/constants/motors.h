@@ -152,6 +152,8 @@ namespace motorConfig {
         constexpr static auto pid0_kF = controlLoop::comp_bot::lifter::shoulder::kF;
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::shoulder::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::shoulder::allowableError;
+        constexpr static double peakOutputForward = 0.75;
+        constexpr static double peakOutputReverse = -0.75;
       };
       struct shoulderFollower {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::FollowMaster;

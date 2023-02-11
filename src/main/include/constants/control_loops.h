@@ -49,7 +49,7 @@ namespace controlLoop {
         constexpr static double allowableError = 0;
       };
       struct shoulder {
-        constexpr static double kP = 0;
+        constexpr static double kP = 20;
         constexpr static double kI = 0;
         constexpr static double kD = 0;
         constexpr static double kF = 0;

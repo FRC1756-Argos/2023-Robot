@@ -224,7 +224,8 @@ void LifterSubsystem::InitializeWristHomes() {
   if (wristHomes) {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
 
-    units::degree_t calcValue = argos_lib::swerve::ConstrainAngle(currentencoder - wristHomes.value(), 0_deg, 360_deg);
+    units::degree_t calcValue =
+        argos_lib::swerve::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
 
     m_wristEncoder.SetPosition(calcValue.to<double>());
 
@@ -237,7 +238,7 @@ void LifterSubsystem::InitializeWristHomes() {
 void LifterSubsystem::UpdateWristHome() {
   const auto homeAngle = measure_up::lifter::wrist::homeAngle;
   units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-  auto valToSave = argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg);
+  auto valToSave = argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, -180_deg, 180_deg);
   bool saved = m_wristHomingStorage.Save(valToSave);
   if (!saved) {
     std::printf("[CRITICAL ERROR]%d Wrist homes failed to save to to file system\n", __LINE__);
@@ -258,7 +259,7 @@ void LifterSubsystem::InitializeShoulderHome() {
   const std::optional<units::degree_t> curHome = m_shoulderHomeStorage.Load();  // Try to load homes from fs
   if (curHome) {                                                                // if homes found
     units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
-    units::degree_t newPosition = argos_lib::swerve::ConstrainAngle(curEncoder - curHome.value(), 0_deg, 360_deg);
+    units::degree_t newPosition = argos_lib::swerve::ConstrainAngle(curEncoder - curHome.value(), -180_deg, 180_deg);
 
     // Error check
     ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
@@ -279,7 +280,7 @@ void LifterSubsystem::UpdateShoulderHome() {
   // save current position as home
   const auto homeAngle = measure_up::lifter::shoulder::homeAngle;
   const units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
-  bool saved = m_shoulderHomeStorage.Save(argos_lib::swerve::ConstrainAngle(curEncoder - homeAngle, 0_deg, 360_deg));
+  bool saved = m_shoulderHomeStorage.Save(argos_lib::swerve::ConstrainAngle(curEncoder - homeAngle, -180_deg, 180_deg));
   if (!saved) {
     std::printf("[CRITICAL ERROR]%d Shoulder homes failed to save to file system\n", __LINE__);
     m_shoulderHomed = false;
@@ -302,7 +303,9 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
     return;
   }
 
-  angle = argos_lib::swerve::ConstrainAngle(angle, 0_deg, 360_deg);  // Constrain to 0 to 360
+  SetShoulderManualOverride(false);
+
+  angle = argos_lib::swerve::ConstrainAngle(angle, -180_deg, 180_deg);  // Constrain to 0 to 360
 
   if (angle < measure_up::lifter::shoulder::minAngle) {  // Handle angle below bound, clamp to min
     angle = measure_up::lifter::shoulder::minAngle;
