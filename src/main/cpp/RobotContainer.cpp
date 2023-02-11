@@ -137,15 +137,16 @@ void RobotContainer::ConfigureBindings() {
 
   frc::SmartDashboard::PutNumber("SetPosition", 0.0);
 
-  auto setPositionTrigger = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
+  auto setPositionTrigger =
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
 
   setPositionTrigger.OnTrue(frc2::InstantCommand(
-                                 [this]() {
-                                   m_lifter.SetArmExtension(units::make_unit<units::inch_t>(
-                                       frc::SmartDashboard::GetNumber("SetPosition", 0.0)));
-                                 },
-                                 {&m_lifter})
-                                 .ToPtr());
+                                [this]() {
+                                  m_lifter.SetArmExtension(units::make_unit<units::inch_t>(
+                                      frc::SmartDashboard::GetNumber("SetPosition", 0.0)));
+                                },
+                                {&m_lifter})
+                                .ToPtr());
   setPositionTrigger.OnFalse(frc2::InstantCommand([this]() { m_lifter.StopArmExtension(); }, {&m_lifter}).ToPtr());
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
