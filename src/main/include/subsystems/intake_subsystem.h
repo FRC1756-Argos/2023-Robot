@@ -7,7 +7,11 @@
 #include <ctre/Phoenix.h>
 #include <frc2/command/SubsystemBase.h>
 
+#include <TimeOfFlight.h>
+
 #include "argos_lib/config/config_types.h"
+#include "argos_lib/general/hysteresis_filter.h"
+#include "units/length.h"
 
 class IntakeSubsystem : public frc2::SubsystemBase {
  public:
@@ -17,15 +21,21 @@ class IntakeSubsystem : public frc2::SubsystemBase {
    * Will be called periodically whenever the CommandScheduler runs.
    */
   void Periodic() override;
-
   void IntakeForward();
   void IntakeReverse();
   void IntakeFastReverse();
   void IntakeStop();
   void Disable();
 
+  /// @brief ToF stuff
+  /// @return
+  units::inch_t GetIntakeDistance();
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
   WPI_TalonSRX m_intakeMotor;
+
+  /// @brief ToF sensor thingy
+  frc::TimeOfFlight m_intakeSensor;
 };
