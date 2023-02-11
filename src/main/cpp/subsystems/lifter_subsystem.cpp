@@ -133,11 +133,22 @@ void LifterSubsystem::SetArmExtensionSpeed(double speed) {
 }
 
 void LifterSubsystem::SetArmExtension(units::inch_t extension) {
-  if (IsArmExtensionHomed()) {
-    SetExtensionManualOverride(false);
-    m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
-                            sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
+  if (!IsArmExtensionHomed()) {
+    std::cerr << "Arm extension commanded while not home\n";
+    return;
   }
+
+  SetExtensionManualOverride(false);
+
+  // guard against out of bounds functions
+  if (extension < measure_up::lifter::arm_extension::minExtension) {
+    extension = measure_up::lifter::arm_extension::minExtension;
+  } else if (extension > measure_up::lifter::arm_extension::maxExtension) {
+    extension = measure_up::lifter::arm_extension::maxExtension;
+  }
+
+  m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
+                          sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
 }
 
 void LifterSubsystem::StopArmExtension() {
@@ -186,6 +197,8 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
     Disable();
     return;
   }
+
+  SetWristManualOverride(false);
 
   if (wristAngle < measure_up::lifter::wrist::minAngle) {
     wristAngle = measure_up::lifter::wrist::minAngle;

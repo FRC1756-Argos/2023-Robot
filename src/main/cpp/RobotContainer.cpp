@@ -135,18 +135,18 @@ void RobotContainer::ConfigureBindings() {
 
   /* —————————————————————————— TUNINT TRIGGERS —————————————————————————— */
 
-  frc::SmartDashboard::PutNumber("ShoulderSetpoint", 0.0);
+  frc::SmartDashboard::PutNumber("SetPosition", 0.0);
 
-  auto shoulderSetPosition = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kY);
+  auto setPositionTrigger = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
 
-  shoulderSetPosition.OnTrue(frc2::InstantCommand(
+  setPositionTrigger.OnTrue(frc2::InstantCommand(
                                  [this]() {
-                                   m_lifter.SetShoulderAngle(units::make_unit<units::degree_t>(
-                                       frc::SmartDashboard::GetNumber("ShoulderSetpoint", 0.0)));
+                                   m_lifter.SetArmExtension(units::make_unit<units::inch_t>(
+                                       frc::SmartDashboard::GetNumber("SetPosition", 0.0)));
                                  },
                                  {&m_lifter})
                                  .ToPtr());
-  shoulderSetPosition.OnFalse(frc2::InstantCommand([this]() { m_lifter.StopShoulder(); }, {&m_lifter}).ToPtr());
+  setPositionTrigger.OnFalse(frc2::InstantCommand([this]() { m_lifter.StopArmExtension(); }, {&m_lifter}).ToPtr());
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
 
