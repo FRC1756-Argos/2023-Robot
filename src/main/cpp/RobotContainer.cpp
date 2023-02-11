@@ -33,7 +33,7 @@ RobotContainer::RobotContainer()
     , m_intake(m_instance)
     , m_bash(m_instance)
     , m_homeArmExtensionCommand(m_lifter)
-    , m_bashGuardHomingCommand(m_bashGuardHomingCommand) {
+    , m_bashGuardHomingCommand(m_bash) {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
@@ -107,8 +107,9 @@ RobotContainer::RobotContainer()
                                         argos_lib::XboxController::JoystickHand::kLeftHand)) :
                                m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
                                    argos_lib::XboxController::JoystickHand::kRightHand));
-
-        m_bash.SetExtensionSpeed(bashSpeed);
+        if (bashSpeed > 0.0 || m_bash.IsBashGuardManualOverride()) {
+          m_bash.SetExtensionSpeed(bashSpeed);
+        }
       },
       {&m_bash}));
 
@@ -143,11 +144,24 @@ void RobotContainer::ConfigureBindings() {
     return std::abs(m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand)) > 0.2;
   }});
 
+  auto overrideBashGuardTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetTriggerAxis(
+               argos_lib::XboxController::JoystickHand::kRightHand)) > 0.2 ||
+           std::abs(m_controllers.OperatorController().GetTriggerAxis(
+               argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
+  }});
+
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::RobotState::IsEnabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
 
   auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
+
+  // Bashguard homeing trigger
+
+  auto bashGuardHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_bash.IsBashGuardHomed(); }});
+
+  auto startupBashGuardHomeTrigger = robotEnableTrigger && bashGuardHomeRequiredTrigger;
 
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {
@@ -205,6 +219,9 @@ void RobotContainer::ConfigureBindings() {
 
   overrideWristTrigger.OnTrue(frc2::InstantCommand([this]() { m_lifter.SetWristManualOverride(true); }, {}).ToPtr());
 
+  overrideBashGuardTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_bash.SetBashGuardManualOverride(true); }, {}).ToPtr());
+
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
       frc2::InstantCommand(
@@ -232,6 +249,8 @@ void RobotContainer::ConfigureBindings() {
 
   //   manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+
+  startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
 }
 
 void RobotContainer::Disable() {

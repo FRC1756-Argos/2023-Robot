@@ -22,6 +22,8 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   void UpdateBashGuardHome();
 
+  bool IsBashGuardHomed();
+
   bool IsBashGuardManualOverride();
 
   void SetBashGuardManualOverride(bool overrideState);

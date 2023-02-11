@@ -38,6 +38,10 @@ void BashGuardSubsystem::UpdateBashGuardHome() {
   m_bashguardHomed = true;
 }
 
+bool BashGuardSubsystem::IsBashGuardHomed() {
+  return m_bashguardHomed;
+}
+
 void BashGuardSubsystem::SetExtensionSpeed(double speed) {
   m_bashGuard.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
