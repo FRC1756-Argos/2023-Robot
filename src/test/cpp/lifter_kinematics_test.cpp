@@ -289,3 +289,225 @@ TEST(LifterKinematicsTest, OffsetLineArm_EffectorOffset_TranslatedFulcrum_IK) {
     EXPECT_TRUE(UnitEqual(joints.armLen, units::meter_t(std::numbers::sqrt2), 0.005_m));
   }
 }
+
+TEST(LifterKinematicsTest, LineArm_OriginFulcrum_FK) {
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0_m, {0_m, 0_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 0_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0_m, {0_m, 0_m});
+    LifterState state{1_m, 45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0_m, {0_m, 0_m});
+    LifterState state{1_m, 90_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 0_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0_m, {0_m, 0_m});
+    LifterState state{1_m, -45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), -1_m / std::numbers::sqrt2));
+  }
+}
+
+TEST(LifterKinematicsTest, OffsetLineArm_OriginFulcrum_FK) {
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 0.1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), -0.1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    LifterState state{1_m, 45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 0.9_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1.1_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    LifterState state{1_m, 45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.1_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 0.9_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    LifterState state{1_m, 90_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), -0.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    LifterState state{1_m, 90_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 0.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0_m, 0_m});
+    LifterState state{1_m, -45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.1_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), -0.9_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0_m, 0_m});
+    LifterState state{1_m, -45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 0.9_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), -1.1_m / std::numbers::sqrt2));
+  }
+}
+
+TEST(LifterKinematicsTest, OffsetLineArm_EffectorOffset_OriginFulcrum_FK) {
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 0.3_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 0.1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0.1_m, -0.2_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), -0.1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 0.8_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1.4_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.0_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1.2_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 90_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), -0.3_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1.1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 90_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), -0.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 1.1_m));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, -45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.4_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), -0.8_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({0_m, 0_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, -45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 1.2_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), -1.0_m / std::numbers::sqrt2));
+  }
+}
+
+TEST(LifterKinematicsTest, OffsetLineArm_EffectorOffset_TranslatedFulcrum_FK) {
+  {
+    LifterKinematics kinematics({1_m, 2_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 2.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 2.3_m));
+  }
+  {
+    LifterKinematics kinematics({3_m, 5_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 4.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 5.1_m));
+  }
+  {
+    LifterKinematics kinematics({7_m, 3_m}, 0.1_m, {0.1_m, -0.2_m});
+    LifterState state{1_m, 0_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 8.1_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 2.9_m));
+  }
+  {
+    LifterKinematics kinematics({0.5_m, 0.6_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 0.5_m + 0.8_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 0.6_m + 1.4_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({100_m, 200_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 100_m + 1.0_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 200_m + 1.2_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({15_m, 10_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 90_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 14.7_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 11.1_m));
+  }
+  {
+    LifterKinematics kinematics({25_m, 20_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, 90_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 24.9_m));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 21.1_m));
+  }
+  {
+    LifterKinematics kinematics({0.1_m, 0.2_m}, 0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, -45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 0.1_m + 1.4_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 0.2_m - 0.8_m / std::numbers::sqrt2));
+  }
+  {
+    LifterKinematics kinematics({9_m, 8_m}, -0.1_m, {0.1_m, 0.2_m});
+    LifterState state{1_m, -45_deg};
+    auto pose = kinematics.GetPose(state, false);
+    EXPECT_TRUE(UnitEqual(pose.X(), 9_m + 1.2_m / std::numbers::sqrt2));
+    EXPECT_TRUE(UnitEqual(pose.Y(), 8_m - 1.0_m / std::numbers::sqrt2));
+  }
+}
