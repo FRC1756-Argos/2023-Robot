@@ -11,6 +11,7 @@
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "argos_lib/subsystems/led_subsystem.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
@@ -53,6 +54,7 @@ class RobotContainer {
   LifterSubsystem m_lifter;
   IntakeSubsystem m_intake;
   BashGuardSubsystem m_bash;
+  argos_lib::LEDSubsystem m_ledsubsystem;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
 
   void ConfigureBindings();

@@ -19,6 +19,8 @@
 
 #include <memory>
 
+#include "argos_lib/subsystems/led_subsystem.h"
+
 RobotContainer::RobotContainer()
     : m_driveSpeedMap(controllerMap::driveSpeed)
     , m_driveRotSpeed(controllerMap::driveRotSpeed)
@@ -32,6 +34,7 @@ RobotContainer::RobotContainer()
     , m_lifter(m_instance)
     , m_intake(m_instance)
     , m_bash(m_instance)
+    , m_ledsubsystem(68)
     , m_homeArmExtensionCommand(m_lifter) {
   // Initialize all of your commands and subsystems here
 
