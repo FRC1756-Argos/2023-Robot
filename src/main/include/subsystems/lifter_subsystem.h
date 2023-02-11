@@ -157,4 +157,11 @@ class LifterSubsystem : public frc2::SubsystemBase {
   bool m_shoulderManualOverride;
   bool m_extensionManualOverride;
   bool m_wristManualOverride;
+
+  void EnableWristSoftLimits();
+  void DisableWristSoftLimits();
+  void EnableArmExtensionSoftLimits();
+  void DisableArmExtensionSoftLimits();
+  void EnableShoulderSoftLimits();
+  void DisableShoulderSoftLimits();
 };

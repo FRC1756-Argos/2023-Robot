@@ -7,7 +7,9 @@
 #include <argos_lib/config/falcon_config.h>
 
 #include "constants/addresses.h"
+#include "constants/measure_up.h"
 #include "constants/motors.h"
+#include "utils/sensor_conversions.h"
 
 BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
     : m_bashGuard{
@@ -25,3 +27,18 @@ void BashGuardSubsystem::SetExtensionSpeed(double speed) {
 
 // This method will be called once per scheduler run
 void BashGuardSubsystem::Periodic() {}
+
+void BashGuardSubsystem::EnableBashGuardSoftLimits() {
+  if (m_bashGuardHomed) {
+    m_bashGuard.ConfigForwardSoftLimitThreshold(
+        sensor_conversions::bashguard::ToSensorUnit(measure_up::bash::maxExtension));
+    m_bashGuard.ConfigReverseSoftLimitThreshold(
+        sensor_conversions::bashguard::ToSensorUnit(measure_up::bash::minExtension));
+    m_bashGuard.ConfigForwardSoftLimitEnable(true);
+    m_bashGuard.ConfigReverseSoftLimitEnable(true);
+  }
+}
+void BashGuardSubsystem::DisableBashGuardSoftLimits() {
+  m_bashGuard.ConfigForwardSoftLimitEnable(false);
+  m_bashGuard.ConfigReverseSoftLimitEnable(false);
+}

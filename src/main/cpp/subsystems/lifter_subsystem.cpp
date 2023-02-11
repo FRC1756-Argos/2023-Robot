@@ -230,6 +230,7 @@ void LifterSubsystem::UpdateArmExtensionHome() {
   m_armExtensionMotor.SetSelectedSensorPosition(
       sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
   m_extensionHomed = true;
+  EnableArmExtensionSoftLimits();
 }
 
 void LifterSubsystem::InitializeWristHomes() {
@@ -266,6 +267,7 @@ void LifterSubsystem::UpdateWristHome() {
     return;
   }
   m_wristHomed = true;
+  EnableWristSoftLimits();
 }
 
 void LifterSubsystem::InitializeShoulderHome() {
@@ -309,6 +311,7 @@ void LifterSubsystem::UpdateShoulderHome() {
   }
 
   m_shoulderHomed = true;
+  EnableShoulderSoftLimits();
 }
 
 void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
@@ -359,4 +362,50 @@ units::degree_t LifterSubsystem::GetShoulderAngle() {
 }
 LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
   return {GetWristAngle(), GetArmExtension(), GetShoulderAngle()};
-}
+  void LifterSubsystem::EnableWristSoftLimits() {
+    if (m_wristHomed) {
+      m_wrist.ConfigForwardSoftLimitThreshold(
+          sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::maxAngle));
+      m_wrist.ConfigReverseSoftLimitThreshold(
+          sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::minAngle));
+      m_wrist.ConfigForwardSoftLimitEnable(true);
+      m_wrist.ConfigReverseSoftLimitEnable(true);
+    }
+  }
+
+  void LifterSubsystem::DisableWristSoftLimits() {
+    m_wrist.ConfigForwardSoftLimitEnable(false);
+    m_wrist.ConfigReverseSoftLimitEnable(false);
+  }
+
+  void LifterSubsystem::EnableArmExtensionSoftLimits() {
+    if (m_extensionHomed) {
+      m_armExtensionMotor.ConfigForwardSoftLimitThreshold(
+          sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::maxExtension));
+      m_armExtensionMotor.ConfigReverseSoftLimitThreshold(
+          sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::minExtension));
+      m_armExtensionMotor.ConfigForwardSoftLimitEnable(true);
+      m_armExtensionMotor.ConfigReverseSoftLimitEnable(true);
+    }
+  }
+
+  void LifterSubsystem::DisableArmExtensionSoftLimits() {
+    m_armExtensionMotor.ConfigForwardSoftLimitEnable(false);
+    m_armExtensionMotor.ConfigReverseSoftLimitEnable(false);
+  }
+
+  void LifterSubsystem::EnableShoulderSoftLimits() {
+    if (m_shoulderHomed) {
+      m_shoulderLeader.ConfigForwardSoftLimitThreshold(
+          sensor_conversions::lifter::shoulder::ToSensorUnit(measure_up::lifter::shoulder::maxAngle));
+      m_shoulderLeader.ConfigReverseSoftLimitThreshold(
+          sensor_conversions::lifter::shoulder::ToSensorUnit(measure_up::lifter::shoulder::minAngle));
+      m_shoulderLeader.ConfigForwardSoftLimitEnable(true);
+      m_shoulderLeader.ConfigReverseSoftLimitEnable(true);
+    }
+  }
+
+  void LifterSubsystem::DisableShoulderSoftLimits() {
+    m_shoulderLeader.ConfigForwardSoftLimitEnable(false);
+    m_shoulderLeader.ConfigReverseSoftLimitEnable(false);
+  }
