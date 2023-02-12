@@ -31,8 +31,6 @@ NTMotorPIDTuner::NTMotorPIDTuner(const std::string& tableName,
       [this](double newVal) {
         for (auto motor : m_pMotors) {
           motor->Config_kP(m_pidSlot, newVal, 50);
-          // REMOVEME
-          std::printf("#######MOTOR CONFIGURED WITH NEW KP VALUE\n");
         }
       },
       m_pMotors.front()->ConfigGetParameter(eProfileParamSlot_P, m_pidSlot));
