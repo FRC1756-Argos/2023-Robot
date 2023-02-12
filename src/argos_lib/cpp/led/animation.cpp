@@ -2,7 +2,7 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include <argos_lib/general/swerve_utils.h>
+#include <argos_lib/general/angle_utils.h>
 #include <argos_lib/led/animiation.h>
 #include <argos_lib/led/geometry.h>
 #include <units/angle.h>
@@ -450,7 +450,7 @@ argos_lib::led::Sprite argos_lib::led::animation::DrawPacMan(float radius,
       auto& alpha = pacMan.alpha.at(x, y);
       // Skip pixels that aren't part of closed-mouth PacMan
       if (alpha > 0) {
-        units::degree_t normalizedPixelAngle = argos_lib::swerve::ConstrainAngle(
+        units::degree_t normalizedPixelAngle = argos_lib::angle::ConstrainAngle(
             units::radian_t(std::atan2(y - pacMan.alpha.Height() / 2.0, x - pacMan.alpha.Width() / 2.0)),
             direction - 180_deg,
             direction + 180_deg);

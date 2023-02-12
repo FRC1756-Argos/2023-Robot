@@ -6,7 +6,7 @@
 
 #include <argos_lib/config/cancoder_config.h>
 #include <argos_lib/config/falcon_config.h>
-#include <argos_lib/general/swerve_utils.h>
+#include <argos_lib/general/angle_utils.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <units/angle.h>
 #include <units/angular_velocity.h>
@@ -18,6 +18,7 @@
 #include "utils/sensor_conversions.h"
 
 using namespace argos_lib::swerve;
+using argos_lib::angle::ConstrainAngle;
 
 SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instance)
     : m_instance(instance)
