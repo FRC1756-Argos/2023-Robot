@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <frc/geometry/Translation2d.h>
 #include <units/angle.h>
 #include <units/length.h>
-#include <frc/geometry/Translation2d.h>
 
 #include <array>
 
@@ -37,6 +37,8 @@ namespace measure_up {
     namespace wrist {
       constexpr auto homeAngle = 0_deg;
       constexpr auto minAngle = -180_deg;
+      constexpr auto invertedAngle = -180_deg;
+      constexpr auto nominalAngle = 0_deg;
       constexpr auto maxAngle = 90_deg;
     }  // namespace wrist
     namespace shoulder {

@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "argos_lib/general/log.h"
 #include "argos_lib/general/nt_motor_pid_tuner.h"
 #include "argos_lib/homing/fs_homing.h"
 #include "constants/interpolation_maps.h"
@@ -105,7 +106,15 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param angle The target angle the shoulder should go to, in an units::degree_t
   void SetShoulderAngle(units::degree_t angle);
 
+  /// @brief Uses the kinematics object to calculate robot pose
+  /// @return The arm's current pose in robot space as a Translation2d
   frc::Translation2d GetArmPose();
+
+  /// @brief Uses the kinematics object to calculate joint positions for a given pose, then sets the system to that pose
+  /// @param desPose The point in robot space to go to
+  /// @param effectorInverted Wether or not the effector is inverted
+  /// @return A LifterPosition representing the state of the different joints
+  LifterPosition SetLifterPose(frc::Translation2d desPose, bool effectorInverted);
 
   /// @brief Is the arm extension homed?
   /// @return True -> Arm extension is homed False -> Arm extension did not home
@@ -138,6 +147,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   CANCoder m_shoulderEncoder;       ///< Encoder that measures shoulder position
   CANCoder m_wristEncoder;          ///< Encoder for measuring wrist position
   LifterKinematics m_kinematics;    ///< Kinematic model for solving arm joints & position
+  argos_lib::ArgosLogger m_logger;  ///< Handles logging errors & info
   argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
   argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
   argos_lib::NTMotorPIDTuner m_extensionTuner;

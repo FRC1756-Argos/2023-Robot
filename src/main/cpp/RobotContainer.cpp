@@ -95,16 +95,6 @@ RobotContainer::RobotContainer()
         } else {
           m_lifter.SetWristSpeed(wristSpeed);
         }
-
-        // REMOVEME PRINT OUT CURRENT SHOULDER ANGLE
-        frc::SmartDashboard::PutNumber("ExtensionDistance", m_lifter.GetArmExtension().to<double>());
-        frc::SmartDashboard::PutNumber("ShoulderAngle", m_lifter.GetShoulderAngle().to<double>());
-
-        // Print out forward kinematics
-        frc::Translation2d curPose = m_lifter.GetArmPose();
-
-        frc::SmartDashboard::PutNumber("PoseX", units::inch_t(curPose.X()).to<double>());
-        frc::SmartDashboard::PutNumber("PoseY", units::inch_t(curPose.Y()).to<double>());
       },
       {&m_lifter}));
 
@@ -139,22 +129,6 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
 
-  /* —————————————————————————— TUNINT TRIGGERS —————————————————————————— */
-
-  frc::SmartDashboard::PutNumber("SetPosition", 0.0);
-
-  auto setPositionTrigger =
-      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
-
-  setPositionTrigger.OnTrue(frc2::InstantCommand(
-                                [this]() {
-                                  m_lifter.SetArmExtension(units::make_unit<units::inch_t>(
-                                      frc::SmartDashboard::GetNumber("SetPosition", 0.0)));
-                                },
-                                {&m_lifter})
-                                .ToPtr());
-  setPositionTrigger.OnFalse(frc2::InstantCommand([this]() { m_lifter.StopArmExtension(); }, {&m_lifter}).ToPtr());
-
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
 
   auto overrideShoulderTrigger = (frc2::Trigger{[this]() {
@@ -182,7 +156,6 @@ void RobotContainer::ConfigureBindings() {
   }});
 
   // LIFTER TRIGGERS
-  // TODO Wrist homes if x and y is held for 1 + 1/2 seconds change
   auto homeWrist = (frc2::Trigger{[this]() {
     return m_controllers.OperatorController().GetDebouncedButton(
         {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
