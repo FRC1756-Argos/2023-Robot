@@ -8,7 +8,6 @@
 #include <argos_lib/config/config_types.h>
 #include <argos_lib/config/falcon_config.h>
 #include <argos_lib/general/angle_utils.h>
-#include <argos_lib/general/general.h>
 #include <constants/addresses.h>
 #include <constants/encoders.h>
 #include <constants/measure_up.h>
@@ -26,6 +25,8 @@
 #include "constants/motors.h"
 #include "units/time.h"
 #include "utils/sensor_conversions.h"
+
+#include <algorithm>
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
@@ -145,7 +146,7 @@ void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   SetExtensionManualOverride(false);
 
   // guard against out of bounds commandds by clamping to min and max
-  extension = argos_lib::Clamp<units::inch_t>(
+  extension = std::clamp<units::inch_t>(
       extension, measure_up::lifter::arm_extension::minExtension, measure_up::lifter::arm_extension::maxExtension);
 
   m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
@@ -199,7 +200,7 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
   SetWristManualOverride(false);
 
   // Guard against out of bounds commands by clamping to min and max
-  wristAngle = argos_lib::Clamp<units::degree_t>(
+  wristAngle = std::clamp<units::degree_t>(
       wristAngle, measure_up::lifter::wrist::minAngle, measure_up::lifter::wrist::maxAngle);
 
   m_wrist.Set(ctre::phoenix::motorcontrol::ControlMode::Position,

@@ -19,15 +19,4 @@ namespace argos_lib {
   constexpr static bool InThreshold(const T value, const T target, const T threshold) {
     return value >= target - threshold && value <= target + threshold;
   }
-
-  template <typename T>
-  constexpr static T Clamp(const T value, const T lowVal, const T highVal) {
-    if (value > highVal) {
-      return highVal;
-    } else if (value < lowVal) {
-      return lowVal;
-    } else {
-      return value;
-    }
-  }
 }  // namespace argos_lib
