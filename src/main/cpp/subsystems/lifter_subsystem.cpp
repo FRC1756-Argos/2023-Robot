@@ -15,6 +15,8 @@
 #include <units/time.h>
 #include <utils/sensor_conversions.h>
 
+#include <algorithm>
+
 #include "Constants.h"
 #include "argos_lib/config/cancoder_config.h"
 #include "argos_lib/config/config_types.h"
@@ -25,8 +27,6 @@
 #include "constants/motors.h"
 #include "units/time.h"
 #include "utils/sensor_conversions.h"
-
-#include <algorithm>
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
@@ -200,8 +200,8 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
   SetWristManualOverride(false);
 
   // Guard against out of bounds commands by clamping to min and max
-  wristAngle = std::clamp<units::degree_t>(
-      wristAngle, measure_up::lifter::wrist::minAngle, measure_up::lifter::wrist::maxAngle);
+  wristAngle =
+      std::clamp<units::degree_t>(wristAngle, measure_up::lifter::wrist::minAngle, measure_up::lifter::wrist::maxAngle);
 
   m_wrist.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
               sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
