@@ -6,25 +6,13 @@
 #include <units/acceleration.h>
 #include <units/angle.h>
 #include <units/angular_velocity.h>
-#include <units/base.h>
 #include <units/length.h>
 #include <units/time.h>
 #include <units/velocity.h>
 
 #include <numbers>
 
-namespace units {
-  UNIT_ADD(velocity,
-           inches_per_second,
-           inches_per_second,
-           ips,
-           units::compound_unit<units::length::inches, units::inverse<units::time::second>>)
-  UNIT_ADD(acceleration,
-           inches_per_second_squared,
-           inches_per_second_squared,
-           ips2,
-           units::compound_unit<units::length::inches, units::inverse<units::squared<units::time::second>>>)
-}  // namespace units
+#include "custom_units.h"
 
 namespace sensor_conversions {
   namespace swerve_drive {

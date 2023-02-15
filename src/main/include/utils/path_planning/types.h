@@ -11,7 +11,7 @@
 
 #include <vector>
 
-#include "utils/sensor_conversions.h"
+#include "utils/custom_units.h"
 
 namespace path_planning {
 
@@ -21,9 +21,14 @@ namespace path_planning {
   };
 
   struct ArmPathVelocity {
-    units::inches_per_second_t v;
-    units::inches_per_second_t v_x;
-    units::inches_per_second_t v_z;
+    units::velocity::inches_per_second_t v;
+    units::velocity::inches_per_second_t v_x;
+    units::velocity::inches_per_second_t v_z;
+  };
+
+  struct VelocityComponents {
+    units::velocity::inches_per_second_t v_radial;
+    units::degrees_per_second_t v_tangential;
   };
 
   template <typename PositionType, typename VelocityType>
@@ -35,7 +40,7 @@ namespace path_planning {
 
   using ArmMPPathPoint = GenericMPPathPoint<ArmPathPoint, ArmPathVelocity>;
   using AngularMPPathPoint = GenericMPPathPoint<units::degree_t, units::degrees_per_second_t>;
-  using LinearMPPathPoint = GenericMPPathPoint<units::inch_t, units::inches_per_second_t>;
+  using LinearMPPathPoint = GenericMPPathPoint<units::inch_t, units::velocity::inches_per_second_t>;
 
   using ShoulderPoint = units::degree_t;
   using ExtensionPoint = units::inch_t;
@@ -63,8 +68,8 @@ namespace path_planning {
   };
 
   struct PathDynamicsConstraints {
-    units::inches_per_second_t maxVelocity;
-    units::inches_per_second_squared_t maxAcceleration;
+    units::velocity::inches_per_second_t maxVelocity;
+    units::acceleration::inches_per_second_squared_t maxAcceleration;
   };
 
   struct ArmCompositePathDynamicConstraints {
