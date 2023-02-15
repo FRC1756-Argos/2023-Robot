@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Some constants
 TASK=generateCompileCommands
 BUILD_FILE=./build/compile_commands/linuxx86-64/compile_commands.json
