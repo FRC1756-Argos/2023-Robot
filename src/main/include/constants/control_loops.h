@@ -67,7 +67,7 @@ namespace controlLoop {
     }  // namespace lifter
     namespace bash_guard {
       struct extension {
-        constexpr static double kP = 0;
+        constexpr static double kP = 0.4;
         constexpr static double kI = 0;
         constexpr static double kD = 0;
         constexpr static double kF = 0;
