@@ -18,8 +18,6 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   void SetExtensionLength(units::inch_t length);
 
-  bool IsBashGuardHomed();
-
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
@@ -41,9 +39,6 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   WPI_TalonFX m_bashGuard;
   bool m_bashGuardManualOverride;
   bool m_bashGuardHomed;
-<<<<<<< HEAD
-=======
   void EnableBashGuardSoftLimits();
   void DisableBashGuardSoftLimits();
->>>>>>> bashguard-homeing
 };
