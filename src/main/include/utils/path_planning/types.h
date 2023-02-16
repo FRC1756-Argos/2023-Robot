@@ -20,6 +20,11 @@ namespace path_planning {
     units::inch_t z;
   };
 
+  struct LineSegment {
+    ArmPathPoint start;
+    ArmPathPoint end;
+  };
+
   struct ArmPathVelocity {
     units::velocity::inches_per_second_t v;
     units::velocity::inches_per_second_t v_x;
@@ -46,6 +51,7 @@ namespace path_planning {
   using ExtensionPoint = units::inch_t;
   using BashGuardPoint = units::inch_t;
 
+  using Polygon = std::vector<ArmPathPoint>;
   using ArmPath = std::vector<ArmPathPoint>;
   using ShoulderPath = std::vector<ShoulderPoint>;
   using ExtensionPath = std::vector<ExtensionPoint>;
