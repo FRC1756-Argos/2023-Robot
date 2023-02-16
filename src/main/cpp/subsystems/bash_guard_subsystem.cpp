@@ -14,13 +14,13 @@
 #include "utils/sensor_conversions.h"
 
 BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
-    : m_bashGuard{GetCANAddr(
-                      address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance),
-                  std::string(GetCANBus(address::comp_bot::bash_guard::extension,
-                                        address::practice_bot::bash_guard::extension,
-                                        instance))} argos_lib::falcon_config::
-          FalconConfig<motorConfig::comp_bot::bash_guard::extension, motorConfig::practice_bot::bash_guard::extension>(
-              m_bashGuard, 100_ms, instance);
+    : m_bashGuard{
+          GetCANAddr(address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance),
+          std::string(GetCANBus(
+              address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance))} {
+  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::bash_guard::extension,
+                                         motorConfig::practice_bot::bash_guard::extension>(
+      m_bashGuard, 100_ms, instance);
 }
 
 bool BashGuardSubsystem::IsBashGuardMoving() {
