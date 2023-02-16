@@ -19,6 +19,7 @@ namespace path_planning {
   [[nodiscard]] ArmMPPath GenerateProfiledPath(const ArmPathPoint& startPoint,
                                                const ArmPathPoint& endPoint,
                                                const PathDynamicsConstraints& constraints,
+                                               const Polygon& avoidancePolygon,
                                                units::millisecond_t resolution = 20_ms);
 
   template <typename PositionType, typename VelocityType>

@@ -14,6 +14,8 @@
 #include <numbers>
 #include <numeric>
 
+#include "utils/path_planning/keep_out.h"
+
 using namespace path_planning;
 
 VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPoint, const ArmPathPoint& armVector) {
@@ -99,8 +101,30 @@ ArmPathPoint lerp(const ArmPathPoint& startPoint, const ArmPathPoint& endPoint, 
 ArmMPPath GenerateProfiledPath(const ArmPathPoint& startPoint,
                                const ArmPathPoint& endPoint,
                                const PathDynamicsConstraints& constraints,
+                               const Polygon& avoidancePolygon,
                                units::millisecond_t resolution) {
-  auto pathLength = units::math::hypot(endPoint.x - startPoint.x, endPoint.z - startPoint.z);
+  auto avoidancePath = KeepOut(LineSegment{.start = startPoint, .end = endPoint}, avoidancePolygon);
+
+  std::vector<units::inch_t> segmentLengths;
+  std::vector<units::radian_t> segmentAngles;
+  std::vector<double> cosSegmentAngles;
+  std::vector<double> sinSegmentAngles;
+
+  std::transform(
+      std::next(avoidancePath.begin()),
+      avoidancePath.end(),
+      avoidancePath.begin(),
+      std::back_inserter(segmentLengths),
+      [](const ArmPathPoint& p1, const ArmPathPoint& p2) { return units::math::hypot(p2.x - p1.x, p2.z - p1.z); });
+
+  segmentAngles.reserve(segmentLengths.size());
+  cosSegmentAngles.reserve(segmentLengths.size());
+  sinSegmentAngles.reserve(segmentLengths.size());
+
+  auto pathLength = std::accumulate(
+      segmentLengths.begin(), segmentLengths.end(), 0_in, [](units::inch_t sum, units::inch_t segmentLength) {
+        return sum + segmentLength;
+      });
   frc::TrapezoidProfile<units::inch> profile({constraints.maxVelocity, constraints.maxAcceleration},
                                              {pathLength, 0_ips});
   const auto totalProfiledTime = profile.TotalTime();
@@ -110,9 +134,23 @@ ArmMPPath GenerateProfiledPath(const ArmPathPoint& startPoint,
 
   units::millisecond_t sampleTime = 0_ms;
 
-  const auto pathAngle = units::math::atan2(endPoint.z - startPoint.z, endPoint.x - startPoint.x);
-  const auto cosAngle = units::math::cos(pathAngle);
-  const auto sinAngle = units::math::sin(pathAngle);
+  std::transform(
+      std::next(avoidancePath.begin()),
+      avoidancePath.end(),
+      avoidancePath.begin(),
+      std::back_inserter(segmentAngles),
+      [](const ArmPathPoint& p1, const ArmPathPoint& p2) { return units::math::atan2(p2.z - p1.z, p2.x - p1.x); });
+  std::transform(segmentAngles.begin(),
+                 segmentAngles.end(),
+                 std::back_inserter(cosSegmentAngles),
+                 [](const units::radian_t& angle) { return units::math::cos(angle); });
+  std::transform(segmentAngles.begin(),
+                 segmentAngles.end(),
+                 std::back_inserter(sinSegmentAngles),
+                 [](const units::radian_t& angle) { return units::math::sin(angle); });
+
+  size_t segmentsCompleted = 0;
+  units::inch_t completedSegmentsLength = 0_in;
 
   while (sampleTime < totalProfiledTime) {
     ArmMPPathPoint newPoint;
@@ -120,8 +158,19 @@ ArmMPPath GenerateProfiledPath(const ArmPathPoint& startPoint,
     newPoint.time = resolution;
 
     auto state = profile.Calculate(sampleTime);
-    newPoint.position = lerp(startPoint, endPoint, state.position / pathLength);
-    newPoint.velocity = {.v = state.velocity, .v_x = state.velocity * cosAngle, .v_z = state.velocity * sinAngle};
+
+    while (state.position - completedSegmentsLength > segmentLengths[segmentsCompleted] &&
+           segmentsCompleted < segmentLengths.size() - 1) {
+      completedSegmentsLength += segmentLengths[segmentsCompleted];
+      ++segmentsCompleted;
+    }
+
+    newPoint.position = lerp(avoidancePath.at(segmentsCompleted),
+                             avoidancePath.at(segmentsCompleted + 1),
+                             (state.position - completedSegmentsLength) / segmentLengths.at(segmentsCompleted));
+    newPoint.velocity = {.v = state.velocity,
+                         .v_x = state.velocity * cosSegmentAngles.at(segmentsCompleted),
+                         .v_z = state.velocity * sinSegmentAngles.at(segmentsCompleted)};
 
     path.push_back(newPoint);
 
