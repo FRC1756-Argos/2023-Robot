@@ -31,7 +31,11 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   void SetBashGuardManualOverride(bool overrideState);
 
+  units::inch_t GetBashGuardExtension();
+
   bool IsBashGuardMoving();
+
+  void Disable();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
