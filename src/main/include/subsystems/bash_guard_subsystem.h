@@ -35,5 +35,7 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   // declared private and exposed only through public methods.
   WPI_TalonFX m_bashGuard;
   bool m_bashGuardManualOverride;
-  bool m_bashguardHomed;
+  bool m_bashGuardHomed;
+  void EnableBashGuardSoftLimits();
+  void DisableBashGuardSoftLimits();
 };

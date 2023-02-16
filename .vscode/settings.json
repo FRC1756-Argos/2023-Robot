@@ -105,7 +105,8 @@
     "xstddef": "cpp",
     "xstring": "cpp",
     "xtr1common": "cpp",
-    "xutility": "cpp"
+    "xutility": "cpp",
+    "matrixfunctions": "cpp"
   },
   "cSpell.words": [
     "ctre",
@@ -123,5 +124,6 @@
     "[ ]",
     "[x]",
     "@todo"
-  ]
+  ],
+  "wpilib.skipTests": true
 }

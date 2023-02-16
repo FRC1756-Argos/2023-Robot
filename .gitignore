@@ -5,6 +5,12 @@
 # Prerequisites
 *.d
 
+# Compile commands file for clangd & other language servers
+*compile_commands.json
+
+# .cache/ made by vim/nvim
+*.cache
+
 # Compiled Object files
 *.slo
 *.lo

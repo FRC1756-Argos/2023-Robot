@@ -7,6 +7,8 @@
 #include <array>
 #include <chrono>
 
+#include "frc/smartdashboard/SmartDashboard.h"
+
 using namespace std::literals::chrono_literals;
 
 using argos_lib::ClosedLoopSensorConversions;
@@ -14,7 +16,7 @@ using argos_lib::NTMotorPIDTuner;
 
 NTMotorPIDTuner::NTMotorPIDTuner(const std::string& tableName,
                                  std::initializer_list<ctre::phoenix::motorcontrol::can::BaseTalon*> motors,
-                                 uint pidSlot,
+                                 unsigned pidSlot,
                                  ClosedLoopSensorConversions sensorConversions)
     : m_updateSubscriber{tableName}
     , m_pMotors{motors}

@@ -77,7 +77,7 @@ RobotContainer::RobotContainer()
 
         if (shoulderSpeed == 0.0) {
           if (m_lifter.IsShoulderManualOverride()) {
-            m_lifter.StopArmExtension();
+            m_lifter.StopShoulder();
           }
         } else {
           m_lifter.SetShoulderSpeed(shoulderSpeed);
@@ -118,7 +118,8 @@ RobotContainer::RobotContainer()
 }
 
 void RobotContainer::ConfigureBindings() {
-  // CONFIGURE DEBOUNCING
+  /* ———————————————————————— CONFIGURE DEBOUNCING ——————————————————————— */
+
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
@@ -170,7 +171,6 @@ void RobotContainer::ConfigureBindings() {
   }});
 
   // LIFTER TRIGGERS
-  // TODO Wrist homes if x and y is held for 1 + 1/2 seconds change
   auto homeWrist = (frc2::Trigger{[this]() {
     return m_controllers.OperatorController().GetDebouncedButton(
         {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});

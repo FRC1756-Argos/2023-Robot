@@ -5,6 +5,7 @@
 #include "argos_lib/controller/vibration.h"
 
 #include <chrono>
+#include <numbers>
 
 using namespace argos_lib;
 
@@ -56,7 +57,7 @@ VibrationModel argos_lib::VibrationSyncWave(units::millisecond_t pulsePeriod, do
             .count() %
         msPeriod;
     const auto periodProgress = static_cast<double>(periodTime) / msPeriod;
-    const auto vibrationIntensity = std::cos(M_PI * 2.0 * periodProgress) / 2 + 0.5;
+    const auto vibrationIntensity = std::cos(std::numbers::pi * 2.0 * periodProgress) / 2 + 0.5;
     const auto outputIntensity = intensityOff + vibrationIntensity * (intensityOn - intensityOff);
     return VibrationStatus{outputIntensity, outputIntensity};
   };
@@ -72,7 +73,7 @@ VibrationModel argos_lib::VibrationAlternateWave(units::millisecond_t pulsePerio
             .count() %
         msPeriod;
     const auto periodProgress = static_cast<double>(periodTime) / msPeriod;
-    const auto vibrationIntensityLeft = std::cos(M_PI * 2.0 * periodProgress) / 2 + 0.5;
+    const auto vibrationIntensityLeft = std::cos(std::numbers::pi * 2.0 * periodProgress) / 2 + 0.5;
     const auto vibrationIntensityRight = 1.0 - vibrationIntensityLeft;
     return VibrationStatus{intensityOff + vibrationIntensityLeft * (intensityOn - intensityOff),
                            intensityOff + vibrationIntensityRight * (intensityOn - intensityOff)};
