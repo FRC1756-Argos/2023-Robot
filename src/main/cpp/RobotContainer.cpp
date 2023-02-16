@@ -77,7 +77,7 @@ RobotContainer::RobotContainer()
 
         if (shoulderSpeed == 0.0) {
           if (m_lifter.IsShoulderManualOverride()) {
-            m_lifter.StopArmExtension();
+            m_lifter.StopShoulder();
           }
         } else {
           m_lifter.SetShoulderSpeed(shoulderSpeed);
@@ -107,8 +107,9 @@ RobotContainer::RobotContainer()
                                         argos_lib::XboxController::JoystickHand::kLeftHand)) :
                                m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
                                    argos_lib::XboxController::JoystickHand::kRightHand));
-
-        m_bash.SetExtensionSpeed(bashSpeed);
+        if (bashSpeed > 0.0 || m_bash.IsBashGuardManualOverride()) {
+          m_bash.SetExtensionSpeed(bashSpeed);
+        }
       },
       {&m_bash}));
 
@@ -117,7 +118,8 @@ RobotContainer::RobotContainer()
 }
 
 void RobotContainer::ConfigureBindings() {
-  // CONFIGURE DEBOUNCING
+  /* ———————————————————————— CONFIGURE DEBOUNCING ——————————————————————— */
+
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
@@ -143,11 +145,24 @@ void RobotContainer::ConfigureBindings() {
     return std::abs(m_controllers.OperatorController().GetX(argos_lib::XboxController::JoystickHand::kRightHand)) > 0.2;
   }});
 
+  auto overrideBashGuardTrigger = (frc2::Trigger{[this]() {
+    return std::abs(m_controllers.OperatorController().GetTriggerAxis(
+               argos_lib::XboxController::JoystickHand::kRightHand)) > 0.2 ||
+           std::abs(m_controllers.OperatorController().GetTriggerAxis(
+               argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
+  }});
+
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::RobotState::IsEnabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
 
   auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
+
+  // Bashguard homeing trigger
+
+  auto bashGuardHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_bash.IsBashGuardHomed(); }});
+
+  auto startupBashGuardHomeTrigger = robotEnableTrigger && bashGuardHomeRequiredTrigger;
 
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {
@@ -156,7 +171,6 @@ void RobotContainer::ConfigureBindings() {
   }});
 
   // LIFTER TRIGGERS
-  // TODO Wrist homes if x and y is held for 1 + 1/2 seconds change
   auto homeWrist = (frc2::Trigger{[this]() {
     return m_controllers.OperatorController().GetDebouncedButton(
         {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
@@ -205,6 +219,9 @@ void RobotContainer::ConfigureBindings() {
 
   overrideWristTrigger.OnTrue(frc2::InstantCommand([this]() { m_lifter.SetWristManualOverride(true); }, {}).ToPtr());
 
+  overrideBashGuardTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_bash.SetBashGuardManualOverride(true); }, {}).ToPtr());
+
   // DRIVE TRIGGER ACTIVATION
   controlMode.OnTrue(
       frc2::InstantCommand(
@@ -232,6 +249,8 @@ void RobotContainer::ConfigureBindings() {
 
   //   manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+
+  startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
 }
 
 void RobotContainer::Disable() {

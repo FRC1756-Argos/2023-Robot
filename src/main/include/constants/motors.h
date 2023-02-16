@@ -135,8 +135,8 @@ namespace motorConfig {
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::armExtension::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::armExtension::allowableError;
       };
-      struct shoulderLeader {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
+      struct shoulderDrive {
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -152,6 +152,8 @@ namespace motorConfig {
         constexpr static auto pid0_kF = controlLoop::comp_bot::lifter::shoulder::kF;
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::shoulder::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::shoulder::allowableError;
+        constexpr static double peakOutputForward = 0.75;
+        constexpr static double peakOutputReverse = -0.75;
       };
       struct shoulderFollower {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::FollowMaster;
@@ -176,7 +178,9 @@ namespace motorConfig {
       // Currently just generic drive with remote sensor
       struct wrist {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
-        constexpr static bool sensorPhase = false;
+        constexpr static bool sensorPhase = true;
+        constexpr static double peakOutputForward = 0.7;
+        constexpr static double peakOutputReverse = -0.7;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
@@ -206,7 +210,7 @@ namespace motorConfig {
     }  // namespace intake
     namespace bash_guard {
       struct extension {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -301,8 +305,7 @@ namespace motorConfig {
     }  // namespace drive
     namespace lifter {
       using armExtension = motorConfig::comp_bot::lifter::armExtension;
-      using shoulderLeader = motorConfig::comp_bot::lifter::shoulderLeader;
-      using shoulderFollower = motorConfig::comp_bot::lifter::shoulderFollower;
+      using shoulderDrive = motorConfig::comp_bot::lifter::shoulderDrive;
       using wrist = motorConfig::comp_bot::lifter::wrist;
     }  // namespace lifter
     namespace intake {

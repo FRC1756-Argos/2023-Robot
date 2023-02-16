@@ -27,6 +27,8 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   void UpdateBashGuardHome();
 
+  bool IsBashGuardHomed();
+
   bool IsBashGuardManualOverride();
 
   void SetBashGuardManualOverride(bool overrideState);
@@ -39,4 +41,9 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   WPI_TalonFX m_bashGuard;
   bool m_bashGuardManualOverride;
   bool m_bashGuardHomed;
+<<<<<<< HEAD
+=======
+  void EnableBashGuardSoftLimits();
+  void DisableBashGuardSoftLimits();
+>>>>>>> bashguard-homeing
 };
