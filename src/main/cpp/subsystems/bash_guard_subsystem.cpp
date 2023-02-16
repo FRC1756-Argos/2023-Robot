@@ -37,11 +37,11 @@ bool BashGuardSubsystem::IsBashGuardManualOverride() {
 
 void BashGuardSubsystem::UpdateBashGuardHome() {
   m_bashGuard.SetSelectedSensorPosition(sensor_conversions::bashguard::ToSensorUnit(measure_up::bash::homeExtension));
-  m_bashguardHomed = true;
+  m_bashGuardHomed = true;
 }
 
 bool BashGuardSubsystem::IsBashGuardHomed() {
-  return m_bashguardHomed;
+  return m_bashGuardHomed;
 }
 
 void BashGuardSubsystem::SetExtensionSpeed(double speed) {
