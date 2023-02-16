@@ -54,9 +54,9 @@ namespace field_points {
     // Global Y-Positions for nodes
     // Columns are named left, middle, right as if you are facing them from inside the field
     // Same as documented picture in /docs
-    constexpr auto innerGridLeft = 20.185_in;
-    constexpr auto innerGridMiddle = 42.185_in;
-    constexpr auto innerGridRight = 64.185_in;
+    constexpr auto innerGridLeftY = 20.185_in;
+    constexpr auto innerGridMiddleY = 42.185_in;
+    constexpr auto innerGridRightY = 64.185_in;
     // TODO fill in with rest of global y positions
 
     namespace blue_alliance {
@@ -69,16 +69,16 @@ namespace field_points {
 
         // Refer to /docs/ScoringGridNaming.png for how this grid is organized
         static const std::vector<Node> nodes = {
-            Node{GamePiece::CONE, frc::Translation3d{highNodeX, nodeLeftY, highConeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, innerGridLeftY, highConeNodeHeight}},
             // TODO maybe add some sort of heigh offset for scoring in the future?
-            Node{GamePiece::CUBE, frc::Translation3d{highNodeX, nodeMiddleY, highCubeNodeHeight}},
-            Node{GamePiece::CONE, frc::Translation3d{highNodeX, nodeRightY, highConeNodeHeight}},
-            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, nodeLeftY, middleConeNodeHeight}},
-            Node{GamePiece::CUBE, frc::Translation3d{middleNodeX, nodeMiddleY, middleCubeNodeHeight}},
-            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, nodeRightY, middleConeNodeHeight}},
-            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, nodeLeftY, 0_in}},
-            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, nodeMiddleY, 0_in}},
-            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, nodeRightY, 0_in}}};
+            Node{GamePiece::CUBE, frc::Translation3d{highNodeX, innerGridMiddleY, highCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, innerGridRightY, highConeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, innerGridLeftY, middleConeNodeHeight}},
+            Node{GamePiece::CUBE, frc::Translation3d{middleNodeX, innerGridMiddleY, middleCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, innerGridRightY, middleConeNodeHeight}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, innerGridLeftY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, innerGridMiddleY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, innerGridRightY, 0_in}}};
 
       }  // namespace inner_grid
       namespace coop_grid {
