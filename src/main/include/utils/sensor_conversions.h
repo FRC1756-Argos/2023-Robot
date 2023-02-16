@@ -113,8 +113,8 @@ namespace sensor_conversions {
                                              driveSprocketTeeth * extensionInchesPerTooth);
     }
     constexpr double ToSensorUnit(const units::inch_t extension) {
-      return extension.to<double>() / driveSprocketTeeth / gearboxReduction / sensorToMotorRevolution /
-             sensorToMotorRevolution;
+      return extension.to<double>() / sensorToMotorRevolution / gearboxReduction / driveSprocketTeeth /
+             extensionInchesPerTooth;
     }
   }  // namespace bashguard
 }  // namespace sensor_conversions
