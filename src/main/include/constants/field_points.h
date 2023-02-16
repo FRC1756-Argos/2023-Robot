@@ -21,25 +21,10 @@ struct Node {
   frc::Translation3d m_position;
 };
 
-// Reference 5.5 in game manual for naming
+// Reference 5.5 in game manual for naming (Inner grid is least x, outer is grid with most x, and middle is... middle)
 // Refernce pg 10 in field drawings for scoring grid dimensions
-// Node index 0 of inner grid is 14.5244 in in x direction, and 20.185 in in y direction
+// Node index 0 of inner grid is 14.5244 in in x direction, and 20.185 in in y direction (Blue alliance)
 namespace field_points {
-  // high cone and cube node heights from floor and depths
-  constexpr auto highConeNodeHeight = 46_in;
-  constexpr auto highConeNodeDepth = 39.75_in;
-  constexpr auto highCubeNodeHeight = 35.5_in;
-  constexpr auto highCubeNodeDepth = 39.75_in;
-  // middle cone and cube node heights from floor and depths
-  constexpr auto middleConeNodeHeight = 34_in;
-  constexpr auto middleConeNodeDepth = 22.75_in;
-  constexpr auto middleCubeNodeHeight = 23.5_in;
-  constexpr auto middleCubeNodeDepth = 22.75_in;
-  // low cone and cube node heights from floor and depths
-  constexpr auto lowConeNodeHeight = 0_in;
-  constexpr auto lowConeNodeDepth = 8_in;
-  constexpr auto lowCubeNodeHeight = 0_in;
-  constexpr auto lowCubeNodeDepth = 8_in;
   // double human player substation height from floor, depth, and width
   constexpr auto doubleSubstationHeight = 37.375_in;
   constexpr auto doubleSubstationDepth = 13_in;
@@ -49,33 +34,59 @@ namespace field_points {
   constexpr auto singleSubstationHeightBottom = 27.125_in;
   constexpr auto singleSubstationWidth = 22.75_in;
 
-  // Common x cords for cone nodes
-  constexpr auto highConeNodeX = 14.5244_in;
-  constexpr auto middleConeNodeX = 31.55_in;
-
-  // Common x cords for cube nodes
-  constexpr auto highCubeNodeX = highConeNodeX;
-  constexpr auto middleCubeNodeX = middleConeNodeX;
-
-  // Common x for low hybrid nodes
-  constexpr auto lowHybridX = 46.01708_in;
-
   namespace grids {
+    // high cone and cube node heights from floor and depths
+    constexpr auto highConeNodeHeight = 46_in;
+    constexpr auto highConeNodeDepth = 39.75_in;
+    constexpr auto highCubeNodeHeight = 35.5_in;
+    constexpr auto highCubeNodeDepth = 39.75_in;
+    // middle cone and cube node heights from floor and depths
+    constexpr auto middleConeNodeHeight = 34_in;
+    constexpr auto middleConeNodeDepth = 22.75_in;
+    constexpr auto middleCubeNodeHeight = 23.5_in;
+    constexpr auto middleCubeNodeDepth = 22.75_in;
+    // low cone and cube node heights from floor and depths
+    constexpr auto lowConeNodeHeight = 0_in;
+    constexpr auto lowConeNodeDepth = 8_in;
+    constexpr auto lowCubeNodeHeight = 0_in;
+    constexpr auto lowCubeNodeDepth = 8_in;
+
+    // Global Y-Positions for nodes
+    // Columns are named left, middle, right as if you are facing them from inside the field
+    // Same as documented picture in /docs
+    constexpr auto innerGridLeft = 20.185_in;
+    constexpr auto innerGridMiddle = 42.185_in;
+    constexpr auto innerGridRight = 64.185_in;
+    // TODO fill in with rest of global y positions
+
     namespace blue_alliance {
-      // Refer to /docs/ScoringGridNaming.png for how this grid is organized
-      static const std::vector<Node> innerGrid = {
-          Node{GamePiece::CONE, frc::Translation3d{highConeNodeX, 20.185_in, highConeNodeHeight}},
-          // TODO maybe add some sort of heigh offset for scoring in the future?
-          Node{GamePiece::CUBE, frc::Translation3d{highCubeNodeX, 42.185_in, highCubeNodeHeight}},
-          Node{GamePiece::CONE, frc::Translation3d{highConeNodeX, 64.185_in, highConeNodeHeight}},
-          Node{GamePiece::CONE, frc::Translation3d{middleConeNodeX, 20.185_in, middleConeNodeHeight}},
-          Node{GamePiece::CUBE, frc::Translation3d{middleCubeNodeX, 42.185_in, middleCubeNodeHeight}},
-          Node{GamePiece::CONE, frc::Translation3d{middleConeNodeX, 64.185_in, middleConeNodeHeight}},
-          Node{GamePiece::HYBRID, frc::Translation3d{lowHybridX, 16.56_in, 0_in}},
-          Node{GamePiece::HYBRID, frc::Translation3d{lowHybridX, 42.185_in, 0_in}},
-          Node{GamePiece::HYBRID, frc::Translation3d{lowHybridX, 64.185_in, 0_in}}};
-      static const std::vector<Node> coopGrid = {/*TODO PUT STUFF HERE*/};
-      static const std::vector<Node> outerGrid = {/*TODO PUT STUFF HERE*/};
+      // Blue alliance X-positions for scoring
+      constexpr auto highNodeX = 14.5244_in;
+      constexpr auto middleNodeX = 31.55_in;
+      constexpr auto lowNodeX = 46.01708_in;
+
+      namespace inner_grid {
+
+        // Refer to /docs/ScoringGridNaming.png for how this grid is organized
+        static const std::vector<Node> nodes = {
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, nodeLeftY, highConeNodeHeight}},
+            // TODO maybe add some sort of heigh offset for scoring in the future?
+            Node{GamePiece::CUBE, frc::Translation3d{highNodeX, nodeMiddleY, highCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, nodeRightY, highConeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, nodeLeftY, middleConeNodeHeight}},
+            Node{GamePiece::CUBE, frc::Translation3d{middleNodeX, nodeMiddleY, middleCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, nodeRightY, middleConeNodeHeight}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, nodeLeftY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, nodeMiddleY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, nodeRightY, 0_in}}};
+
+      }  // namespace inner_grid
+      namespace coop_grid {
+        static const std::vector<Node> nodes = {/*TODO PUT STUFF HERE*/};
+      }  // namespace coop_grid
+      namespace outer_grid {
+        static const std::vector<Node> nodes = {/*TODO PUT STUFF HERE*/};
+      }  // namespace outer_grid
 
     }  // namespace blue_alliance
   }    // namespace grids
