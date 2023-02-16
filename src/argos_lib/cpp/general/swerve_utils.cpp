@@ -6,49 +6,12 @@
 
 #include <cmath>
 
-using argos_lib::swerve::ConstrainAngle;
-using argos_lib::swerve::InvertedAngle;
-using argos_lib::swerve::NearestAngle;
+#include "argos_lib/general/angle_utils.h"
+
+using argos_lib::angle::ConstrainAngle;
+using argos_lib::angle::InvertedAngle;
+using argos_lib::angle::NearestAngle;
 using argos_lib::swerve::Optimize;
-
-units::degree_t argos_lib::swerve::NearestAngle(units::degree_t desiredAngle, units::degree_t referenceAngle) {
-  const auto normalizedDesiredAngle = ConstrainAngle(desiredAngle, 0_deg, 360_deg);
-  const auto normalizedReferenceAngle = ConstrainAngle(referenceAngle, 0_deg, 360_deg);
-
-  auto angleDiff = normalizedDesiredAngle - normalizedReferenceAngle;
-
-  // Closest equivalent angle is across discontinuity point
-  if (units::math::fabs(angleDiff) > 180_deg) {
-    angleDiff = units::math::copysign(360_deg - units::math::fabs(angleDiff), angleDiff * -1.0);
-  }
-
-  return referenceAngle + angleDiff;
-}
-
-units::degree_t argos_lib::swerve::InvertedAngle(units::degree_t desiredAngle, units::degree_t referenceAngle) {
-  // Inverted angle is 180 degrees offset from desired angle and in opposite travel direction from reference angle
-  const auto fwDist = ConstrainAngle(desiredAngle - referenceAngle, -180_deg, 180_deg);
-  const auto revDistMag = 180_deg - units::math::fabs(fwDist);
-  return referenceAngle + units::math::copysign(revDistMag, -fwDist);
-}
-
-units::degree_t argos_lib::swerve::ConstrainAngle(units::degree_t inVal,
-                                                  units::degree_t minVal,
-                                                  units::degree_t maxVal) {
-  const auto range = maxVal - minVal;
-  inVal = units::math::fmod(inVal - minVal, maxVal - minVal);
-  if (inVal < 0_deg) {
-    inVal += range;
-  }
-  return inVal + minVal;
-}
-
-double argos_lib::swerve::ConstrainAngle(double inVal, double minVal, double maxVal) {
-  return ConstrainAngle(units::make_unit<units::degree_t>(inVal),
-                        units::make_unit<units::degree_t>(minVal),
-                        units::make_unit<units::degree_t>(maxVal))
-      .to<double>();
-}
 
 frc::SwerveModuleState argos_lib::swerve::Optimize(frc::SwerveModuleState desiredState,
                                                    units::degree_t currentModuleAngle,

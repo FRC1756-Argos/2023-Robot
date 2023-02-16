@@ -6,13 +6,16 @@
 
 #include <argos_lib/config/config_types.h>
 #include <ctre/Phoenix.h>
+#include <frc/geometry/Translation2d.h>
 #include <frc2/command/SubsystemBase.h>
 
 #include <string>
 
+#include "argos_lib/general/log.h"
 #include "argos_lib/general/nt_motor_pid_tuner.h"
 #include "argos_lib/homing/fs_homing.h"
 #include "constants/interpolation_maps.h"
+#include "utils/lifter_kinematics.h"
 
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
@@ -20,8 +23,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
  public:
   struct LifterPosition {
     units::degree_t wristAngle;
-    units::inch_t armEXtension;
-    units::degree_t shoulderAngle;
+    ArmState state;
   };
   explicit LifterSubsystem(argos_lib::RobotInstance instance);
 
@@ -100,11 +102,38 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Updates shoulder home in FS, resets relative position on sensor
   void UpdateShoulderHome();
 
+  /// @brief Sets the shoulder joint's angle (see GetShoulderAngle or docs for convention)
+  /// @param angle The target angle the shoulder should go to, in an units::degree_t
+  void SetShoulderAngle(units::degree_t angle);
+
+  /// @brief Uses the kinematics object to calculate robot pose
+  /// @return The arm's current pose in robot space as a Translation2d
+  frc::Translation2d GetArmPose();
+
+  /// @brief Uses the kinematics object to calculate joint positions for a given pose, then sets the system to that pose
+  /// @param desPose The point in robot space to go to
+  /// @param effectorInverted Wether or not the effector is inverted
+  /// @return A LifterPosition representing the state of the different joints
+  LifterPosition SetLifterPose(frc::Translation2d desPose, bool effectorInverted);
+
+  /// @brief Is the arm extension homed?
+  /// @return True -> Arm extension is homed False -> Arm extension did not home
   bool IsArmExtensionHomed();
 
+  /// @brief Gets the wrist angle (right handle rule with axis towards front of robot)
+  /// @return Angle in units::degree_t representing angle of effector
   units::degree_t GetWristAngle();
+
+  /// @brief Gets the arm extension (positive is extend out)
+  /// @return Extension of arm from shoulder rotation center as an units::inch_t
   units::inch_t GetArmExtension();
+
+  /// @brief Gets the shoulder's angle with positive being rotating down into the robot, and 0 being strait out behind the robot
+  /// @return The shoulder's current angle as an units::degree_t
   units::degree_t GetShoulderAngle();
+
+  /// @brief Gets the lifter's current shoulder position represented as a collection of joint states
+  /// @return A LifterPosition containing the state of the shoulder system's joints
   LifterPosition GetLifterPosition();
 
  private:
@@ -112,20 +141,29 @@ class LifterSubsystem : public frc2::SubsystemBase {
   // declared private and exposed only through public methods.
 
   // Shoulder motors are attached in parallel mechanically to operate shoulder, back motor follows front motor
-  WPI_TalonFX m_shoulderLeader;     ///< Shoulder motor closest to front of robot
-  WPI_TalonFX m_shoulderFollower;   ///< Shoulder motor closest to back of robot
+  WPI_TalonFX m_shoulderDrive;      ///< Shoulder motor closest to front of robot
   WPI_TalonFX m_armExtensionMotor;  ///< Motor that controls extension of arm
   WPI_TalonFX m_wrist;              ///< Motor that controls wrist movement
   CANCoder m_shoulderEncoder;       ///< Encoder that measures shoulder position
   CANCoder m_wristEncoder;          ///< Encoder for measuring wrist position
+  LifterKinematics m_kinematics;    ///< Kinematic model for solving arm joints & position
+  argos_lib::ArgosLogger m_logger;  ///< Handles logging errors & info
   argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
   argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
   argos_lib::NTMotorPIDTuner m_extensionTuner;
   argos_lib::NTMotorPIDTuner m_wristTuner;
+  argos_lib::NTMotorPIDTuner m_shoulderTuner;
   bool m_shoulderHomed;
   bool m_extensionHomed;
   bool m_wristHomed;
   bool m_shoulderManualOverride;
   bool m_extensionManualOverride;
   bool m_wristManualOverride;
+
+  void EnableWristSoftLimits();
+  void DisableWristSoftLimits();
+  void EnableArmExtensionSoftLimits();
+  void DisableArmExtensionSoftLimits();
+  void EnableShoulderSoftLimits();
+  void DisableShoulderSoftLimits();
 };
