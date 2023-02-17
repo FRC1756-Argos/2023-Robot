@@ -106,6 +106,28 @@ TEST_F(KeepOutTest, Square) {
     EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
     EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
   }
+  {
+    LineSegment candidatePath{.start{.x = -10_in, .z = 50_in}, .end{.x = 50_in, .z = -10_in}};
+    auto path = KeepOut(candidatePath, square);
+    ASSERT_EQ(path.size(), 3);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
+  {
+    LineSegment candidatePath{.start{.x = 50_in, .z = -10_in}, .end{.x = -10_in, .z = 50_in}};
+    auto path = KeepOut(candidatePath, square);
+    ASSERT_EQ(path.size(), 3);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
 }
 
 TEST_F(KeepOutTest, InverseSquare) {
@@ -153,6 +175,28 @@ TEST_F(KeepOutTest, InverseSquare) {
     EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
     EXPECT_TRUE(UnitEqual(path.at(1).x, 0_in));
     EXPECT_TRUE(UnitEqual(path.at(1).z, 100_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
+  {
+    LineSegment candidatePath{.start{.x = -10_in, .z = 50_in}, .end{.x = 50_in, .z = -10_in}};
+    auto path = KeepOut(candidatePath, inverse_square);
+    ASSERT_EQ(path.size(), 3);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
+  {
+    LineSegment candidatePath{.start{.x = 50_in, .z = -10_in}, .end{.x = -10_in, .z = 50_in}};
+    auto path = KeepOut(candidatePath, inverse_square);
+    ASSERT_EQ(path.size(), 3);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
     EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
     EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
   }
@@ -270,6 +314,32 @@ TEST_F(KeepOutTest, BlockH) {
     EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
     EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
   }
+  {
+    LineSegment candidatePath{.start{.x = -10_in, .z = 10_in}, .end{.x = 50_in, .z = 10_in}};
+    auto path = KeepOut(candidatePath, blockH);
+    ASSERT_EQ(path.size(), 4);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).x, 25_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
+  {
+    LineSegment candidatePath{.start{.x = 50_in, .z = 10_in}, .end{.x = -10_in, .z = 10_in}};
+    auto path = KeepOut(candidatePath, blockH);
+    ASSERT_EQ(path.size(), 4);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 25_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
 }
 
 TEST_F(KeepOutTest, InverseBlockH) {
@@ -305,6 +375,32 @@ TEST_F(KeepOutTest, InverseBlockH) {
     EXPECT_TRUE(UnitEqual(path.at(1).z, 30_in));
     EXPECT_TRUE(UnitEqual(path.at(2).x, 25_in));
     EXPECT_TRUE(UnitEqual(path.at(2).z, 70_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
+  {
+    LineSegment candidatePath{.start{.x = -10_in, .z = 10_in}, .end{.x = 50_in, .z = 10_in}};
+    auto path = KeepOut(candidatePath, inverse_blockH);
+    ASSERT_EQ(path.size(), 4);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).x, 25_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
+    EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
+  }
+  {
+    LineSegment candidatePath{.start{.x = 50_in, .z = 10_in}, .end{.x = -10_in, .z = 10_in}};
+    auto path = KeepOut(candidatePath, inverse_blockH);
+    ASSERT_EQ(path.size(), 4);
+    EXPECT_TRUE(UnitEqual(path.front().x, candidatePath.start.x));
+    EXPECT_TRUE(UnitEqual(path.front().z, candidatePath.start.z));
+    EXPECT_TRUE(UnitEqual(path.at(1).x, 25_in));
+    EXPECT_TRUE(UnitEqual(path.at(1).z, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).x, 0_in));
+    EXPECT_TRUE(UnitEqual(path.at(2).z, 0_in));
     EXPECT_TRUE(UnitEqual(path.back().x, candidatePath.end.x));
     EXPECT_TRUE(UnitEqual(path.back().z, candidatePath.end.z));
   }

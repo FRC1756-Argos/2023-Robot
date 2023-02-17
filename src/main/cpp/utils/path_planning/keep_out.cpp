@@ -137,7 +137,9 @@ ArmPath path_planning::KeepOut(LineSegment candidatePath, const Polygon& avoidan
          intersectionIt != std::prev(segmentsWithIntersections.end()) &&
          intersectionIt != segmentsWithIntersections.end();
          std::advance(intersectionIt, 2)) {
-      if (intersectionIt->first < std::next(intersectionIt)->first) {
+      if (intersectionIt->first < std::next(intersectionIt)->first &&
+          std::next(intersectionIt)->first - intersectionIt->first <=
+              (avoidancePolygon.size() - std::next(intersectionIt)->first + intersectionIt->first)) {
         // Shortest path is forward order from first index to second index
         for (size_t i = intersectionIt->first; i < std::next(intersectionIt)->first; ++i) {
           safePath.push_back(polygonSegments.at(i).end);
@@ -147,6 +149,16 @@ ArmPath path_planning::KeepOut(LineSegment candidatePath, const Polygon& avoidan
         // Shortest path is reverse order from first index to second index
         for (size_t i = intersectionIt->first; i > std::next(intersectionIt)->first; --i) {
           safePath.push_back(polygonSegments.at(i).start);
+        }
+      } else if (intersectionIt->first < std::next(intersectionIt)->first &&
+                 std::next(intersectionIt)->first - intersectionIt->first >
+                     (avoidancePolygon.size() - std::next(intersectionIt)->first + intersectionIt->first)) {
+        // Shortest path is reverse order from first index to second index with wrap around 0
+        size_t i = intersectionIt->first;
+        while (i != std::next(intersectionIt)->first) {
+          safePath.push_back(polygonSegments.at(i).start);
+
+          i == 0 ? i = polygonSegments.size() - 1 : --i;
         }
       } else {
         // Shortest path is forward order from first index to second index with wrap around 0
