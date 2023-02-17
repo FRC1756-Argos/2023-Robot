@@ -19,6 +19,9 @@
 
 #include <memory>
 
+#include "commands/set_arm_pose_command.h"
+#include "utils/custom_units.h"
+
 RobotContainer::RobotContainer()
     : m_driveSpeedMap(controllerMap::driveSpeed)
     , m_driveRotSpeed(controllerMap::driveRotSpeed)
@@ -176,6 +179,9 @@ void RobotContainer::ConfigureBindings() {
         {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
   }});
 
+  auto goToPositionTrigger =
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
+
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
                                                                       argos_lib::XboxController::Button::kA,
@@ -251,11 +257,32 @@ void RobotContainer::ConfigureBindings() {
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
   startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
+
+  frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 120.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 120.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TargetX (in)", 50.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TargetY (in)", 18.0);
+  frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
+
+  // This might be bad... I think when called this way, the network tables reads only happen once at startup
+  goToPositionTrigger.OnTrue(
+      SetArmPoseCommand(
+          m_lifter,
+          m_bash,
+          {units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
+           units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0))},
+          static_cast<BashGuardPosition>(frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)),
+          units::make_unit<units::inches_per_second_t>(
+              frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 120.0)),
+          units::make_unit<units::inches_per_second_squared_t>(
+              frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 120.0)))
+          .ToPtr());
 }
 
 void RobotContainer::Disable() {
   m_lifter.Disable();
   m_intake.Disable();
+  m_bash.Disable();
 }
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {

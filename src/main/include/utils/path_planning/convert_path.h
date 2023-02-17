@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "subsystems/lifter_subsystem.h"
 #include "types.h"
 
 namespace path_planning {
@@ -14,8 +15,12 @@ namespace path_planning {
 
   [[nodiscard]] CompositeMPPath GenerateCompositeMPPath(ArmMPPath generalPath,
                                                         const BashGuardMPPath& bashGuardPath,
-                                                        const ArmPathPoint& shoulderFulcrum);
-
+                                                        const ArmPathPoint& shoulderFulcrum,
+                                                        const LifterSubsystem& lifter);
+  [[nodiscard]] BashGuardMPPath GenerateProfiledBashGuard(const BashGuardPoint& startPoint,
+                                                          const BashGuardPoint& endPoint,
+                                                          const PathDynamicsConstraints& constraints,
+                                                          units::millisecond_t resolution = 20_ms);
   [[nodiscard]] ArmMPPath GenerateProfiledPath(const ArmPathPoint& startPoint,
                                                const ArmPathPoint& endPoint,
                                                const PathDynamicsConstraints& constraints,

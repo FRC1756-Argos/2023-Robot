@@ -10,6 +10,8 @@
 
 #include <array>
 
+#include "utils/path_planning/types.h"
+
 namespace measure_up {
   constexpr auto bumperExtension = 3_in;  ///< Distance from frame to outer edge of bumpers
   namespace chassis {
@@ -55,7 +57,21 @@ namespace measure_up {
   }                 // namespace lifter
   namespace bash {  // TODO: These are placeholder values
     constexpr auto homeExtension = 2_in;
+    constexpr auto retractedExtension = 2.5_in;
+    constexpr auto deployedExtension = 24.5_in;
     constexpr auto minExtension = 3_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
+  constexpr std::array<path_planning::ArmPathPoint, 11> PathPlanningKeepOutZone = {
+      path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 0_in},
+      path_planning::ArmPathPoint{-chassis::length / 2 - 48_in, 0_in},
+      path_planning::ArmPathPoint{-chassis::length / 2 - 48_in, 78_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 78_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 0_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 0_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 12_in},
+      path_planning::ArmPathPoint{0_in, 12_in},
+      path_planning::ArmPathPoint{lifter::fulcrumPosition.X(), lifter::fulcrumPosition.Y()},
+      path_planning::ArmPathPoint{-chassis::length / 2, 8_in},
+      path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 8_in}};
 }  // namespace measure_up

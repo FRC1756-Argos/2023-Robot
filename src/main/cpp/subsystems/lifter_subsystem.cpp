@@ -214,6 +214,9 @@ void LifterSubsystem::Disable() {
   StopShoulder();
   StopArmExtension();
   StopWrist();
+  m_shoulderStream.Clear();
+  m_extensionStream.Clear();
+  m_wristStream.Clear();
 }
 
 bool LifterSubsystem::IsArmExtensionMoving() {
@@ -363,6 +366,37 @@ LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
   return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderAngle()}};
 }
 
+ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, bool effectorInverted) const {
+  return m_kinematics.GetJoints(pose, effectorInverted);
+}
+
+bool LifterSubsystem::IsShoulderMPComplete() {
+  return m_shoulderDrive.IsMotionProfileFinished();
+}
+bool LifterSubsystem::IsExtensionMPComplete() {
+  return m_armExtensionMotor.IsMotionProfileFinished();
+}
+bool LifterSubsystem::IsWristMPComplete() {
+  return m_wrist.IsMotionProfileFinished();
+}
+
+ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetShoulderMPStream() {
+  return m_shoulderStream;
+}
+ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetExtensionMPStream() {
+  return m_extensionStream;
+}
+ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetWristMPStream() {
+  return m_wristStream;
+}
+
+void LifterSubsystem::StartMotionProfile() {
+  m_shoulderManualOverride = false;
+  m_extensionManualOverride = false;
+  m_shoulderDrive.StartMotionProfile(m_shoulderStream, 20, ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+  m_armExtensionMotor.StartMotionProfile(
+      m_extensionStream, 20, ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+}
 void LifterSubsystem::EnableWristSoftLimits() {
   if (!m_wristHomed) {
     m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable wrist soft limits without homes\n");

@@ -66,18 +66,17 @@ bool path_planning::SegmentsIntersect(const LineSegment& segment1, const LineSeg
 // Source: https://stackoverflow.com/a/58605767
 std::optional<ArmPathPoint> path_planning::Intersection(const LineSegment& segment1, const LineSegment& segment2) {
   if (SegmentsIntersect(segment1, segment2)) {
-    return ArmPathPoint{.x = ((segment1.start.x * segment1.end.z - segment1.start.z * segment1.end.x) *
-                                  (segment2.start.x - segment2.end.x) -
-                              (segment2.start.x * segment2.end.z - segment2.start.z * segment2.end.x) *
-                                  (segment1.start.x - segment1.end.x)) /
-                             ((segment1.start.x - segment1.end.x) * (segment2.start.z - segment2.end.z) -
-                              (segment1.start.z - segment1.end.z) * (segment2.start.x - segment2.end.x)),
-                        .z = ((segment1.start.x * segment1.end.z - segment1.start.z * segment1.end.x) *
-                                  (segment2.start.z - segment2.end.z) -
-                              (segment2.start.x * segment2.end.z - segment2.start.z * segment2.end.x) *
-                                  (segment1.start.z - segment1.end.z)) /
-                             ((segment1.start.x - segment1.end.x) * (segment2.start.z - segment2.end.z) -
-                              (segment1.start.z - segment1.end.z) * (segment2.start.x - segment2.end.x))};
+    return ArmPathPoint(
+        ((segment1.start.x * segment1.end.z - segment1.start.z * segment1.end.x) * (segment2.start.x - segment2.end.x) -
+         (segment2.start.x * segment2.end.z - segment2.start.z * segment2.end.x) *
+             (segment1.start.x - segment1.end.x)) /
+            ((segment1.start.x - segment1.end.x) * (segment2.start.z - segment2.end.z) -
+             (segment1.start.z - segment1.end.z) * (segment2.start.x - segment2.end.x)),
+        ((segment1.start.x * segment1.end.z - segment1.start.z * segment1.end.x) * (segment2.start.z - segment2.end.z) -
+         (segment2.start.x * segment2.end.z - segment2.start.z * segment2.end.x) *
+             (segment1.start.z - segment1.end.z)) /
+            ((segment1.start.x - segment1.end.x) * (segment2.start.z - segment2.end.z) -
+             (segment1.start.z - segment1.end.z) * (segment2.start.x - segment2.end.x)));
   }
   return std::nullopt;
 }

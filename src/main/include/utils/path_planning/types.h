@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <frc/geometry/Translation2d.h>
 #include <units/angle.h>
 #include <units/angular_velocity.h>
 #include <units/length.h>
@@ -16,6 +17,9 @@
 namespace path_planning {
 
   struct ArmPathPoint {
+    constexpr ArmPathPoint() = default;
+    constexpr ArmPathPoint(units::inch_t x, units::inch_t z) : x(x), z(z) {}
+    constexpr explicit ArmPathPoint(const frc::Translation2d& other) : x(other.X()), z(other.Y()) {}
     units::inch_t x;
     units::inch_t z;
   };

@@ -39,7 +39,8 @@ VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPo
 
 CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
                                                        const BashGuardMPPath& bashGuardPath,
-                                                       const ArmPathPoint& shoulderFulcrum) {
+                                                       const ArmPathPoint& shoulderFulcrum,
+                                                       const LifterSubsystem& lifter) {
   CompositeMPPath compositePath{.startTime = std::chrono::steady_clock::now(),
                                 .shoulderPath = {},
                                 .extensionPath = {},
@@ -76,15 +77,23 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
   }
 
   for (const auto& point : generalPath) {
-    const ArmPathPoint armPositionVector{.x = point.position.x - shoulderFulcrum.x,
-                                         .z = point.position.z - shoulderFulcrum.z};
+    const ArmPathPoint armPositionVector(point.position.x - shoulderFulcrum.x, point.position.z - shoulderFulcrum.z);
     VelocityComponents velocities = DecomposeVelocity(point, armPositionVector);
-    compositePath.extensionPath.emplace_back(
-        point.time, units::math::hypot(armPositionVector.x, armPositionVector.z), velocities.v_radial);
-    compositePath.shoulderPath.emplace_back(
-        point.time, units::math::atan2(-armPositionVector.x, armPositionVector.z), velocities.v_tangential);
+    auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), false);
+    compositePath.extensionPath.emplace_back(point.time, joints.armLen, velocities.v_radial);
+    compositePath.shoulderPath.emplace_back(point.time, joints.shoulderAngle, velocities.v_tangential);
   }
   return compositePath;
+}
+
+BashGuardPoint lerp(const BashGuardPoint& startPoint, const BashGuardPoint& endPoint, double pct) {
+  if (pct <= 0) {
+    return startPoint;
+  }
+  if (pct >= 1) {
+    return endPoint;
+  }
+  return BashGuardPoint(startPoint + pct * (endPoint - startPoint));
 }
 
 ArmPathPoint lerp(const ArmPathPoint& startPoint, const ArmPathPoint& endPoint, double pct) {
@@ -94,15 +103,51 @@ ArmPathPoint lerp(const ArmPathPoint& startPoint, const ArmPathPoint& endPoint, 
   if (pct >= 1) {
     return endPoint;
   }
-  return ArmPathPoint{.x = startPoint.x + pct * (endPoint.x - startPoint.x),
-                      .z = startPoint.z + pct * (endPoint.z - startPoint.z)};
+  return ArmPathPoint(startPoint.x + pct * (endPoint.x - startPoint.x),
+                      startPoint.z + pct * (endPoint.z - startPoint.z));
 }
 
-ArmMPPath GenerateProfiledPath(const ArmPathPoint& startPoint,
-                               const ArmPathPoint& endPoint,
-                               const PathDynamicsConstraints& constraints,
-                               const Polygon& avoidancePolygon,
-                               units::millisecond_t resolution) {
+BashGuardMPPath path_planning::GenerateProfiledBashGuard(const BashGuardPoint& startPoint,
+                                                         const BashGuardPoint& endPoint,
+                                                         const PathDynamicsConstraints& constraints,
+                                                         units::millisecond_t resolution) {
+  if (startPoint == endPoint) {
+    return BashGuardMPPath();
+  }
+
+  auto pathLength = units::math::abs(endPoint - startPoint);
+
+  frc::TrapezoidProfile<units::inch> profile({constraints.maxVelocity, constraints.maxAcceleration},
+                                             {pathLength, 0_ips});
+  const auto totalProfiledTime = profile.TotalTime();
+
+  BashGuardMPPath path;
+  path.reserve(std::ceil((totalProfiledTime / resolution).to<double>()) + 1);
+
+  units::millisecond_t sampleTime = 0_ms;
+
+  while (sampleTime < totalProfiledTime) {
+    BashGuardMPPathPoint newPoint;
+    newPoint.time = resolution;
+
+    auto sample = profile.Calculate(sampleTime);
+
+    newPoint.position = lerp(startPoint, endPoint, (sample.position / pathLength).to<double>());
+    newPoint.velocity = sample.velocity * (endPoint > startPoint ? -1 : 1);  // Invert velocity if path is backwards
+
+    sampleTime += resolution;
+  }
+
+  path.push_back({resolution, endPoint, 0_ips});
+
+  return path;
+}
+
+ArmMPPath path_planning::GenerateProfiledPath(const ArmPathPoint& startPoint,
+                                              const ArmPathPoint& endPoint,
+                                              const PathDynamicsConstraints& constraints,
+                                              const Polygon& avoidancePolygon,
+                                              units::millisecond_t resolution) {
   auto avoidancePath = KeepOut(LineSegment{.start = startPoint, .end = endPoint}, avoidancePolygon);
 
   std::vector<units::inch_t> segmentLengths;

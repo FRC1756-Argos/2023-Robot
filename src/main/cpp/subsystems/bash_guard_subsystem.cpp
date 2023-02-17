@@ -27,7 +27,24 @@ bool BashGuardSubsystem::IsBashGuardMoving() {
   return std::abs(m_bashGuard.GetSelectedSensorVelocity()) > 10;
 }
 
+bool BashGuardSubsystem::IsBashGuardMPComplete() {
+  return m_bashGuard.IsMotionProfileFinished();
+}
+ctre::phoenix::motion::BufferedTrajectoryPointStream& BashGuardSubsystem::GetMPStream() {
+  return m_bashStream;
+}
+
+void BashGuardSubsystem::StartMotionProfile() {
+  SetBashGuardManualOverride(false);
+  m_bashGuard.StartMotionProfile(m_bashStream, 20, ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+}
+
 void BashGuardSubsystem::Disable() {
+  m_bashGuard.Set(0.0);
+  m_bashStream.Clear();
+}
+
+void BashGuardSubsystem::Stop() {
   m_bashGuard.Set(0.0);
 }
 
