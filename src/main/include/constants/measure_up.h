@@ -54,7 +54,8 @@ namespace measure_up {
     }               // namespace effector
   }                 // namespace lifter
   namespace bash {  // TODO: These are placeholder values
+    constexpr auto homeExtension = 2_in;
     constexpr auto minExtension = 3_in;
-    constexpr auto maxExtension = 7_in;
+    constexpr auto maxExtension = 25_in;
   }  // namespace bash
 }  // namespace measure_up

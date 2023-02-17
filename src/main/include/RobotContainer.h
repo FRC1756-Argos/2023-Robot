@@ -6,6 +6,7 @@
 
 #include <argos_lib/config/config_types.h>
 #include <argos_lib/subsystems/swappable_controllers_subsystem.h>
+#include <commands/bashguard_homing_command.h>
 #include <commands/home_arm_extension_command.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
@@ -54,6 +55,7 @@ class RobotContainer {
   IntakeSubsystem m_intake;
   BashGuardSubsystem m_bash;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
+  BashGuardHomingCommand m_bashGuardHomingCommand;
 
   void ConfigureBindings();
 
