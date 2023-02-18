@@ -1,19 +1,21 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
 
 #pragma once
 
+#include <commands/set_arm_pose_command.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
-#include <frc2/command/InstantCommand.h>
 #include <frc2/command/CommandPtr.h>
+#include <frc2/command/InstantCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
-#include <frc/smartdashboard/SmartDashboard.h>
-#include <commands/set_arm_pose_command.h>
-#include <subsystems/lifter_subsystem.h>
-#include <subsystems/intake_subsystem.h>
 #include <subsystems/bash_guard_subsystem.h>
+#include <subsystems/intake_subsystem.h>
+#include <subsystems/lifter_subsystem.h>
+
+#include <memory>
 
 /**
  * An example command.
@@ -46,7 +48,7 @@ class ScoreConeCommand : public frc2::CommandHelper<frc2::CommandBase, ScoreCone
     frc::SmartDashboard::PutNumber("(GetRelativePose) Relative Pose Calculated(Y)",
                                    units::inch_t(returnPos.Y()).to<double>());
     return returnPos;
-  };
+  }
 
   LifterSubsystem& m_lifter;
   IntakeSubsystem& m_intake;

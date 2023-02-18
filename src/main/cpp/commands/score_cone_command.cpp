@@ -1,10 +1,12 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
 
 #include "commands/score_cone_command.h"
-#include "commands/set_arm_pose_command.h"
+
 #include <Constants.h>
+
+#include "commands/set_arm_pose_command.h"
 
 ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& bash, IntakeSubsystem& intake)
     : m_lifter{lifter}
@@ -16,14 +18,14 @@ ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& 
 void ScoreConeCommand::Initialize() {
   auto gpDown = SetArmPoseCommand{m_lifter,
                                   m_bash,
-                                  GetRelativePose(m_lifter.GetArmPose(), 0_in, -6_in),
+                                  GetRelativePose(m_lifter.GetArmPose(), 0_in, -10_in),
                                   BashGuardPosition::Retracted,
                                   speeds::armKinematicSpeeds::effectorVelocity,
                                   speeds::armKinematicSpeeds::effectorAcceleration,
                                   false};
   auto gpBack = SetArmPoseCommand{m_lifter,
                                   m_bash,
-                                  GetRelativePose(m_lifter.GetArmPose(), -10_in, -6_in),
+                                  GetRelativePose(m_lifter.GetArmPose(), -10_in, -10_in),
                                   BashGuardPosition::Retracted,
                                   speeds::armKinematicSpeeds::effectorVelocity,
                                   speeds::armKinematicSpeeds::effectorAcceleration,
