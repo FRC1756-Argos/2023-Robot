@@ -1,3 +1,7 @@
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @file LED.h
 ///
@@ -19,10 +23,11 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef LED_H
-#define LED_H
+#ifndef 2023_ROBOT_SRC_OPERATORCONTROLLER_LED_H_
+#define 2023_ROBOT_SRC_OPERATORCONTROLLER_LED_H_
 
 #include <Arduino.h>
+
 #include "MiscConstants.h"
 
 constexpr uint16_t BLINK_FAST_PERIOD_MS = 500;
@@ -35,58 +40,50 @@ constexpr uint8_t PWM_MAX_BRIGHTNESS = 255;
 
 constexpr uint16_t PERIODDIVISOR = 16;
 
-class LED
-{
-  public:
-    enum class LEDPattern
-    {
-      SOLID = 0,
-      BLINK_FAST,
-      BLINK_SLOW,
-      PULSE_FAST,
-      PULSE_SLOW,
-    };
+class LED {
+ public:
+  enum class LEDPattern {
+    SOLID = 0,
+    BLINK_FAST,
+    BLINK_SLOW,
+    PULSE_FAST,
+    PULSE_SLOW,
+  };
 
-    LED( uint8_t controlPin);
-    LED( uint8_t controlPin,
-         bool    pwmEnable );
-    LED( uint8_t controlPin,
-         uint8_t groundPin,
-         bool    pwmEnable = false );
+  explicit LED(uint8_t controlPin);
+  LED(uint8_t controlPin, bool pwmEnable);
+  LED(uint8_t controlPin, uint8_t groundPin, bool pwmEnable = false);
 
-    void Initialize();
-    void Update();
+  void Initialize();
+  void Update();
 
-    void On();
-    void Off();
+  void On();
+  void Off();
 
-    bool GetIlluminated() const;
+  bool GetIlluminated() const;
 
-    void SetPattern(LEDPattern newPattern);
-    LEDPattern GetPattern() const;
+  void SetPattern(LEDPattern newPattern);
+  LEDPattern GetPattern() const;
 
-    bool IsPWM() const;
+  bool IsPWM() const;
 
-  private:
-    const uint8_t  m_controlPin;
-    const uint8_t  m_groundPin;
-    const bool     m_pwmEnable;
+ private:
+  const uint8_t m_controlPin;
+  const uint8_t m_groundPin;
+  const bool m_pwmEnable;
 
-    bool           m_initialized;
-    LEDPattern     m_pattern;
-    bool           m_illuminate;
+  bool m_initialized;
+  LEDPattern m_pattern;
+  bool m_illuminate;
 
-    static uint8_t GAMMA[256];
-    static bool    GAMMA_INITIALIZED;
+  static uint8_t GAMMA[256];
+  static bool GAMMA_INITIALIZED;
 
-    void SetPulse();
-    void SetFlash();
-    void SetSolid();
+  void SetPulse();
+  void SetFlash();
+  void SetSolid();
 
-    uint8_t CalcPulseBrightness( uint8_t brightness,
-                                 uint16_t period,
-                                 bool smooth = false,
-                                 uint8_t offBrightness = 0 );
+  uint8_t CalcPulseBrightness(uint8_t brightness, uint16_t period, bool smooth = false, uint8_t offBrightness = 0);
 };
 
-#endif
+#endif  // 2023_ROBOT_SRC_OPERATORCONTROLLER_LED_H_

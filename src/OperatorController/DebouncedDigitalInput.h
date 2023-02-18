@@ -1,3 +1,7 @@
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @file DebouncedDigitalInput.h
 ///
@@ -19,49 +23,43 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DebouncedDigitalInput_H
-#define DebouncedDigitalInput_H
+#ifndef 2023_ROBOT_SRC_OPERATORCONTROLLER_DEBOUNCEDDIGITALINPUT_H_
+#define 2023_ROBOT_SRC_OPERATORCONTROLLER_DEBOUNCEDDIGITALINPUT_H_
 
 #include <stdint.h>
+
 #include "MiscConstants.h"
 
-class DebouncedDigitalInput
-{
-  public:
-    DebouncedDigitalInput() = delete;
-    DebouncedDigitalInput( uint8_t pinNumber,
-                           bool    usePullup = false );
-    DebouncedDigitalInput( uint8_t pinNumber,
-                           uint8_t groundPin,
-                           bool    usePullup = false );
-    DebouncedDigitalInput( uint8_t  pinNumber,
-                           uint8_t  groundPin,
-                           uint16_t debounceSamples,
-                           bool     usePullup = false );
+class DebouncedDigitalInput {
+ public:
+  DebouncedDigitalInput() = delete;
+  explicit DebouncedDigitalInput(uint8_t pinNumber, bool usePullup = false);
+  DebouncedDigitalInput(uint8_t pinNumber, uint8_t groundPin, bool usePullup = false);
+  DebouncedDigitalInput(uint8_t pinNumber, uint8_t groundPin, uint16_t debounceSamples, bool usePullup = false);
 
-    DebouncedDigitalInput& operator=(const DebouncedDigitalInput&) = delete;
+  DebouncedDigitalInput& operator=(const DebouncedDigitalInput&) = delete;
 
-    void Initialize();
+  void Initialize();
 
-    bool Update();
+  bool Update();
 
-    bool GetValue() const;
+  bool GetValue() const;
 
-    bool GetRawValue() const;
+  bool GetRawValue() const;
 
-    void Reset(bool newValue = false);
+  void Reset(bool newValue = false);
 
-    void SetDebounceCount(uint16_t newCount);
+  void SetDebounceCount(uint16_t newCount);
 
-  private:
-    const uint8_t m_readPin;         ///< Arduino pin number for this input
-    const uint8_t m_groundPin;       ///< Arduino pin number used as a ground source
-    const bool    m_usePullup;       ///< True uses Arduino internal pullup resistor
-    uint16_t      m_debounceSamples; ///< Number of samples new value must be held before debounced value changes
-    bool          m_initialized;     ///< True once initialization has completed
-    uint16_t      m_debounceCount;   ///< Number of samples that do not match the current debounced value
-    bool          m_rawValue;        ///< Latest read value without debouncing
-    bool          m_debouncedValue;  ///< Active debounced value
+ private:
+  const uint8_t m_readPin;     ///< Arduino pin number for this input
+  const uint8_t m_groundPin;   ///< Arduino pin number used as a ground source
+  const bool m_usePullup;      ///< True uses Arduino internal pullup resistor
+  uint16_t m_debounceSamples;  ///< Number of samples new value must be held before debounced value changes
+  bool m_initialized;          ///< True once initialization has completed
+  uint16_t m_debounceCount;    ///< Number of samples that do not match the current debounced value
+  bool m_rawValue;             ///< Latest read value without debouncing
+  bool m_debouncedValue;       ///< Active debounced value
 };
 
-#endif
+#endif  // 2023_ROBOT_SRC_OPERATORCONTROLLER_DEBOUNCEDDIGITALINPUT_H_

@@ -1,3 +1,7 @@
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @file MiscConstants.h
 ///
@@ -19,11 +23,11 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef MISC_CONSTANTS_H
-#define MISC_CONSTANTS_H
+#ifndef 2023_ROBOT_SRC_OPERATORCONTROLLER_MISCCONSTANTS_H_
+#define 2023_ROBOT_SRC_OPERATORCONTROLLER_MISCCONSTANTS_H_
 
 #include <stdint.h>
 
 constexpr uint8_t NOT_A_PIN = 255;
 
-#endif
+#endif  // 2023_ROBOT_SRC_OPERATORCONTROLLER_MISCCONSTANTS_H_

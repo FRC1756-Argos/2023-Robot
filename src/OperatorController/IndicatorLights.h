@@ -1,3 +1,7 @@
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @file IndicatorLights.h
 ///
@@ -19,126 +23,92 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef IndicatorLights_H
-#define IndicatorLights_H
+#pragma once
 
 #include "LED.h"
 
-template<size_t N>
-class IndicatorLights
-{
-  public:
-    IndicatorLights() = delete;
-    IndicatorLights( LED (&&lights)[N],
-                     size_t maxIlluminated = N ): m_lights(lights),
-                                                  m_initialized(false),
-                                                  m_numLEDs(N),
-                                                  m_maxIlluminated(maxIlluminated),
-                                                  m_numIlluminated(0) {};
+template <size_t N>
+class IndicatorLights {
+ public:
+  IndicatorLights() = delete;
+  explicit IndicatorLights(LED (&&lights)[N], size_t maxIlluminated = N)
+      : m_lights(lights), m_initialized(false), m_numLEDs(N), m_maxIlluminated(maxIlluminated), m_numIlluminated(0) {}
 
-    void Initialize()
-    {
-      if(!m_initialized)
-      {
-        for(size_t i = 0; i < N; ++i)
-        {
-          m_lights[i].Initialize();
-        }
-        m_initialized = true;
+  void Initialize() {
+    if (!m_initialized) {
+      for (size_t i = 0; i < N; ++i) {
+        m_lights[i].Initialize();
       }
-    };
+      m_initialized = true;
+    }
+  }
 
-    void Update()
-    {
-      if(m_initialized)
-      {
-        for(size_t i = 0; i < N; ++i)
-        {
-          m_lights[i].Update();
-        }
-      }
-    };
-
-    void On(size_t idx)
-    {
-      if(m_initialized && idx < m_numLEDs)
-      {
-        bool activeIllumination = m_lights[idx].GetIlluminated();
-        if(!activeIllumination && m_numIlluminated < m_maxIlluminated)
-        {
-          ++m_numIlluminated;
-          m_lights[idx].On();
-        }
-      }
-    };
-
-    void Off(size_t idx)
-    {
-      if(m_initialized && idx < m_numLEDs)
-      {
-        bool activeIllumination = m_lights[idx].GetIlluminated();
-        if(activeIllumination)
-        {
-          --m_numIlluminated;
-          m_lights[idx].Off();
-        }
-      }
-    };
-
-    void Set(size_t idx, bool val)
-    {
-      if(m_initialized)
-      {
-        if(val)
-        {
-          On(idx);
-        }
-        else
-        {
-          Off(idx);
-        }
+  void Update() {
+    if (m_initialized) {
+      for (size_t i = 0; i < N; ++i) {
+        m_lights[i].Update();
       }
     }
+  }
 
-    LED::LEDPattern GetPattern(size_t idx) const
-    {
-      LED::LEDPattern retVal = LED::LEDPattern::SOLID;
-      if(m_initialized && idx < m_numLEDs)
-      {
-        retVal = m_lights[idx].GetPattern();
+  void On(size_t idx) {
+    if (m_initialized && idx < m_numLEDs) {
+      bool activeIllumination = m_lights[idx].GetIlluminated();
+      if (!activeIllumination && m_numIlluminated < m_maxIlluminated) {
+        ++m_numIlluminated;
+        m_lights[idx].On();
       }
-      return retVal;
-    };
+    }
+  }
 
-    void SetPattern(size_t idx, LED::LEDPattern newPattern)
-    {
-      if(m_initialized && idx < m_numLEDs)
-      {
-        m_lights[idx].SetPattern(newPattern);
+  void Off(size_t idx) {
+    if (m_initialized && idx < m_numLEDs) {
+      bool activeIllumination = m_lights[idx].GetIlluminated();
+      if (activeIllumination) {
+        --m_numIlluminated;
+        m_lights[idx].Off();
       }
-    };
+    }
+  }
 
-    size_t GetNumLights() const
-    {
-      return m_numLEDs;
-    };
-
-    bool GetIlluminated(size_t idx) const
-    {
-      bool retVal = false;
-      if(m_initialized && idx < m_numLEDs)
-      {
-        retVal = m_lights[idx].GetIlluminated();
+  void Set(size_t idx, bool val) {
+    if (m_initialized) {
+      if (val) {
+        On(idx);
+      } else {
+        Off(idx);
       }
-      return retVal;
-    };
+    }
+  }
 
-  private:
-    LED                   m_lights[N];
-    bool                  m_initialized;
-    const size_t          m_numLEDs;
-    const size_t          m_maxIlluminated;
-    size_t                m_numIlluminated;
-};
+  LED::LEDPattern GetPattern(size_t idx) const {
+    LED::LEDPattern retVal = LED::LEDPattern::SOLID;
+    if (m_initialized && idx < m_numLEDs) {
+      retVal = m_lights[idx].GetPattern();
+    }
+    return retVal;
+  }
 
-#endif
+  void SetPattern(size_t idx, LED::LEDPattern newPattern) {
+    if (m_initialized && idx < m_numLEDs) {
+      m_lights[idx].SetPattern(newPattern);
+    }
+  }
+
+  size_t GetNumLights() const { return m_numLEDs; }
+
+  bool GetIlluminated(size_t idx) const {
+    bool retVal = false;
+    if (m_initialized && idx < m_numLEDs) {
+      retVal = m_lights[idx].GetIlluminated();
+    }
+    return retVal;
+  }
+
+ private:
+  LED m_lights[N];
+  bool m_initialized;
+  const size_t m_numLEDs;
+  const size_t m_maxIlluminated;
+  size_t m_numIlluminated;
+}

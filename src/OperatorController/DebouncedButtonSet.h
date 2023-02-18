@@ -1,3 +1,7 @@
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @file DebouncedButtonSet.h
 ///
@@ -19,18 +23,18 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DebouncedButtonSet_H
-#define DebouncedButtonSet_H
+#pragma once
 
 #include <stdint.h>
+
 #include "DebouncedDigitalInput.h"
 
 template <size_t N>
 class DebouncedButtonSet {
  public:
   DebouncedButtonSet() = delete;
-  DebouncedButtonSet(DebouncedDigitalInput (&&buttons)[N])
-      : m_buttonSet(buttons), m_initialized(false), m_numButtons(N){};
+  explicit DebouncedButtonSet(DebouncedDigitalInput (&&buttons)[N])
+      : m_buttonSet(buttons), m_initialized(false), m_numButtons(N) {}
 
   DebouncedButtonSet(const DebouncedButtonSet&) = delete;
 
@@ -43,7 +47,7 @@ class DebouncedButtonSet {
       }
     }
     m_initialized = true;
-  };
+  }
 
   void Update() {
     if (m_initialized) {
@@ -51,7 +55,7 @@ class DebouncedButtonSet {
         m_buttonSet[i].Update();
       }
     }
-  };
+  }
 
   bool GetValue(size_t idx) const {
     bool retVal = false;
@@ -59,7 +63,7 @@ class DebouncedButtonSet {
       retVal = m_buttonSet[idx].GetValue();
     }
     return retVal;
-  };
+  }
 
   bool GetRawValue(size_t idx) const {
     bool retVal = false;
@@ -67,7 +71,7 @@ class DebouncedButtonSet {
       retVal = m_buttonSet[idx].GetRawValue();
     }
     return retVal;
-  };
+  }
 
   void Reset(bool newValue = false) {
     if (m_initialized) {
@@ -75,32 +79,30 @@ class DebouncedButtonSet {
         m_buttonSet[i].Reset(newValue);
       }
     }
-  };
+  }
   void Reset(size_t idx, bool newValue = false) {
     if (m_initialized && idx < N) {
       m_buttonSet[idx].Reset(newValue);
     }
-  };
+  }
 
   void SetDebounceCount(size_t idx, uint16_t newCount) {
     if (m_initialized && idx < N) {
       m_buttonSet[idx].SetDebounceCount(newCount);
     }
-  };
+  }
   void SetDebounceCount(uint16_t newCount) {
     if (m_initialized) {
       for (size_t i = 0; i < N; ++i) {
         m_buttonSet[i].SetDebounceCount(newCount);
       }
     }
-  };
+  }
 
-  size_t GetNumButtons() const { return m_numButtons; };
+  size_t GetNumButtons() const { return m_numButtons; }
 
  private:
   DebouncedDigitalInput m_buttonSet[N];
   bool m_initialized;
   const size_t m_numButtons;
-};
-
-#endif
+}
