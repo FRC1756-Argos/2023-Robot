@@ -42,9 +42,10 @@ ctre::phoenix::motion::BufferedTrajectoryPointStream& BashGuardSubsystem::GetMPS
   return m_bashStream;
 }
 
-void BashGuardSubsystem::StartMotionProfile() {
+void BashGuardSubsystem::StartMotionProfile(size_t streamSize) {
   SetBashGuardManualOverride(false);
-  m_bashGuard.StartMotionProfile(m_bashStream, 20, ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+  m_bashGuard.StartMotionProfile(
+      m_bashStream, std::min<size_t>(10, streamSize), ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
 }
 
 void BashGuardSubsystem::Disable() {

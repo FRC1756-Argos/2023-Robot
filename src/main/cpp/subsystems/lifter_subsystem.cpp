@@ -390,12 +390,17 @@ ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetWristM
   return m_wristStream;
 }
 
-void LifterSubsystem::StartMotionProfile() {
+void LifterSubsystem::StartMotionProfile(size_t shoulderStreamSize,
+                                         size_t extensionStreamSize,
+                                         size_t wristStreamSize) {
   m_shoulderManualOverride = false;
   m_extensionManualOverride = false;
-  m_shoulderDrive.StartMotionProfile(m_shoulderStream, 20, ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
-  m_armExtensionMotor.StartMotionProfile(
-      m_extensionStream, 20, ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+  m_shoulderDrive.StartMotionProfile(m_shoulderStream,
+                                     std::min<size_t>(10, shoulderStreamSize),
+                                     ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+  m_armExtensionMotor.StartMotionProfile(m_extensionStream,
+                                         std::min<size_t>(10, extensionStreamSize),
+                                         ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
 }
 void LifterSubsystem::EnableWristSoftLimits() {
   if (!m_wristHomed) {

@@ -116,8 +116,8 @@ void SetArmPoseCommand::Initialize() {
         false));
   }
 
-  m_bashGuard.StartMotionProfile();
-  m_lifter.StartMotionProfile();
+  m_bashGuard.StartMotionProfile(compositePath.bashGuardPath.size());
+  m_lifter.StartMotionProfile(compositePath.shoulderPath.size(), compositePath.extensionPath.size(), 0);
 }
 
 // Called repeatedly when this Command is scheduled to run

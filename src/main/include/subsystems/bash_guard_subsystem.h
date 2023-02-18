@@ -42,7 +42,7 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   ctre::phoenix::motion::BufferedTrajectoryPointStream& GetMPStream();
 
-  void StartMotionProfile();
+  void StartMotionProfile(size_t streamSize);
 
   void Disable();
 
