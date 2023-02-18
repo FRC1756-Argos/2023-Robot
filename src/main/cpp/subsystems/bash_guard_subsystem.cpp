@@ -14,10 +14,18 @@
 #include "utils/sensor_conversions.h"
 
 BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
-    : m_bashGuard{
-          GetCANAddr(address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance),
-          std::string(GetCANBus(
-              address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance))} {
+    : m_bashGuard{GetCANAddr(
+                      address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance),
+                  std::string(GetCANBus(address::comp_bot::bash_guard::extension,
+                                        address::practice_bot::bash_guard::extension,
+                                        instance))}
+    , m_bashTuner{"argos/bashTuner",
+                  {&m_bashGuard},
+                  0,
+                  argos_lib::ClosedLoopSensorConversions{
+                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToExtension),
+                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToVelocity),
+                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToExtension)}} {
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::bash_guard::extension,
                                          motorConfig::practice_bot::bash_guard::extension>(
       m_bashGuard, 100_ms, instance);
@@ -46,6 +54,10 @@ void BashGuardSubsystem::Disable() {
 
 void BashGuardSubsystem::Stop() {
   m_bashGuard.Set(0.0);
+}
+
+int BashGuardSubsystem::GetMotorMPBufferCount() {
+  return m_bashGuard.GetMotionProfileTopLevelBufferCount();
 }
 
 void BashGuardSubsystem::SetExtensionLength(units::inch_t length) {

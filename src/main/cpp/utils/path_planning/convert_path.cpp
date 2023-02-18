@@ -133,7 +133,9 @@ BashGuardMPPath path_planning::GenerateProfiledBashGuard(const BashGuardPoint& s
     auto sample = profile.Calculate(sampleTime);
 
     newPoint.position = lerp(startPoint, endPoint, (sample.position / pathLength).to<double>());
-    newPoint.velocity = sample.velocity * (endPoint > startPoint ? -1 : 1);  // Invert velocity if path is backwards
+    newPoint.velocity = sample.velocity * (endPoint > startPoint ? 1 : -1);  // Invert velocity if path is backwards
+
+    path.push_back(newPoint);
 
     sampleTime += resolution;
   }

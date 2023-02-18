@@ -113,6 +113,9 @@ RobotContainer::RobotContainer()
         if (bashSpeed > 0.0 || m_bash.IsBashGuardManualOverride()) {
           m_bash.SetExtensionSpeed(bashSpeed);
         }
+
+        // REMOVEME CONTROL DEBUG READOUTS
+        frc::SmartDashboard::PutNumber("BashPointCount", m_bash.GetMotorMPBufferCount());
       },
       {&m_bash}));
 

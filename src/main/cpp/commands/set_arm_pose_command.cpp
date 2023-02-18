@@ -34,40 +34,30 @@ void SetArmPoseCommand::Initialize() {
   }
 
   // For testing, load all these during initialization so we can adjust
-  m_bashGuardTarget = static_cast<BashGuardPosition>(frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0));
+  units::inch_t targetBashGuardPosition =
+      units::make_unit<units::inch_t>((frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)));
   m_targetPose = frc::Translation2d(
       units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
       units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0)));
 
   m_maxVelocity = units::make_unit<units::inches_per_second_t>(
-      frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 120.0));
+      frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 90.0));
   m_maxAcceleration = units::make_unit<units::inches_per_second_squared_t>(
-      frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 120.0));
+      frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
 
   auto initialPosition = m_lifter.GetArmPose();
 
-  units::inch_t targetBashGuardPosition;
-  switch (m_bashGuardTarget) {
-    case BashGuardPosition::Deployed:
-      targetBashGuardPosition = measure_up::bash::deployedExtension;
-      break;
-    case BashGuardPosition::Retracted:
-      targetBashGuardPosition = measure_up::bash::retractedExtension;
-      break;
-    case BashGuardPosition::Stationary:
-    default:
-      targetBashGuardPosition = m_bashGuard.GetBashGuardExtension();
-      break;
-  }
   auto bashGuardPath =
       path_planning::GenerateProfiledBashGuard(m_bashGuard.GetBashGuardExtension(),
                                                targetBashGuardPosition,
-                                               {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration});
+                                               {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},
+                                               50_ms);
   auto generalArmPath = path_planning::GenerateProfiledPath(
       path_planning::ArmPathPoint(initialPosition),
       path_planning::ArmPathPoint(m_targetPose),
       {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},
-      path_planning::Polygon(measure_up::PathPlanningKeepOutZone.begin(), measure_up::PathPlanningKeepOutZone.end()));
+      path_planning::Polygon(measure_up::PathPlanningKeepOutZone.begin(), measure_up::PathPlanningKeepOutZone.end()),
+      50_ms);
 
   auto compositePath = path_planning::GenerateCompositeMPPath(
       generalArmPath, bashGuardPath, path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition), m_lifter);
@@ -95,7 +85,7 @@ void SetArmPoseCommand::Initialize() {
   for (auto pointIt = compositePath.shoulderPath.begin(); pointIt != compositePath.shoulderPath.end(); ++pointIt) {
     shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
         sensor_conversions::lifter::shoulder::ToSensorUnit(pointIt->position),
-        sensor_conversions::lifter::shoulder::ToSensorVelocity(pointIt->velocity),
+        sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity),
         0,
         0,
         0,
