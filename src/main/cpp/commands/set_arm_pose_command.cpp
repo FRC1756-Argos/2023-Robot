@@ -4,6 +4,8 @@
 
 #include "commands/set_arm_pose_command.h"
 
+#include <frc/smartdashboard/SmartDashboard.h>
+
 #include "constants/measure_up.h"
 #include "ctre/phoenix/motion/BufferedTrajectoryPointStream.h"
 #include "utils/path_planning/convert_path.h"
@@ -30,6 +32,17 @@ void SetArmPoseCommand::Initialize() {
   if (!m_bashGuard.IsBashGuardHomed() || !m_lifter.IsArmExtensionHomed()) {
     Cancel();
   }
+
+  // For testing, load all these during initialization so we can adjust
+  m_bashGuardTarget = static_cast<BashGuardPosition>(frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0));
+  m_targetPose = frc::Translation2d(
+      units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
+      units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0)));
+
+  m_maxVelocity = units::make_unit<units::inches_per_second_t>(
+      frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 120.0));
+  m_maxAcceleration = units::make_unit<units::inches_per_second_squared_t>(
+      frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 120.0));
 
   auto initialPosition = m_lifter.GetArmPose();
 
