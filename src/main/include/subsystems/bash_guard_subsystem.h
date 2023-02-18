@@ -5,8 +5,11 @@
 #pragma once
 
 #include <argos_lib/config/falcon_config.h>
+#include <argos_lib/general/nt_motor_pid_tuner.h>
 #include <frc2/command/SubsystemBase.h>
 #include <units/length.h>
+
+enum class BashGuardPosition { Retracted, Deployed, Stationary };
 
 class BashGuardSubsystem : public frc2::SubsystemBase {
  public:
@@ -35,7 +38,17 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   bool IsBashGuardMoving();
 
+  bool IsBashGuardMPComplete();
+
+  ctre::phoenix::motion::BufferedTrajectoryPointStream& GetMPStream();
+
+  void StartMotionProfile(size_t streamSize);
+
   void Disable();
+
+  void Stop();
+
+  int GetMotorMPBufferCount();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
@@ -43,6 +56,10 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   WPI_TalonFX m_bashGuard;
   bool m_bashGuardManualOverride;
   bool m_bashGuardHomed;
+  argos_lib::NTMotorPIDTuner m_bashTuner;
+
+  ctre::phoenix::motion::BufferedTrajectoryPointStream m_bashStream;
+
   void EnableBashGuardSoftLimits();
   void DisableBashGuardSoftLimits();
 };

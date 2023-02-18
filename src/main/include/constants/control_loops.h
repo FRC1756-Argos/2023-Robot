@@ -44,15 +44,15 @@ namespace controlLoop {
         constexpr static double kP = 0.2;
         constexpr static double kI = 0;
         constexpr static double kD = 0;
-        constexpr static double kF = 0;
+        constexpr static double kF = 0.3;
         constexpr static double iZone = 0;
         constexpr static double allowableError = 0;
       };
       struct shoulder {
-        constexpr static double kP = 20;
+        constexpr static double kP = 7.0;
         constexpr static double kI = 0;
         constexpr static double kD = 0;
-        constexpr static double kF = 0;
+        constexpr static double kF = 15.0;
         constexpr static double iZone = 0;
         constexpr static double allowableError = 0;
       };
@@ -67,10 +67,10 @@ namespace controlLoop {
     }  // namespace lifter
     namespace bash_guard {
       struct extension {
-        constexpr static double kP = 0.4;
+        constexpr static double kP = 0.1;
         constexpr static double kI = 0;
         constexpr static double kD = 0;
-        constexpr static double kF = 0;
+        constexpr static double kF = 0.07;
         constexpr static double iZone = 0;
         constexpr static double allowableError = 0;
       };

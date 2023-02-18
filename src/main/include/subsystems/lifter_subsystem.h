@@ -136,6 +136,18 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @return A LifterPosition containing the state of the shoulder system's joints
   LifterPosition GetLifterPosition();
 
+  ArmState ConvertPose(frc::Translation2d pose, bool effectorInverted) const;
+
+  bool IsShoulderMPComplete();
+  bool IsExtensionMPComplete();
+  bool IsWristMPComplete();
+
+  ctre::phoenix::motion::BufferedTrajectoryPointStream& GetShoulderMPStream();
+  ctre::phoenix::motion::BufferedTrajectoryPointStream& GetExtensionMPStream();
+  ctre::phoenix::motion::BufferedTrajectoryPointStream& GetWristMPStream();
+
+  void StartMotionProfile(size_t shoulderStreamSize, size_t extensionStreamSize, size_t wristStreamSize);
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
@@ -159,6 +171,10 @@ class LifterSubsystem : public frc2::SubsystemBase {
   bool m_shoulderManualOverride;
   bool m_extensionManualOverride;
   bool m_wristManualOverride;
+
+  ctre::phoenix::motion::BufferedTrajectoryPointStream m_shoulderStream;
+  ctre::phoenix::motion::BufferedTrajectoryPointStream m_extensionStream;
+  ctre::phoenix::motion::BufferedTrajectoryPointStream m_wristStream;
 
   void EnableWristSoftLimits();
   void DisableWristSoftLimits();

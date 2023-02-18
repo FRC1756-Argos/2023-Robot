@@ -2,29 +2,16 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include <fmt/format.h>
+#include <argos_lib/testing/assertions.h>
 #include <gtest/gtest.h>
 #include <units/angle.h>
 #include <units/length.h>
-#include <units/math.h>
 
 #include <numbers>
 
 #include "utils/lifter_kinematics.h"
 
-template <class UnitTypeLhs, class UnitTypeRhs, class UnitTypeTol>
-::testing::AssertionResult UnitEqual(UnitTypeLhs actual, UnitTypeRhs expected, UnitTypeTol tolerance) {
-  if (units::math::abs(actual - expected) < tolerance) {
-    return ::testing::AssertionSuccess();
-  }
-  return ::testing::AssertionFailure() << fmt::format(
-             "{:.4f} not within {:.4f} of expected {:.4f}", actual, tolerance, expected);
-}
-
-template <class UnitTypeLhs, class UnitTypeRhs>
-::testing::AssertionResult UnitEqual(UnitTypeLhs actual, UnitTypeRhs expected) {
-  return UnitEqual(actual, expected, decltype(actual)(0.001));
-}
+using argos_lib::testing::UnitEqual;
 
 TEST(LifterKinematicsTest, LineArm_OriginFulcrum_IK) {
   {

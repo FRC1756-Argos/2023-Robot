@@ -14,10 +14,18 @@
 #include "utils/sensor_conversions.h"
 
 BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
-    : m_bashGuard{
-          GetCANAddr(address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance),
-          std::string(GetCANBus(
-              address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance))} {
+    : m_bashGuard{GetCANAddr(
+                      address::comp_bot::bash_guard::extension, address::practice_bot::bash_guard::extension, instance),
+                  std::string(GetCANBus(address::comp_bot::bash_guard::extension,
+                                        address::practice_bot::bash_guard::extension,
+                                        instance))}
+    , m_bashTuner{"argos/bashTuner",
+                  {&m_bashGuard},
+                  0,
+                  argos_lib::ClosedLoopSensorConversions{
+                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToExtension),
+                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToVelocity),
+                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToExtension)}} {
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::bash_guard::extension,
                                          motorConfig::practice_bot::bash_guard::extension>(
       m_bashGuard, 100_ms, instance);
@@ -27,8 +35,30 @@ bool BashGuardSubsystem::IsBashGuardMoving() {
   return std::abs(m_bashGuard.GetSelectedSensorVelocity()) > 10;
 }
 
+bool BashGuardSubsystem::IsBashGuardMPComplete() {
+  return m_bashGuard.IsMotionProfileFinished();
+}
+ctre::phoenix::motion::BufferedTrajectoryPointStream& BashGuardSubsystem::GetMPStream() {
+  return m_bashStream;
+}
+
+void BashGuardSubsystem::StartMotionProfile(size_t streamSize) {
+  SetBashGuardManualOverride(false);
+  m_bashGuard.StartMotionProfile(
+      m_bashStream, std::min<size_t>(10, streamSize), ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+}
+
 void BashGuardSubsystem::Disable() {
   m_bashGuard.Set(0.0);
+  m_bashStream.Clear();
+}
+
+void BashGuardSubsystem::Stop() {
+  m_bashGuard.Set(0.0);
+}
+
+int BashGuardSubsystem::GetMotorMPBufferCount() {
+  return m_bashGuard.GetMotionProfileTopLevelBufferCount();
 }
 
 void BashGuardSubsystem::SetExtensionLength(units::inch_t length) {
