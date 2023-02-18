@@ -46,6 +46,7 @@ namespace address {
     struct controllers {
       constexpr static const char driver = 0;
       constexpr static const char secondary = 1;
+      constexpr static const char buttonBox = 2;
     };
     struct solenoids {};
     struct sensors {

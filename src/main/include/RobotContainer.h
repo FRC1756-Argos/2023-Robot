@@ -50,6 +50,7 @@ class RobotContainer {
 
   // The robot's subsystems are defined here...
   argos_lib::SwappableControllersSubsystem m_controllers;
+  frc::GenericHID m_buttonBox;
   SwerveDriveSubsystem m_swerveDrive;
   LifterSubsystem m_lifter;
   IntakeSubsystem m_intake;
@@ -65,4 +66,6 @@ class RobotContainer {
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 
   nt::GenericEntry* p_wristSetpoint;
+
+  frc::EventLoop m_event;
 };

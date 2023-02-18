@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "commands/set_arm_pose_command.h"
+#include "constants/control_box.h"
 #include "utils/custom_units.h"
 
 RobotContainer::RobotContainer()
@@ -31,6 +32,7 @@ RobotContainer::RobotContainer()
     , m_bashSpeed(controllerMap::bashSpeed)
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
+    , m_buttonBox(address::comp_bot::controllers::buttonBox)
     , m_swerveDrive(m_instance)
     , m_lifter(m_instance)
     , m_intake(m_instance)
@@ -184,6 +186,15 @@ void RobotContainer::ConfigureBindings() {
 
   auto goToPositionTrigger =
       m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
+  // BUTTON BOX
+  auto newTargetTriggers =
+      m_buttonBox.Button(box_left_top, &m_event).Rising() || m_buttonBox.Button(box_left_middle, &m_event).Rising() ||
+      m_buttonBox.Button(box_left_bottom, &m_event).Rising() || m_buttonBox.Button(box_middle_top, &m_event).Rising() ||
+      m_buttonBox.Button(box_middle_middle, &m_event).Rising() ||
+      m_buttonBox.Button(box_middle_bottom, &m_event).Rising() ||
+      m_buttonBox.Button(box_right_top, &m_event).Rising() || m_buttonBox.Button(box_right_middle, &m_event).Rising() ||
+      m_buttonBox.Button(box_right_bottom, &m_event).Rising() || m_buttonBox.Button(box_high, &m_event).Rising() ||
+      m_buttonBox.Button(box_middle, &m_event).Rising() || m_buttonBox.Button(box_low, &m_event).Rising();
 
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
