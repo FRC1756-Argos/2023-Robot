@@ -105,4 +105,4 @@ class DebouncedButtonSet {
   DebouncedDigitalInput m_buttonSet[N];
   bool m_initialized;
   const size_t m_numButtons;
-}
+};

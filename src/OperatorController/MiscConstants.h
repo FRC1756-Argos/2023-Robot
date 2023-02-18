@@ -23,11 +23,8 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef 2023_ROBOT_SRC_OPERATORCONTROLLER_MISCCONSTANTS_H_
-#define 2023_ROBOT_SRC_OPERATORCONTROLLER_MISCCONSTANTS_H_
+#pragma once
 
 #include <stdint.h>
 
 constexpr uint8_t NOT_A_PIN = 255;
-
-#endif  // 2023_ROBOT_SRC_OPERATORCONTROLLER_MISCCONSTANTS_H_

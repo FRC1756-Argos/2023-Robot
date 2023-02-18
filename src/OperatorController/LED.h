@@ -23,22 +23,21 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef 2023_ROBOT_SRC_OPERATORCONTROLLER_LED_H_
-#define 2023_ROBOT_SRC_OPERATORCONTROLLER_LED_H_
+#pragma once
 
 #include <Arduino.h>
 
 #include "MiscConstants.h"
 
-constexpr uint16_t BLINK_FAST_PERIOD_MS = 500;
-constexpr uint16_t BLINK_SLOW_PERIOD_MS = 1000;
-constexpr uint16_t PULSE_FAST_PERIOD_MS = 250;
-constexpr uint16_t PULSE_SLOW_PERIOD_MS = 500;
+constexpr unsigned BLINK_FAST_PERIOD_MS = 500;
+constexpr unsigned BLINK_SLOW_PERIOD_MS = 1000;
+constexpr unsigned PULSE_FAST_PERIOD_MS = 250;
+constexpr unsigned PULSE_SLOW_PERIOD_MS = 500;
 
-constexpr uint8_t PWM_MIN_BRIGHTNESS = 64;
-constexpr uint8_t PWM_MAX_BRIGHTNESS = 255;
+constexpr unsigned char PWM_MIN_BRIGHTNESS = 64;
+constexpr unsigned char PWM_MAX_BRIGHTNESS = 255;
 
-constexpr uint16_t PERIODDIVISOR = 16;
+constexpr unsigned PERIODDIVISOR = 16;
 
 class LED {
  public:
@@ -85,5 +84,3 @@ class LED {
 
   uint8_t CalcPulseBrightness(uint8_t brightness, uint16_t period, bool smooth = false, uint8_t offBrightness = 0);
 };
-
-#endif  // 2023_ROBOT_SRC_OPERATORCONTROLLER_LED_H_

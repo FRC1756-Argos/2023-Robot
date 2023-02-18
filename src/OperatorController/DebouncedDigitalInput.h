@@ -23,8 +23,7 @@
 ///            along with 2019-Robot.  If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef 2023_ROBOT_SRC_OPERATORCONTROLLER_DEBOUNCEDDIGITALINPUT_H_
-#define 2023_ROBOT_SRC_OPERATORCONTROLLER_DEBOUNCEDDIGITALINPUT_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -61,5 +60,3 @@ class DebouncedDigitalInput {
   bool m_rawValue;             ///< Latest read value without debouncing
   bool m_debouncedValue;       ///< Active debounced value
 };
-
-#endif  // 2023_ROBOT_SRC_OPERATORCONTROLLER_DEBOUNCEDDIGITALINPUT_H_

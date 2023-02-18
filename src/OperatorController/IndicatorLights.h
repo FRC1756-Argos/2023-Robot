@@ -111,4 +111,4 @@ class IndicatorLights {
   const size_t m_numLEDs;
   const size_t m_maxIlluminated;
   size_t m_numIlluminated;
-}
+};

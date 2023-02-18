@@ -25,6 +25,8 @@
 
 #include "LED.h"
 
+#include <cmath>
+
 bool LED::GAMMA_INITIALIZED = false;
 uint8_t LED::GAMMA[256];
 
