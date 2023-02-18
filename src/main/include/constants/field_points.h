@@ -58,6 +58,12 @@ namespace field_points {
     constexpr auto innerGridMiddleY = 42.185_in;
     constexpr auto innerGridRightY = 64.185_in;
     // TODO fill in with rest of global y positions
+    constexpr auto coopGridLeftY = 86.185_in;
+    constexpr auto coopGridMiddleY = 108.185_in;
+    constexpr auto coopGridRightY = 130.185_in;
+    constexpr auto outerGridLeftY = 152.185_in;
+    constexpr auto outerGridMiddleY = 174.185;
+    constexpr auto outerGridRightY = 196.185_in;
 
     namespace blue_alliance {
       // Blue alliance X-positions for scoring
@@ -82,10 +88,30 @@ namespace field_points {
 
       }  // namespace inner_grid
       namespace coop_grid {
-        static const std::vector<Node> nodes = {/*TODO PUT STUFF HERE*/};
+        static const std::vector<Node> nodes = {
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, coopGridLeftY, highConeNodeHeight}},
+            Node{GamePiece::CUBE, frc::Translation3d{highNodeX, coopGridMiddleY, highCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, coopGridRightY, highConeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, coopGridLeftY, middleConeNodeHeight}},
+            Node{GamePiece::CUBE, frc::Translation3d{middleNodeX, coopGridMiddleY, middleCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, coopGridRightY, middleConeNodeHeight}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, coopGridLeftY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, coopGridMiddleY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, coopGridRightY, 0_in}}};
+
       }  // namespace coop_grid
       namespace outer_grid {
-        static const std::vector<Node> nodes = {/*TODO PUT STUFF HERE*/};
+        static const std::vector<Node> nodes = {
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, outerGridLeftY, highConeNodeHeight}},
+            Node{GamePiece::CUBE, frc::Translation3d{highNodeX, outerGridMiddleY, highCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{highNodeX, outerGridRightY, highConeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, outerGridLeftY, middleConeNodeHeight}},
+            Node{GamePiece::CUBE, frc::Translation3d{middleNodeX, outerGridMiddleY, middleCubeNodeHeight}},
+            Node{GamePiece::CONE, frc::Translation3d{middleNodeX, outerGridRightY, middleConeNodeHeight}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, outerGridLeftY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, outerGridMiddleY, 0_in}},
+            Node{GamePiece::HYBRID, frc::Translation3d{lowNodeX, outerGridRightY, 0_in}}};
+
       }  // namespace outer_grid
 
     }  // namespace blue_alliance
