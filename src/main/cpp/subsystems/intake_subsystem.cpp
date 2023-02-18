@@ -26,7 +26,7 @@ void IntakeSubsystem::IntakeReverse() {
   m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.2);
 }
 void IntakeSubsystem::IntakeFastReverse() {
-  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.6);
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.7);
 }
 
 void IntakeSubsystem::IntakeStop() {

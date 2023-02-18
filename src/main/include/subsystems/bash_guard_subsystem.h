@@ -50,6 +50,8 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   int GetMotorMPBufferCount();
 
+  units::inch_t DecomposeBashExtensuion(const BashGuardPosition& positionEnum);
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

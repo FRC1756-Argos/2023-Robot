@@ -24,6 +24,10 @@ namespace speeds {
   namespace drive {
     constexpr units::velocity::feet_per_second_t maxAngular = 12_fps;
   }  // namespace drive
+  namespace armKinematicSpeeds {
+    constexpr auto effectorVelocity = 90_ips;
+    constexpr auto effectorAcceleration = 80_ips2;
+  }  // namespace armKinematicSpeeds
 }  // namespace speeds
 
 namespace indexes {

@@ -16,13 +16,15 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      frc::Translation2d targetPose,
                                      BashGuardPosition desiredBashGuardPosition,
                                      units::inches_per_second_t maxVelocity,
-                                     units::inches_per_second_squared_t maxAcceleration)
+                                     units::inches_per_second_squared_t maxAcceleration,
+                                     bool isTuneable)
     : m_lifter(lifter)
     , m_bashGuard(bashGuard)
     , m_targetPose(targetPose)
     , m_bashGuardTarget(desiredBashGuardPosition)
     , m_maxVelocity(maxVelocity)
-    , m_maxAcceleration(maxAcceleration) {
+    , m_maxAcceleration(maxAcceleration)
+    , m_isTunable{isTuneable} {
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 }
@@ -33,17 +35,20 @@ void SetArmPoseCommand::Initialize() {
     Cancel();
   }
 
+  units::inch_t targetBashGuardPosition = m_bashGuard.DecomposeBashExtensuion(m_bashGuardTarget);
   // For testing, load all these during initialization so we can adjust
-  units::inch_t targetBashGuardPosition =
-      units::make_unit<units::inch_t>((frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)));
-  m_targetPose = frc::Translation2d(
-      units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
-      units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0)));
+  if (m_isTunable) {
+    targetBashGuardPosition =
+        units::make_unit<units::inch_t>((frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)));
+    m_targetPose = frc::Translation2d(
+        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
+        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0)));
 
-  m_maxVelocity = units::make_unit<units::inches_per_second_t>(
-      frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 90.0));
-  m_maxAcceleration = units::make_unit<units::inches_per_second_squared_t>(
-      frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
+    m_maxVelocity = units::make_unit<units::inches_per_second_t>(
+        frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 90.0));
+    m_maxAcceleration = units::make_unit<units::inches_per_second_squared_t>(
+        frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
+  }
 
   auto initialPosition = m_lifter.GetArmPose();
 
