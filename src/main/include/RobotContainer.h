@@ -12,6 +12,7 @@
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "constants/control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
@@ -68,4 +69,6 @@ class RobotContainer {
   nt::GenericEntry* p_wristSetpoint;
 
   frc::EventLoop m_event;
+
+  LastPressedButton m_lastPressedButton;
 };

@@ -19,7 +19,13 @@ enum box {
   box_low = 11,
   box_spare_button = 12,
   box_led = 13,
-  box_gamep = 14,
+  box_game_piece = 14,
   box_bash = 15,
   box_spare_switch = 16,
+  box_invalid
+};
+
+struct LastPressedButton {
+  box height = box_invalid;
+  box position = box_invalid;
 };
