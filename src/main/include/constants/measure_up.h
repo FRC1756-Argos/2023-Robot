@@ -53,9 +53,9 @@ namespace measure_up {
     }  // namespace armBar
     namespace effector {
       constexpr auto effectorFromArm = frc::Translation2d{4_in, 1_in};
-    }               // namespace effector
-  }                 // namespace lifter
-  namespace bash {  // TODO: These are placeholder values
+    }  // namespace effector
+  }    // namespace lifter
+  namespace bash {
     constexpr auto homeExtension = 2_in;
     constexpr auto retractedExtension = 2.5_in;
     constexpr auto deployedExtension = 24.5_in;

@@ -68,11 +68,11 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
                                          });
 
   if (bashGuardRetracting) {
-    compositePath.bashGuardPath = PadProfile(compositePath.bashGuardPath, 250_ms, true);
+    compositePath.bashGuardPath = PadProfile(compositePath.bashGuardPath, 500_ms, true);
   } else if (!bashGuardStationary) {
     auto timeDelta = generalPathTime - bashGuardPathTime;
-    if (timeDelta < 250_ms) {
-      generalPath = PadProfile(generalPath, 250_ms - timeDelta, true);
+    if (timeDelta < 500_ms) {
+      generalPath = PadProfile(generalPath, 500_ms - timeDelta, true);
     }
   }
 
