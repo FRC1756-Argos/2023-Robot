@@ -12,7 +12,7 @@
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
-#include "constants/control_box.h"
+#include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
@@ -51,7 +51,7 @@ class RobotContainer {
 
   // The robot's subsystems are defined here...
   argos_lib::SwappableControllersSubsystem m_controllers;
-  frc::GenericHID m_buttonBox;
+  OperatorControlBox m_buttonBox;
   SwerveDriveSubsystem m_swerveDrive;
   LifterSubsystem m_lifter;
   IntakeSubsystem m_intake;
@@ -67,8 +67,4 @@ class RobotContainer {
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 
   nt::GenericEntry* p_wristSetpoint;
-
-  frc::EventLoop m_event;
-
-  LastPressedButton m_lastPressedButton;
 };

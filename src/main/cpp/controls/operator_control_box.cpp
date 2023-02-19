@@ -1,0 +1,96 @@
+/// \copyright Copyright (c) Argos FRC Team 1756.
+///            Open Source Software; you can modify and/or share it under the terms of
+///            the license file in the root directory of this project.
+
+#include "controls/operator_control_box.h"
+
+OperatorControlBox::OperatorControlBox(int port)
+    : GenericHID(port), m_event(), m_scoringPosition{.column = ScoringColumn::invalid, .row = ScoringRow::invalid} {};
+
+frc2::Trigger OperatorControlBox::TriggerScoringPositionUpdated() {
+  return (Button(boxIndex_leftGrid_leftCone, &m_event).Rising() ||
+          Button(boxIndex_leftGrid_middleCube, &m_event).Rising() ||
+          Button(boxIndex_leftGrid_rightCone, &m_event).Rising() ||
+          Button(boxIndex_middleGrid_leftCone, &m_event).Rising() ||
+          Button(boxIndex_middleGrid_middleCube, &m_event).Rising() ||
+          Button(boxIndex_middleGrid_rightCone, &m_event).Rising() ||
+          Button(boxIndex_rightGrid_leftCone, &m_event).Rising() ||
+          Button(boxIndex_rightGrid_middleCube, &m_event).Rising() ||
+          Button(boxIndex_rightGrid_rightCone, &m_event).Rising() || Button(boxIndex_high, &m_event).Rising() ||
+          Button(boxIndex_middle, &m_event).Rising() || Button(boxIndex_low, &m_event).Rising())
+      .CastTo<frc2::Trigger>();
+}
+
+ScoringPosition OperatorControlBox::GetScoringPosition() {
+  return UpdatePosition();
+}
+
+frc2::Trigger OperatorControlBox::TriggerStowPosition() {
+  return Button(boxIndex_stowPosition, &m_event).Rising().CastTo<frc2::Trigger>();
+}
+
+frc2::Trigger OperatorControlBox::TriggerLED() {
+  return Button(boxIndex_led, &m_event).CastTo<frc2::Trigger>();
+}
+
+bool OperatorControlBox::GetLEDStatus() {
+  return GetRawButton(boxIndex_led);
+}
+
+frc2::Trigger OperatorControlBox::TriggerGamePiece() {
+  return Button(boxIndex_game_piece, &m_event).CastTo<frc2::Trigger>();
+}
+
+bool OperatorControlBox::GetGamePieceStatus() {
+  return GetRawButton(boxIndex_game_piece);
+}
+
+frc2::Trigger OperatorControlBox::TriggerBashGuard() {
+  return Button(boxIndex_bash, &m_event).CastTo<frc2::Trigger>();
+}
+
+bool OperatorControlBox::GetBashGuardStatus() {
+  return GetRawButton(boxIndex_bash);
+}
+
+ScoringPosition OperatorControlBox::UpdatePosition() {
+  if (GetRawButton(boxIndex_leftGrid_leftCone)) {
+    m_scoringPosition.column = ScoringColumn::leftGrid_leftCone;
+  }
+  if (GetRawButton(boxIndex_leftGrid_middleCube)) {
+    m_scoringPosition.column = ScoringColumn::leftGrid_middleCube;
+  }
+  if (GetRawButton(boxIndex_leftGrid_rightCone)) {
+    m_scoringPosition.column = ScoringColumn::leftGrid_rightCone;
+  }
+  if (GetRawButton(boxIndex_middleGrid_leftCone)) {
+    m_scoringPosition.column = ScoringColumn::middleGrid_leftCone;
+  }
+  if (GetRawButton(boxIndex_middleGrid_middleCube)) {
+    m_scoringPosition.column = ScoringColumn::middleGrid_middleCube;
+  }
+  if (GetRawButton(boxIndex_middleGrid_rightCone)) {
+    m_scoringPosition.column = ScoringColumn::middleGrid_rightCone;
+  }
+  if (GetRawButton(boxIndex_rightGrid_leftCone)) {
+    m_scoringPosition.column = ScoringColumn::rightGrid_leftCone;
+  }
+  if (GetRawButton(boxIndex_rightGrid_middleCube)) {
+    m_scoringPosition.column = ScoringColumn::rightGrid_middleCube;
+  }
+  if (GetRawButton(boxIndex_rightGrid_rightCone)) {
+    m_scoringPosition.column = ScoringColumn::rightGrid_rightCone;
+  }
+
+  if (GetRawButton(boxIndex_high)) {
+    m_scoringPosition.row = ScoringRow::high;
+  }
+  if (GetRawButton(boxIndex_middle)) {
+    m_scoringPosition.row = ScoringRow::middle;
+  }
+  if (GetRawButton(boxIndex_low)) {
+    m_scoringPosition.row = ScoringRow::low;
+  }
+
+  return m_scoringPosition;
+}

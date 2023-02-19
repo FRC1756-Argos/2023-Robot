@@ -13,12 +13,32 @@
 
 SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
+                                     std::function<ScoringPosition()> scoringPositionCb,
+                                     std::function<bool()> bashGuardModeCb,
+                                     units::inches_per_second_t maxVelocity,
+                                     units::inches_per_second_squared_t maxAcceleration)
+    : m_lifter(lifter)
+    , m_bashGuard(bashGuard)
+    , m_scoringPositionCb(scoringPositionCb)
+    , m_bashGuardModeCb(bashGuardModeCb)
+    , m_targetPose()
+    , m_bashGuardTarget()
+    , m_maxVelocity(maxVelocity)
+    , m_maxAcceleration(maxAcceleration) {
+  AddRequirements(&m_lifter);
+  AddRequirements(&m_bashGuard);
+}
+
+SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
+                                     BashGuardSubsystem& bashGuard,
                                      frc::Translation2d targetPose,
                                      BashGuardPosition desiredBashGuardPosition,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration)
     : m_lifter(lifter)
     , m_bashGuard(bashGuard)
+    , m_scoringPositionCb(std::nullopt)
+    , m_bashGuardModeCb(std::nullopt)
     , m_targetPose(targetPose)
     , m_bashGuardTarget(desiredBashGuardPosition)
     , m_maxVelocity(maxVelocity)

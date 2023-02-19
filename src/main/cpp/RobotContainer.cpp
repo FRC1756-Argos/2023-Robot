@@ -20,7 +20,6 @@
 #include <memory>
 
 #include "commands/set_arm_pose_command.h"
-#include "constants/control_box.h"
 #include "utils/custom_units.h"
 
 RobotContainer::RobotContainer()
@@ -187,14 +186,8 @@ void RobotContainer::ConfigureBindings() {
   auto goToPositionTrigger =
       m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
   // BUTTON BOX
-  auto newTargetTriggers =
-      m_buttonBox.Button(box_left_top, &m_event).Rising() || m_buttonBox.Button(box_left_middle, &m_event).Rising() ||
-      m_buttonBox.Button(box_left_bottom, &m_event).Rising() || m_buttonBox.Button(box_middle_top, &m_event).Rising() ||
-      m_buttonBox.Button(box_middle_middle, &m_event).Rising() ||
-      m_buttonBox.Button(box_middle_bottom, &m_event).Rising() ||
-      m_buttonBox.Button(box_right_top, &m_event).Rising() || m_buttonBox.Button(box_right_middle, &m_event).Rising() ||
-      m_buttonBox.Button(box_right_bottom, &m_event).Rising() || m_buttonBox.Button(box_high, &m_event).Rising() ||
-      m_buttonBox.Button(box_middle, &m_event).Rising() || m_buttonBox.Button(box_low, &m_event).Rising();
+  auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
+  auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
 
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
@@ -291,6 +284,13 @@ void RobotContainer::ConfigureBindings() {
           units::make_unit<units::inches_per_second_squared_t>(
               frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 120.0)))
           .ToPtr());
+
+  newTargetTrigger.OnTrue(SetArmPoseCommand(
+                              m_lifter,
+                              m_bash,
+                              [this]() { return m_buttonBox.GetScoringPosition(); },
+                              [this]() { return m_buttonBox.GetBashGuardStatus(); })
+                              .ToPtr());
 }
 
 void RobotContainer::Disable() {

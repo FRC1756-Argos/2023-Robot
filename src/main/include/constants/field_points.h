@@ -11,4 +11,24 @@
 
 #include "measure_up.h"
 
+enum class ScoringColumn {
+  leftGrid_leftCone,
+  leftGrid_middleCube,
+  leftGrid_rightCone,
+  middleGrid_leftCone,
+  middleGrid_middleCube,
+  middleGrid_rightCone,
+  rightGrid_leftCone,
+  rightGrid_middleCube,
+  rightGrid_rightCone,
+  invalid
+};
+
+enum class ScoringRow { low, middle, high, invalid };
+
+struct ScoringPosition {
+  ScoringColumn column;
+  ScoringRow row;
+};
+
 namespace field_points {}  // namespace field_points
