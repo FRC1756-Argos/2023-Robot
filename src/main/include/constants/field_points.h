@@ -24,14 +24,16 @@ enum class ScoringColumn {
   rightGrid_leftCone,
   rightGrid_middleCube,
   rightGrid_rightCone,
+  intake,
+  stow,
   invalid
 };
 
 enum class ScoringRow { low, middle, high, invalid };
 
 struct ScoringPosition {
-  ScoringColumn column;
-  ScoringRow row;
+  ScoringColumn column = ScoringColumn::invalid;
+  ScoringRow row = ScoringRow::invalid;
 };
 
 enum GamePiece { CONE, CUBE, HYBRID };
@@ -55,6 +57,7 @@ namespace field_points {
   constexpr auto singleSubstationWidth = 22.75_in;
 
   namespace grids {
+    constexpr auto gridDepth = 54.05_in;  ///< Distance from alliance station wall to end of grid dividers
     // high cone and cube node heights from floor and depths
     constexpr auto highConeNodeHeight = 46_in;
     constexpr auto highConeNodeDepth = 39.75_in;

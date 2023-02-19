@@ -7,6 +7,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 #include "constants/measure_up.h"
+#include "constants/scoring_positions.h"
 #include "ctre/phoenix/motion/BufferedTrajectoryPointStream.h"
 #include "utils/path_planning/convert_path.h"
 #include "utils/sensor_conversions.h"
@@ -28,6 +29,34 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_isTunable{false} {
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
+}
+
+SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
+                                     BashGuardSubsystem& bashGuard,
+                                     ScoringPosition scoringPosition,
+                                     std::function<bool()> bashGuardModeCb,
+                                     units::inches_per_second_t maxVelocity,
+                                     units::inches_per_second_squared_t maxAcceleration)
+    : m_lifter(lifter)
+    , m_bashGuard(bashGuard)
+    , m_scoringPositionCb(std::nullopt)
+    , m_bashGuardModeCb(bashGuardModeCb)
+    , m_targetPose()
+    , m_bashGuardTarget()
+    , m_maxVelocity(maxVelocity)
+    , m_maxAcceleration(maxAcceleration)
+    , m_isTunable{false} {
+  AddRequirements(&m_lifter);
+  AddRequirements(&m_bashGuard);
+
+  auto targetEffectorPosition = GetTargetPosition(scoringPosition, true);
+
+  if (targetEffectorPosition) {
+    m_targetPose = targetEffectorPosition.value().endEffectorPosition;
+    m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
+  } else {
+    m_targetPose = m_lifter.GetArmPose();
+  }
 }
 
 SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
@@ -56,7 +85,22 @@ void SetArmPoseCommand::Initialize() {
     Cancel();
   }
 
-  units::inch_t targetBashGuardPosition = m_bashGuard.DecomposeBashExtension(m_bashGuardTarget);
+  bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
+
+  if (m_scoringPositionCb) {
+    auto targetScoringPosition = m_scoringPositionCb.value()();
+    auto targetEffectorPosition = GetTargetPosition(targetScoringPosition, bashGuardEnable);
+
+    if (targetEffectorPosition) {
+      m_targetPose = targetEffectorPosition.value().endEffectorPosition;
+      m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
+    } else {
+      m_targetPose = m_lifter.GetArmPose();
+    }
+  }
+
+  units::inch_t targetBashGuardPosition =
+      m_bashGuard.DecomposeBashExtension(bashGuardEnable ? m_bashGuardTarget : BashGuardPosition::Stationary);
   // For testing, load all these during initialization so we can adjust
   if (m_isTunable) {
     targetBashGuardPosition =

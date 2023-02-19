@@ -211,12 +211,12 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
 void LifterSubsystem::Periodic() {}
 
 void LifterSubsystem::Disable() {
-  StopShoulder();
-  StopArmExtension();
-  StopWrist();
   m_shoulderStream.Clear();
   m_extensionStream.Clear();
   m_wristStream.Clear();
+  StopShoulder();
+  StopArmExtension();
+  StopWrist();
 }
 
 bool LifterSubsystem::IsArmExtensionMoving() {
