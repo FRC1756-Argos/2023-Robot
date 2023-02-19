@@ -251,16 +251,16 @@ void RobotContainer::ConfigureBindings() {
 
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
   (intakeForwardTrigger && exclusiveIntakeTrigger)
-      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeForward(); }, {&m_intake}),
+      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
                                          SetArmPoseCommand(m_lifter,
                                                            m_bash,
                                                            ScoringPosition{.column = ScoringColumn::intake},
                                                            [this]() { return m_buttonBox.GetBashGuardStatus(); }))
                   .ToPtr());
   (intakeReverseTrigger && exclusiveIntakeTrigger)
-      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeReverse(); }, {&m_intake}).ToPtr());
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCone(); }, {&m_intake}).ToPtr());
   (intakeFastReverse && exclusiveIntakeTrigger)
-      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeFastReverse(); }, {&m_intake}),
+      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
                                          SetArmPoseCommand(m_lifter,
                                                            m_bash,
                                                            ScoringPosition{.column = ScoringColumn::intake},

@@ -116,8 +116,8 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Y               | Field Home (hold) |
 | LB              | Cube Intake |
 | RB              | Hold For Robot Centric |
-| LT              | Outtake |
-| RT              | Intake|
+| LT              | Cone Eject |
+| RT              | Cone Intake |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |
@@ -138,7 +138,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | DPad Right      | Unused |
 | DPad Down       | Unused |
 | DPad Left       | Unused |
-| LB              | Unused |
+| LB              | Score Cone |
 | RB              | Unused |
 | LT              | Retract bash guard |
 | RT              | Extend bash guard |

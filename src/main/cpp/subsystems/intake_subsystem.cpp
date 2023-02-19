@@ -9,8 +9,10 @@
 #include "constants/motors.h"
 
 IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
-    : m_intakeMotor{
-          GetCANAddr(address::comp_bot::intake::intakeMotor, address::comp_bot::intake::intakeMotor, instance)} {
+    : m_intakeMotor{GetCANAddr(
+          address::comp_bot::intake::intakeMotor, address::comp_bot::intake::intakeMotor, instance)}
+    , m_haveCone(false)
+    , m_haveCube(false) {
   argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
                                              motorConfig::practice_bot::intake::intake>(
       m_intakeMotor, 100_ms, instance);
@@ -19,20 +21,37 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {}
 
-void IntakeSubsystem::IntakeForward() {
+void IntakeSubsystem::IntakeCone() {
   m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 1.0);
+  m_haveCone = true;
+  m_haveCube = false;
 }
-void IntakeSubsystem::IntakeReverse() {
+void IntakeSubsystem::EjectCone() {
   m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.2);
+  m_haveCone = false;
 }
-void IntakeSubsystem::IntakeFastReverse() {
+void IntakeSubsystem::IntakeCube() {
   m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.7);
+  m_haveCube = true;
+  m_haveCone = false;
+}
+void IntakeSubsystem::EjectCube() {
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.7);
+  m_haveCube = false;
 }
 
 void IntakeSubsystem::IntakeStop() {
-  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.0);
+  if (m_haveCone) {
+    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.2);
+  } else if (m_haveCube) {
+    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.2);
+  } else {
+    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.0);
+  }
 }
 
 void IntakeSubsystem::Disable() {
+  m_haveCone = false;
+  m_haveCube = false;
   IntakeStop();
 }

@@ -12,7 +12,7 @@ ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& 
     : m_lifter{lifter}
     , m_intake{intake}
     , m_bash{bash}
-    , m_retractIntake{frc2::InstantCommand{[this]() { m_intake.IntakeFastReverse(); }, {&m_intake}}} {}
+    , m_retractIntake{frc2::InstantCommand{[this]() { m_intake.EjectCone(); }, {&m_intake}}} {}
 
 // Called when the command is initially scheduled.
 void ScoreConeCommand::Initialize() {
@@ -21,15 +21,13 @@ void ScoreConeCommand::Initialize() {
                                   GetRelativePose(m_lifter.GetArmPose(), 0_in, -10_in),
                                   BashGuardPosition::Retracted,
                                   speeds::armKinematicSpeeds::effectorVelocity,
-                                  speeds::armKinematicSpeeds::effectorAcceleration,
-                                  false};
+                                  speeds::armKinematicSpeeds::effectorAcceleration};
   auto gpBack = SetArmPoseCommand{m_lifter,
                                   m_bash,
                                   GetRelativePose(m_lifter.GetArmPose(), -10_in, -10_in),
                                   BashGuardPosition::Retracted,
                                   speeds::armKinematicSpeeds::effectorVelocity,
-                                  speeds::armKinematicSpeeds::effectorAcceleration,
-                                  false};
+                                  speeds::armKinematicSpeeds::effectorAcceleration};
 
   m_allCommands =
       std::make_unique<frc2::SequentialCommandGroup>(frc2::SequentialCommandGroup(gpDown, m_retractIntake, gpBack));
