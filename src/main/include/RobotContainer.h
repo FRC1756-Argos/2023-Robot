@@ -13,11 +13,13 @@
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "commands/autonomous/autonomous_nothing.h"
 #include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
+#include "utils/auto_selector.h"
 
 /**
  * This class is where the bulk of the robot should be declared.  Since
@@ -60,6 +62,11 @@ class RobotContainer {
   HomeArmExtensionCommand m_homeArmExtensionCommand;
   BashGuardHomingCommand m_bashGuardHomingCommand;
   ScoreConeCommand m_scoreConeCommand;
+
+  // Autonomous
+  AutonomousNothing m_autoNothing;
+
+  AutoSelector m_autoSelector;
 
   void ConfigureBindings();
 

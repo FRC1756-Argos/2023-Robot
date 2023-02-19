@@ -39,7 +39,9 @@ RobotContainer::RobotContainer()
     , m_bash(m_instance)
     , m_homeArmExtensionCommand(m_lifter)
     , m_bashGuardHomingCommand(m_bash)
-    , m_scoreConeCommand{m_lifter, m_bash, m_intake} {
+    , m_scoreConeCommand{m_lifter, m_bash, m_intake}
+    , m_autoNothing{}
+    , m_autoSelector{{&m_autoNothing}, &m_autoNothing} {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
