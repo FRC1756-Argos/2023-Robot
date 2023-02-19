@@ -37,7 +37,8 @@ RobotContainer::RobotContainer()
     , m_intake(m_instance)
     , m_bash(m_instance)
     , m_homeArmExtensionCommand(m_lifter)
-    , m_bashGuardHomingCommand(m_bash) {
+    , m_bashGuardHomingCommand(m_bash)
+    , m_scoreConeCommand{m_lifter, m_bash, m_intake} {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
@@ -189,6 +190,8 @@ void RobotContainer::ConfigureBindings() {
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
 
+  auto scoreConeTrigger = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
+
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
                                                                       argos_lib::XboxController::Button::kA,
@@ -265,8 +268,8 @@ void RobotContainer::ConfigureBindings() {
 
   startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
 
-  frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 120.0);
-  frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 120.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetX (in)", 50.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetY (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
@@ -282,8 +285,11 @@ void RobotContainer::ConfigureBindings() {
           units::make_unit<units::inches_per_second_t>(
               frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 120.0)),
           units::make_unit<units::inches_per_second_squared_t>(
-              frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 120.0)))
+              frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 120.0)),
+          true)
           .ToPtr());
+
+  scoreConeTrigger.OnTrue(&m_scoreConeCommand);
 
   newTargetTrigger.OnTrue(SetArmPoseCommand(
                               m_lifter,

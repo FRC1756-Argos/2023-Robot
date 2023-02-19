@@ -26,7 +26,8 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     frc::Translation2d targetPose,
                     BashGuardPosition desiredBashGuardPosition,
                     units::velocity::inches_per_second_t maxVelocity,
-                    units::acceleration::inches_per_second_squared_t maxAcceleration);
+                    units::acceleration::inches_per_second_squared_t maxAcceleration,
+                    bool isTunable);
 
   void Initialize() override;
 
@@ -45,4 +46,5 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   BashGuardPosition m_bashGuardTarget;
   units::velocity::inches_per_second_t m_maxVelocity;
   units::acceleration::inches_per_second_squared_t m_maxAcceleration;
+  bool m_isTunable;
 };
