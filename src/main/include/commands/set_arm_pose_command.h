@@ -19,15 +19,15 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     std::function<ScoringPosition()> scoringPositionCb,
                     std::function<bool()> bashGuardModeCb,
                     units::velocity::inches_per_second_t maxVelocity = 90_ips,
-                    units::acceleration::inches_per_second_squared_t maxAcceleration = 90_ips2);
+                    units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2);
 
   SetArmPoseCommand(LifterSubsystem& lifter,
                     BashGuardSubsystem& bashGuard,
                     frc::Translation2d targetPose,
                     BashGuardPosition desiredBashGuardPosition,
-                    units::velocity::inches_per_second_t maxVelocity,
-                    units::acceleration::inches_per_second_squared_t maxAcceleration,
-                    bool isTunable);
+                    units::velocity::inches_per_second_t maxVelocity = 90_ips,
+                    units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2,
+                    bool isTunable = false);
 
   void Initialize() override;
 

@@ -50,7 +50,7 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   int GetMotorMPBufferCount();
 
-  units::inch_t DecomposeBashExtensuion(const BashGuardPosition& positionEnum);
+  units::inch_t DecomposeBashExtension(const BashGuardPosition& positionEnum);
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be

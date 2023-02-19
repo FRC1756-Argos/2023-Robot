@@ -61,7 +61,7 @@ int BashGuardSubsystem::GetMotorMPBufferCount() {
   return m_bashGuard.GetMotionProfileTopLevelBufferCount();
 }
 
-units::inch_t BashGuardSubsystem::DecomposeBashExtensuion(const BashGuardPosition& positionEnum) {
+units::inch_t BashGuardSubsystem::DecomposeBashExtension(const BashGuardPosition& positionEnum) {
   switch (positionEnum) {
     case BashGuardPosition::Retracted:
       return measure_up::bash::retractedExtension;

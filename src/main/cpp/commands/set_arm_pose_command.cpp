@@ -24,7 +24,8 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_targetPose()
     , m_bashGuardTarget()
     , m_maxVelocity(maxVelocity)
-    , m_maxAcceleration(maxAcceleration) {
+    , m_maxAcceleration(maxAcceleration)
+    , m_isTunable{false} {
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 }
@@ -55,7 +56,7 @@ void SetArmPoseCommand::Initialize() {
     Cancel();
   }
 
-  units::inch_t targetBashGuardPosition = m_bashGuard.DecomposeBashExtensuion(m_bashGuardTarget);
+  units::inch_t targetBashGuardPosition = m_bashGuard.DecomposeBashExtension(m_bashGuardTarget);
   // For testing, load all these during initialization so we can adjust
   if (m_isTunable) {
     targetBashGuardPosition =
