@@ -16,14 +16,10 @@
 
 class LimelightTarget {
  private:
-  frc::Pose3d m_targetPose;                ///< 3d pose of target in view
-  frc::Transform3d m_targetToRobot;        ///< 3d transform of target in view in robot space
-  int m_targetId;                          ///< April tag id of the target in view
-  units::degree_t m_pitch;                 ///< Pitch of target relative to camera -20.5 to 20.5 degrees
-  units::degree_t m_yaw;                   ///< Yaw of target relative to camera -27 to 27 degrees
-  bool m_hasTargets;                       ///< True if the camera has a target it can read
-  units::millisecond_t m_pipelineLatency;  ///< Pipeline latency contribution
-  constexpr static units::millisecond_t m_miscLatency{11_ms};  ///< Any extra latency to account for
+  frc::Pose3d m_robotPose;              ///< 3d pose of robot relative to field center
+  frc::Pose3d m_robotPoseWPI;           ///< 3d pose of robot relative to WPI reference for active alliance
+  bool m_hasTargets;                    ///< True if the camera has a target it can read
+  units::millisecond_t m_totalLatency;  ///< Total latency
 
  public:
   LimelightTarget() = default;
@@ -33,12 +29,10 @@ class LimelightTarget {
    *
    */
   struct tValues {
-    units::degree_t pitch;                    ///< See LimelightTarget::m_pitch
-    units::degree_t yaw;                      ///< See LimelightTarget::m_yaw
-    frc::Pose3d targetPose;                   ///< See LimelightTarget::m_targetPose
-    frc::Transform3d targetToRobotTransform;  ///< See LimelightTarget::m_targetToRobot
-    int targetId;                             ///< See LimelightTarget::m_targetId
-    units::millisecond_t totalLatency;        ///< See LimelightTarget::m_pipelineLatency
+    frc::Pose3d robotPose;              ///< @copydoc LimelightTarget::m_robotPose
+    frc::Pose3d robotPoseWPI;           ///< @copydoc LimelightTarget::m_robotPoseWPI
+    bool hasTargets;                    ///< @copydoc LimelightTarget::m_hasTargets
+    units::millisecond_t totalLatency;  ///< @copydoc LimelightTarget::m_totalLatency
   };
 
   /**
@@ -82,9 +76,9 @@ class CameraInterface {
   void SetDriverMode(bool mode);
 };
 
-class vision_subsytem : public frc2::SubsystemBase {
+class VisionSubsystem : public frc2::SubsystemBase {
  public:
-  vision_subsytem();
+  VisionSubsystem();
 
   /**
    * @brief Get the offset to the center of the target
