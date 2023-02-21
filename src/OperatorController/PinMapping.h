@@ -78,9 +78,9 @@ namespace OCInputs {
   constexpr uint8_t button_low_gnd = 18;
   constexpr size_t button_low_idx = 11;
 
-  constexpr uint8_t button_spare_in = 36;
-  constexpr uint8_t button_spare_gnd = 37;
-  constexpr size_t button_spare_idx = 12;
+  constexpr uint8_t button_stow_in = 36;
+  constexpr uint8_t button_stow_gnd = 37;
+  constexpr size_t button_stow_idx = 12;
 
   constexpr uint8_t switch_led_in = 46;
   constexpr uint8_t switch_led_gnd = 47;
@@ -165,10 +165,10 @@ namespace OCOutputs {
   constexpr size_t led_button_low_idx = 11;
   constexpr bool led_button_low_pwm = true;
 
-  constexpr uint8_t led_button_spare_out = 8;
-  constexpr uint8_t led_button_spare_gnd = NOT_A_PIN;
-  constexpr size_t led_button_spare_idx = 12;
-  constexpr bool led_button_spare_pwm = true;
+  constexpr uint8_t led_button_stow_out = 8;
+  constexpr uint8_t led_button_stow_gnd = NOT_A_PIN;
+  constexpr size_t led_button_stow_idx = 12;
+  constexpr bool led_button_stow_pwm = true;
 
   constexpr uint8_t led_switch_led_out = 12;
   constexpr uint8_t led_switch_led_gnd = NOT_A_PIN;
@@ -229,10 +229,10 @@ namespace GPButtons {
   constexpr uint8_t gpButton_right_top_idx = 6;
   constexpr uint8_t gpButton_right_middle_idx = 7;
   constexpr uint8_t gpButton_right_bottom_idx = 8;
-  constexpr uint8_t gpButton_high_idx = 9;
-  constexpr uint8_t gpButton_middle_idx = 10;
-  constexpr uint8_t gpButton_low_idx = 11;
-  constexpr uint8_t gpButton_spare_idx = 12;
+  constexpr uint8_t gpButton_stow_idx = 9;
+  constexpr uint8_t gpButton_high_idx = 10;
+  constexpr uint8_t gpButton_middle_idx = 11;
+  constexpr uint8_t gpButton_low_idx = 12;
   constexpr uint8_t gpButton_led_idx = 13;
   constexpr uint8_t gpButton_gamep_idx = 14;
   constexpr uint8_t gpButton_bash_idx = 15;
