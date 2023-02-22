@@ -8,20 +8,21 @@
 
 #pragma once
 
+#include <fmt/format.h>
+#include <frc/DataLogManager.h>
+#include <wpi/DataLog.h>
+
 #include <cstdarg>
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <fmt/format.h>
-#include <wpi/DataLog.h>
-#include <frc/DataLogManager.h>
 
 #include "units/base.h"
 
 namespace {
   /// @brief Represents a log level of either information, or error
   enum LogLevel { INFO, WARN, ERR };
-};  // namespace
+}  // namespace
 
 namespace argos_lib {
 
