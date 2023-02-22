@@ -303,6 +303,7 @@ void RobotContainer::ConfigureBindings() {
       SetArmPoseCommand(m_lifter, m_bash, ScoringPosition{.column = ScoringColumn::stow}, [this]() {
         return m_buttonBox.GetBashGuardStatus();
       }).ToPtr());
+  stowPositionTrigger.OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
 }
 
 void RobotContainer::Disable() {

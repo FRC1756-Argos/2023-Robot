@@ -62,14 +62,16 @@ namespace measure_up {
     constexpr auto minExtension = 3_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
-  constexpr std::array<path_planning::ArmPathPoint, 11> PathPlanningKeepOutZone = {
+  constexpr std::array<path_planning::ArmPathPoint, 13> PathPlanningKeepOutZone = {
       path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 0_in},
       path_planning::ArmPathPoint{-chassis::length / 2 - 48_in, 0_in},
       path_planning::ArmPathPoint{-chassis::length / 2 - 48_in, 78_in},
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 78_in},
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 0_in},
       path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 0_in},
-      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 12_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 18_in},
+      path_planning::ArmPathPoint{chassis::length / 2 - bumperExtension, 18_in},
+      path_planning::ArmPathPoint{chassis::length / 2 - bumperExtension, 12_in},
       path_planning::ArmPathPoint{0_in, 12_in},
       path_planning::ArmPathPoint{lifter::fulcrumPosition.X(), lifter::fulcrumPosition.Y()},
       path_planning::ArmPathPoint{-chassis::length / 2, 8_in},

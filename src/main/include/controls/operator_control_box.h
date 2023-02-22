@@ -13,23 +13,23 @@
 class OperatorControlBox : public frc::GenericHID {
  private:
   enum BoxButtonIndex {
-    boxIndex_leftGrid_leftCone = 0,
-    boxIndex_leftGrid_middleCube = 1,
-    boxIndex_leftGrid_rightCone = 2,
-    boxIndex_middleGrid_leftCone = 3,
-    boxIndex_middleGrid_middleCube = 4,
-    boxIndex_middleGrid_rightCone = 5,
-    boxIndex_rightGrid_leftCone = 6,
-    boxIndex_rightGrid_middleCube = 7,
-    boxIndex_rightGrid_rightCone = 8,
-    boxIndex_high = 9,
-    boxIndex_middle = 10,
-    boxIndex_low = 11,
-    boxIndex_stowPosition = 12,
-    boxIndex_led = 13,
-    boxIndex_game_piece = 14,
-    boxIndex_bash = 15,
-    boxIndex_spare_switch = 16,
+    boxIndex_leftGrid_leftCone = 1,
+    boxIndex_leftGrid_middleCube = 2,
+    boxIndex_leftGrid_rightCone = 3,
+    boxIndex_middleGrid_leftCone = 4,
+    boxIndex_middleGrid_middleCube = 5,
+    boxIndex_middleGrid_rightCone = 6,
+    boxIndex_rightGrid_leftCone = 7,
+    boxIndex_rightGrid_middleCube = 8,
+    boxIndex_rightGrid_rightCone = 9,
+    boxIndex_stowPosition = 10,
+    boxIndex_high = 11,
+    boxIndex_middle = 12,
+    boxIndex_low = 13,
+    boxIndex_led = 14,
+    boxIndex_game_piece = 15,
+    boxIndex_bash = 16,
+    boxIndex_spare_switch = 17,
     boxIndex_invalid
   };
 
@@ -54,9 +54,11 @@ class OperatorControlBox : public frc::GenericHID {
 
   [[nodiscard]] bool GetBashGuardStatus();
 
+  void Update();
+
  private:
   ScoringPosition UpdatePosition();
 
-  frc::EventLoop m_event;
+  frc::EventLoop* m_pEvent;
   ScoringPosition m_scoringPosition;
 };

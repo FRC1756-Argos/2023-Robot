@@ -27,7 +27,7 @@ namespace scoring_positions {
 
     constexpr static SetpointPosition coneLow(frc::Translation2d(field_points::grids::lowConeNodeDepth +
                                                                      robotPlacingOffsetX,
-                                                                 field_points::grids::lowConeNodeHeight) +
+                                                                 field_points::grids::lowConeNodeHeight + 6_in) +
                                                   conePlacingOffset,
                                               BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneMid(frc::Translation2d(field_points::grids::middleConeNodeDepth +
@@ -42,7 +42,7 @@ namespace scoring_positions {
                                                BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow(frc::Translation2d(field_points::grids::lowCubeNodeDepth +
                                                                      robotPlacingOffsetX,
-                                                                 field_points::grids::lowCubeNodeHeight) +
+                                                                 field_points::grids::lowCubeNodeHeight + 6_in) +
                                                   cubePlacingOffset,
                                               BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeMid(frc::Translation2d(field_points::grids::middleCubeNodeDepth +

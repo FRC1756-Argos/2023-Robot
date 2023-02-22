@@ -4,20 +4,24 @@
 
 #include "controls/operator_control_box.h"
 
+#include <frc2/command/CommandScheduler.h>
+
 OperatorControlBox::OperatorControlBox(int port)
-    : GenericHID(port), m_event(), m_scoringPosition{.column = ScoringColumn::invalid, .row = ScoringRow::invalid} {};
+    : GenericHID(port)
+    , m_pEvent(frc2::CommandScheduler::GetInstance().GetDefaultButtonLoop())
+    , m_scoringPosition{.column = ScoringColumn::invalid, .row = ScoringRow::invalid} {};
 
 frc2::Trigger OperatorControlBox::TriggerScoringPositionUpdated() {
-  return (Button(boxIndex_leftGrid_leftCone, &m_event).Rising() ||
-          Button(boxIndex_leftGrid_middleCube, &m_event).Rising() ||
-          Button(boxIndex_leftGrid_rightCone, &m_event).Rising() ||
-          Button(boxIndex_middleGrid_leftCone, &m_event).Rising() ||
-          Button(boxIndex_middleGrid_middleCube, &m_event).Rising() ||
-          Button(boxIndex_middleGrid_rightCone, &m_event).Rising() ||
-          Button(boxIndex_rightGrid_leftCone, &m_event).Rising() ||
-          Button(boxIndex_rightGrid_middleCube, &m_event).Rising() ||
-          Button(boxIndex_rightGrid_rightCone, &m_event).Rising() || Button(boxIndex_high, &m_event).Rising() ||
-          Button(boxIndex_middle, &m_event).Rising() || Button(boxIndex_low, &m_event).Rising())
+  return (Button(boxIndex_leftGrid_leftCone, m_pEvent).Rising() ||
+          Button(boxIndex_leftGrid_middleCube, m_pEvent).Rising() ||
+          Button(boxIndex_leftGrid_rightCone, m_pEvent).Rising() ||
+          Button(boxIndex_middleGrid_leftCone, m_pEvent).Rising() ||
+          Button(boxIndex_middleGrid_middleCube, m_pEvent).Rising() ||
+          Button(boxIndex_middleGrid_rightCone, m_pEvent).Rising() ||
+          Button(boxIndex_rightGrid_leftCone, m_pEvent).Rising() ||
+          Button(boxIndex_rightGrid_middleCube, m_pEvent).Rising() ||
+          Button(boxIndex_rightGrid_rightCone, m_pEvent).Rising() || Button(boxIndex_high, m_pEvent).Rising() ||
+          Button(boxIndex_middle, m_pEvent).Rising() || Button(boxIndex_low, m_pEvent).Rising())
       .CastTo<frc2::Trigger>();
 }
 
@@ -26,11 +30,11 @@ ScoringPosition OperatorControlBox::GetScoringPosition() {
 }
 
 frc2::Trigger OperatorControlBox::TriggerStowPosition() {
-  return Button(boxIndex_stowPosition, &m_event).Rising().CastTo<frc2::Trigger>();
+  return Button(boxIndex_stowPosition, m_pEvent).Rising().CastTo<frc2::Trigger>();
 }
 
 frc2::Trigger OperatorControlBox::TriggerLED() {
-  return Button(boxIndex_led, &m_event).CastTo<frc2::Trigger>();
+  return Button(boxIndex_led, m_pEvent).CastTo<frc2::Trigger>();
 }
 
 bool OperatorControlBox::GetLEDStatus() {
@@ -38,7 +42,7 @@ bool OperatorControlBox::GetLEDStatus() {
 }
 
 frc2::Trigger OperatorControlBox::TriggerGamePiece() {
-  return Button(boxIndex_game_piece, &m_event).CastTo<frc2::Trigger>();
+  return Button(boxIndex_game_piece, m_pEvent).CastTo<frc2::Trigger>();
 }
 
 bool OperatorControlBox::GetGamePieceStatus() {
@@ -46,11 +50,15 @@ bool OperatorControlBox::GetGamePieceStatus() {
 }
 
 frc2::Trigger OperatorControlBox::TriggerBashGuard() {
-  return Button(boxIndex_bash, &m_event).CastTo<frc2::Trigger>();
+  return Button(boxIndex_bash, m_pEvent).CastTo<frc2::Trigger>();
 }
 
 bool OperatorControlBox::GetBashGuardStatus() {
   return GetRawButton(boxIndex_bash);
+}
+
+void OperatorControlBox::Update() {
+  UpdatePosition();
 }
 
 ScoringPosition OperatorControlBox::UpdatePosition() {
@@ -80,6 +88,9 @@ ScoringPosition OperatorControlBox::UpdatePosition() {
   }
   if (GetRawButton(boxIndex_rightGrid_rightCone)) {
     m_scoringPosition.column = ScoringColumn::rightGrid_rightCone;
+  }
+  if (GetRawButton(boxIndex_stowPosition)) {
+    m_scoringPosition.column = ScoringColumn::stow;
   }
 
   if (GetRawButton(boxIndex_high)) {
