@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <argos_lib/general/log.h>
 #include <commands/autonomous/autonomous_command.h>
 #include <frc2/command/Command.h>
-#include <argos_lib/general/log.h>
 
 #include <initializer_list>
 #include <vector>
