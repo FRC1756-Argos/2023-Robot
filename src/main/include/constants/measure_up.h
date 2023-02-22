@@ -29,6 +29,7 @@ namespace measure_up {
     constexpr auto backLeftLOffset = 2.625_in;
   }  // namespace swerve_offsets
   namespace lifter {
+    // Y is actually Z
     constexpr auto fulcrumPosition = frc::Translation2d{-12_in, 50_in};
     namespace arm_extension {
       constexpr auto homeExtension = 37.50_in;
@@ -52,6 +53,7 @@ namespace measure_up {
       constexpr auto centerOfRotDis = 1.35_in;
     }  // namespace armBar
     namespace effector {
+      // Y is actually Z
       constexpr auto effectorFromArm = frc::Translation2d{4_in, 1_in};
     }  // namespace effector
   }    // namespace lifter
