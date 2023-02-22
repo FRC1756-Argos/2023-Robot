@@ -35,6 +35,8 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param speed double, on the interval [-1, 1]
   void SetArmExtensionSpeed(double speed);
 
+  /// @brief Sets the extension of the arm to "extension" inches
+  /// @param extension The inches to extend, from fulcrum to back face of wrist gear
   void SetArmExtension(units::inch_t extension);
 
   /// @brief Sets the wrist speed
@@ -50,31 +52,31 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Sets the wrist speed to zero
   void StopWrist();
 
-  /// @brief
-  /// @return
+  /// @brief Checks if manual shoulder override member is true
+  /// @return True -> Shoulder is manually overridden False -> Shoulder is not overridden
   bool IsShoulderManualOverride();
 
-  /// @brief
+  /// @brief Sets the override state of the shoulder
   void SetShoulderManualOverride(bool overrideState);
 
-  /// @brief
-  /// @return
+  /// @brief Checks if manual extension override member is true
+  /// @return True -> Extension is manually overridden False -> Extension is not overriden
   bool IsExtensionManualOverride();
 
-  /// @brief
+  /// @brief Sets the override state of the extension
   void SetExtensionManualOverride(bool overrideState);
 
-  /// @brief
-  /// @return
+  /// @brief Checks if manual wrist override member is true
+  /// @return True -> Wrist is manually overridden False -> Wrist is not overriden
   bool IsWristManualOverride();
 
-  /// @brief
+  /// @brief Sets the override state of the wrist
   void SetWristManualOverride(bool overrideState);
 
-  /// @brief initializing wrist homes from
+  /// @brief Initializes wrist homes from file system
   void InitializeWristHomes();
 
-  /// @brief
+  /// @brief Sets the wrist angle from min and max angles defined in measure_up. Positive is CW looking down the arm from the fulcrum
   /// @param wristAngle
   void SetWristAngle(units::degree_t wristAngle);
 
@@ -111,7 +113,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   frc::Translation2d GetArmPose();
 
   /// @brief Uses the kinematics object to calculate joint positions for a given pose, then sets the system to that pose
-  /// @param desPose The point in robot space to go to
+  /// @param desPose The point in robot space to go to (y is actually z)
   /// @param effectorInverted Wether or not the effector is inverted
   /// @return A LifterPosition representing the state of the different joints
   LifterPosition SetLifterPose(frc::Translation2d desPose, bool effectorInverted);
@@ -136,6 +138,10 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @return A LifterPosition containing the state of the shoulder system's joints
   LifterPosition GetLifterPosition();
 
+  /// @brief Converts from a point in 2d space to an arm state
+  /// @param pose Point in robot x/z plane where the end effector should be (y is actually z) in Translation2d
+  /// @param effectorInverted True -> Effector is inverted False -> Effector is NOT inverted
+  /// @return ArmState holding joint properties to get to "pose" point in 2d space
   ArmState ConvertPose(frc::Translation2d pose, bool effectorInverted) const;
 
   bool IsShoulderMPComplete();
@@ -160,26 +166,37 @@ class LifterSubsystem : public frc2::SubsystemBase {
   CANCoder m_wristEncoder;          ///< Encoder for measuring wrist position
   LifterKinematics m_kinematics;    ///< Kinematic model for solving arm joints & position
   argos_lib::ArgosLogger m_logger;  ///< Handles logging errors & info
-  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;
-  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;
-  argos_lib::NTMotorPIDTuner m_extensionTuner;
-  argos_lib::NTMotorPIDTuner m_wristTuner;
-  argos_lib::NTMotorPIDTuner m_shoulderTuner;
-  bool m_shoulderHomed;
-  bool m_extensionHomed;
-  bool m_wristHomed;
-  bool m_shoulderManualOverride;
-  bool m_extensionManualOverride;
-  bool m_wristManualOverride;
+  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;  ///< File system homing for shoulder
+  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;   ///< File system homing for wrist
+  argos_lib::NTMotorPIDTuner m_extensionTuner;  ///< TEMP network tables PID tuner for tuning extension
+  argos_lib::NTMotorPIDTuner m_wristTuner;      ///< TEMP network tables PID tuner for tuning wrist
+  argos_lib::NTMotorPIDTuner m_shoulderTuner;   ///< TEMP network tables PID tuner for tuning shoulder
+  bool m_shoulderHomed;                         ///< True if the shoulder is homed successfully from file system
+  bool m_extensionHomed;                        ///< True if extension is homed successfully
+  bool m_wristHomed;                            ///< True if wrist was homed successfully from file system
+  bool m_shoulderManualOverride;   ///< True if manual control is currently in use, do not execute any closed loop
+  bool m_extensionManualOverride;  ///< True if manual control is currently in use, do not execute any closed loop
+  bool m_wristManualOverride;      ///< True if manual control is currently in use, do not execute any closed loop
 
   ctre::phoenix::motion::BufferedTrajectoryPointStream m_shoulderStream;
   ctre::phoenix::motion::BufferedTrajectoryPointStream m_extensionStream;
   ctre::phoenix::motion::BufferedTrajectoryPointStream m_wristStream;
 
+  /// @brief Turn on soft limits for wrist
   void EnableWristSoftLimits();
+
+  /// @brief Turn off soft limits for wrist
   void DisableWristSoftLimits();
+
+  /// @brief Turn on soft limits for arm extension
   void EnableArmExtensionSoftLimits();
+
+  /// @brief Turn off soft limits for arm extension
   void DisableArmExtensionSoftLimits();
+
+  /// @brief Turn on soft limits for arm shoulder
   void EnableShoulderSoftLimits();
+
+  /// @brief Turn off soft limits for arm shoulder
   void DisableShoulderSoftLimits();
 };

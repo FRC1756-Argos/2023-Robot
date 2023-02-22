@@ -288,7 +288,7 @@ void RobotContainer::ConfigureBindings() {
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
   frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetX (in)", 50.0);
-  frc::SmartDashboard::PutNumber("MPTesting/TargetY (in)", 18.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TargetZ (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);

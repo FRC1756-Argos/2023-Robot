@@ -107,7 +107,7 @@ void SetArmPoseCommand::Initialize() {
         units::make_unit<units::inch_t>((frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)));
     m_targetPose = frc::Translation2d(
         units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
-        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0)));
+        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetZ (in)", 18.0)));
 
     m_maxVelocity = units::make_unit<units::inches_per_second_t>(
         frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 90.0));
