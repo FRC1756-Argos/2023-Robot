@@ -106,7 +106,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   bool wristSuccess =
       argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::wristEncoder>(m_wristEncoder, 100_ms);
   if (!wristSuccess) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Wirst encoder configuration failed\n");
+    m_logger.LogE("Wirst encoder configuration failed\n");
   } else {
     InitializeWristHomes();
   }
@@ -115,7 +115,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
       m_shoulderEncoder, 100_ms);
 
   if (!shoulderSuccess) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Shoulder encoder configuration failed, shoulder not homed\n");
+    m_logger.LogE("Shoulder encoder configuration failed, shoulder not homed\n");
     m_shoulderHomed = false;
   } else {
     InitializeShoulderHome();
@@ -139,7 +139,7 @@ void LifterSubsystem::SetArmExtensionSpeed(double speed) {
 
 void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   if (!IsArmExtensionHomed()) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Arm extension commanded while not home\n");
+    m_logger.LogE("Arm extension commanded while not home\n");
     return;
   }
 
@@ -254,7 +254,7 @@ void LifterSubsystem::UpdateWristHome() {
   auto valToSave = argos_lib::angle::ConstrainAngle(currentEncoder - homeAngle, -180_deg, 180_deg);
   bool saved = m_wristHomingStorage.Save(valToSave);
   if (!saved) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Wrist homes failed to save to to file system\n");
+    m_logger.LogE("Wrist homes failed to save to to file system\n");
     m_wristHomed = false;
     return;
   }
@@ -271,14 +271,14 @@ void LifterSubsystem::InitializeShoulderHome() {
     // Error check
     ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
     if (rslt != ErrorCode::OKAY) {
-      m_logger.Log(argos_lib::LogLevel::ERR, "Error code %d returned by shoulderEncoder on home set attempt\n", rslt);
+      m_logger.LogE("Error code %d returned by shoulderEncoder on home set attempt\n", rslt);
       m_shoulderHomed = false;
     } else {
       m_shoulderHomed = true;
     }
 
   } else {  // if homes not found
-    m_logger.Log(argos_lib::LogLevel::ERR, "Shoulder homes were unable to be initialized\n");
+    m_logger.LogE("Shoulder homes were unable to be initialized\n");
     m_shoulderHomed = false;
   }
 
@@ -291,7 +291,7 @@ void LifterSubsystem::UpdateShoulderHome() {
   const units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
   bool saved = m_shoulderHomeStorage.Save(argos_lib::angle::ConstrainAngle(curEncoder - homeAngle, -180_deg, 180_deg));
   if (!saved) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Shoulder homes failed to save to file system\n");
+    m_logger.LogE("Shoulder homes failed to save to file system\n");
     m_shoulderHomed = false;
     return;
   }
@@ -312,16 +312,14 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
 
   if (angle < measure_up::lifter::shoulder::minAngle) {  // Handle angle below bound, clamp to min
     angle = measure_up::lifter::shoulder::minAngle;
-    m_logger.Log(argos_lib::INFO,
-                 "Shoulder commanded to angle [%f] below bound of [%f]\n",
-                 angle.to<double>(),
-                 measure_up::lifter::shoulder::minAngle.to<double>());
+    m_logger.LogI("Shoulder commanded to angle [%f] below bound of [%f]\n",
+                  angle.to<double>(),
+                  measure_up::lifter::shoulder::minAngle.to<double>());
   } else if (angle > measure_up::lifter::shoulder::maxAngle) {  // Handle angle above bound, clamp to max
     angle = measure_up::lifter::shoulder::maxAngle;
-    m_logger.Log(argos_lib::INFO,
-                 "Shoulder commanded to angle [%f] above bound of [%f]\n",
-                 angle.to<double>(),
-                 measure_up::lifter::shoulder::minAngle.to<double>());
+    m_logger.LogI("Shoulder commanded to angle [%f] above bound of [%f]\n",
+                  angle.to<double>(),
+                  measure_up::lifter::shoulder::minAngle.to<double>());
   }
 
   m_shoulderDrive.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
@@ -404,7 +402,7 @@ void LifterSubsystem::StartMotionProfile(size_t shoulderStreamSize,
 }
 void LifterSubsystem::EnableWristSoftLimits() {
   if (!m_wristHomed) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable wrist soft limits without homes\n");
+    m_logger.LogE("Attempted to enable wrist soft limits without homes\n");
     return;
   }
   m_wrist.ConfigForwardSoftLimitThreshold(
@@ -422,7 +420,7 @@ void LifterSubsystem::DisableWristSoftLimits() {
 
 void LifterSubsystem::EnableArmExtensionSoftLimits() {
   if (!m_extensionHomed) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable extension soft limits without homes\n");
+    m_logger.LogE("Attempted to enable extension soft limits without homes\n");
     return;
   }
   m_armExtensionMotor.ConfigForwardSoftLimitThreshold(
@@ -440,7 +438,7 @@ void LifterSubsystem::DisableArmExtensionSoftLimits() {
 
 void LifterSubsystem::EnableShoulderSoftLimits() {
   if (!m_shoulderHomed) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable shoulder soft limits without homes\n");
+    m_logger.LogE("Attempted to enable shoulder soft limits without homes\n");
     return;
   }
   m_shoulderDrive.ConfigForwardSoftLimitThreshold(

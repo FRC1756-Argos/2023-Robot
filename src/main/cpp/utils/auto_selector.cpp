@@ -47,7 +47,7 @@ frc2::Command* AutoSelector::GetSelectedCommand() const {
   }
 
   // No valid default found, log error
-  m_log.Log(argos_lib::LogLevel::ERR, "Default auto command is nullptr\n");
+  m_log.LogE("Default auto command is nullptr\n");
 
   // No valid default either... :(
   return nullptr;
