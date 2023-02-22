@@ -18,6 +18,7 @@
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
+#include "subsystems/simple_led_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
 #include "utils/auto_selector.h"
 
@@ -59,6 +60,7 @@ class RobotContainer {
   LifterSubsystem m_lifter;
   IntakeSubsystem m_intake;
   BashGuardSubsystem m_bash;
+  SimpleLedSubsystem m_ledSubSystem;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
   BashGuardHomingCommand m_bashGuardHomingCommand;
   ScoreConeCommand m_scoreConeCommand;

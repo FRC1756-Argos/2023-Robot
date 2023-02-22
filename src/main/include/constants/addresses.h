@@ -52,6 +52,9 @@ namespace address {
     struct sensors {
       constexpr static argos_lib::CANAddress pigeonIMU{1, "drive"};
     };
+    struct led {
+      constexpr static argos_lib::CANAddress CANdle{1, "drive"};
+    };
   }  // namespace comp_bot
   namespace practice_bot {
     using drive = address::comp_bot::drive;
@@ -62,6 +65,7 @@ namespace address {
     using controllers = address::comp_bot::controllers;
     using solenoids = address::comp_bot::solenoids;
     using sensors = address::comp_bot::sensors;
+    using led = address::comp_bot::led;
   }  // namespace practice_bot
 
 }  // namespace address

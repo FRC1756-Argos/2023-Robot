@@ -10,7 +10,7 @@
 
 IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
     : m_intakeMotor{GetCANAddr(
-          address::comp_bot::intake::intakeMotor, address::comp_bot::intake::intakeMotor, instance)}
+          address::comp_bot::intake::intakeMotor, address::practice_bot::intake::intakeMotor, instance)}
     , m_haveCone(false)
     , m_haveCube(false) {
   argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
