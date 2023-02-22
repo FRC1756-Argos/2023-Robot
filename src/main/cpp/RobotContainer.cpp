@@ -311,6 +311,6 @@ void RobotContainer::Disable() {
   m_bash.Disable();
 }
 
-frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
-  return frc2::InstantCommand().ToPtr();
+frc2::Command* RobotContainer::GetAutonomousCommand() {
+  return m_autoSelector.GetSelectedCommand();
 }
