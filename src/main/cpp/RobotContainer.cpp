@@ -264,7 +264,7 @@ void RobotContainer::ConfigureBindings() {
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 120.0);
   frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 120.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetX (in)", 50.0);
-  frc::SmartDashboard::PutNumber("MPTesting/TargetY (in)", 18.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TargetZ (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
 
   // This might be bad... I think when called this way, the network tables reads only happen once at startup
@@ -273,7 +273,7 @@ void RobotContainer::ConfigureBindings() {
           m_lifter,
           m_bash,
           {units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
-           units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0))},
+           units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetZ (in)", 18.0))},
           static_cast<BashGuardPosition>(frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)),
           units::make_unit<units::inches_per_second_t>(
               frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 120.0)),
