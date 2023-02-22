@@ -34,10 +34,10 @@ void Robot::DisabledPeriodic() {}
  * RobotContainer} class.
  */
 void Robot::AutonomousInit() {
-  m_autonomousCommand = m_container.GetAutonomousCommand();
+  m_pAutonomousCommand = m_container.GetAutonomousCommand();
 
-  if (m_autonomousCommand) {
-    m_autonomousCommand.value()->Schedule();
+  if (m_pAutonomousCommand) {
+    m_pAutonomousCommand->Schedule();
   }
 }
 
@@ -48,8 +48,8 @@ void Robot::TeleopInit() {
   // teleop starts running. If you want the autonomous to
   // continue until interrupted by another command, remove
   // this line or comment it out.
-  if (m_autonomousCommand) {
-    m_autonomousCommand.value()->Cancel();
+  if (m_pAutonomousCommand) {
+    m_pAutonomousCommand->Cancel();
   }
 }
 
