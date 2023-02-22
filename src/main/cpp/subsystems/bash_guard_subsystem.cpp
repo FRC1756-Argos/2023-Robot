@@ -61,6 +61,24 @@ int BashGuardSubsystem::GetMotorMPBufferCount() {
   return m_bashGuard.GetMotionProfileTopLevelBufferCount();
 }
 
+units::inch_t BashGuardSubsystem::DecomposeBashExtension(const BashGuardPosition& positionEnum) {
+  switch (positionEnum) {
+    case BashGuardPosition::Retracted:
+      return measure_up::bash::retractedExtension;
+      break;
+    case BashGuardPosition::Deployed:
+      return measure_up::bash::deployedExtension;
+      break;
+    case BashGuardPosition::Stationary:
+      return GetBashGuardExtension();
+      break;
+
+    default:
+      return 0_in;
+      break;
+  }
+}
+
 void BashGuardSubsystem::SetExtensionLength(units::inch_t length) {
   if (!IsBashGuardHomed()) {
     return;

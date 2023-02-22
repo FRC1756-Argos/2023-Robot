@@ -7,22 +7,74 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 #include "constants/measure_up.h"
+#include "constants/scoring_positions.h"
 #include "ctre/phoenix/motion/BufferedTrajectoryPointStream.h"
 #include "utils/path_planning/convert_path.h"
 #include "utils/sensor_conversions.h"
 
 SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
-                                     frc::Translation2d targetPose,
-                                     BashGuardPosition desiredBashGuardPosition,
+                                     std::function<ScoringPosition()> scoringPositionCb,
+                                     std::function<bool()> bashGuardModeCb,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration)
     : m_lifter(lifter)
     , m_bashGuard(bashGuard)
+    , m_scoringPositionCb(scoringPositionCb)
+    , m_bashGuardModeCb(bashGuardModeCb)
+    , m_targetPose()
+    , m_bashGuardTarget()
+    , m_maxVelocity(maxVelocity)
+    , m_maxAcceleration(maxAcceleration)
+    , m_isTunable{false} {
+  AddRequirements(&m_lifter);
+  AddRequirements(&m_bashGuard);
+}
+
+SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
+                                     BashGuardSubsystem& bashGuard,
+                                     ScoringPosition scoringPosition,
+                                     std::function<bool()> bashGuardModeCb,
+                                     units::inches_per_second_t maxVelocity,
+                                     units::inches_per_second_squared_t maxAcceleration)
+    : m_lifter(lifter)
+    , m_bashGuard(bashGuard)
+    , m_scoringPositionCb(std::nullopt)
+    , m_bashGuardModeCb(bashGuardModeCb)
+    , m_targetPose()
+    , m_bashGuardTarget()
+    , m_maxVelocity(maxVelocity)
+    , m_maxAcceleration(maxAcceleration)
+    , m_isTunable{false} {
+  AddRequirements(&m_lifter);
+  AddRequirements(&m_bashGuard);
+
+  auto targetEffectorPosition = GetTargetPosition(scoringPosition, true);
+
+  if (targetEffectorPosition) {
+    m_targetPose = targetEffectorPosition.value().endEffectorPosition;
+    m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
+  } else {
+    m_targetPose = m_lifter.GetArmPose();
+  }
+}
+
+SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
+                                     BashGuardSubsystem& bashGuard,
+                                     frc::Translation2d targetPose,
+                                     BashGuardPosition desiredBashGuardPosition,
+                                     units::inches_per_second_t maxVelocity,
+                                     units::inches_per_second_squared_t maxAcceleration,
+                                     bool isTuneable)
+    : m_lifter(lifter)
+    , m_bashGuard(bashGuard)
+    , m_scoringPositionCb(std::nullopt)
+    , m_bashGuardModeCb(std::nullopt)
     , m_targetPose(targetPose)
     , m_bashGuardTarget(desiredBashGuardPosition)
     , m_maxVelocity(maxVelocity)
-    , m_maxAcceleration(maxAcceleration) {
+    , m_maxAcceleration(maxAcceleration)
+    , m_isTunable{isTuneable} {
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 }
@@ -33,17 +85,35 @@ void SetArmPoseCommand::Initialize() {
     Cancel();
   }
 
-  // For testing, load all these during initialization so we can adjust
-  units::inch_t targetBashGuardPosition =
-      units::make_unit<units::inch_t>((frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)));
-  m_targetPose = frc::Translation2d(
-      units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
-      units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0)));
+  bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
 
-  m_maxVelocity = units::make_unit<units::inches_per_second_t>(
-      frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 90.0));
-  m_maxAcceleration = units::make_unit<units::inches_per_second_squared_t>(
-      frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
+  if (m_scoringPositionCb) {
+    auto targetScoringPosition = m_scoringPositionCb.value()();
+    auto targetEffectorPosition = GetTargetPosition(targetScoringPosition, bashGuardEnable);
+
+    if (targetEffectorPosition) {
+      m_targetPose = targetEffectorPosition.value().endEffectorPosition;
+      m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
+    } else {
+      m_targetPose = m_lifter.GetArmPose();
+    }
+  }
+
+  units::inch_t targetBashGuardPosition =
+      m_bashGuard.DecomposeBashExtension(bashGuardEnable ? m_bashGuardTarget : BashGuardPosition::Stationary);
+  // For testing, load all these during initialization so we can adjust
+  if (m_isTunable) {
+    targetBashGuardPosition =
+        units::make_unit<units::inch_t>((frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)));
+    m_targetPose = frc::Translation2d(
+        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
+        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0)));
+
+    m_maxVelocity = units::make_unit<units::inches_per_second_t>(
+        frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 90.0));
+    m_maxAcceleration = units::make_unit<units::inches_per_second_squared_t>(
+        frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
+  }
 
   auto initialPosition = m_lifter.GetArmPose();
 

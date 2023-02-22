@@ -38,10 +38,10 @@ namespace measure_up {
     }  // namespace arm_extension
     namespace wrist {
       constexpr auto homeAngle = 0_deg;
-      constexpr auto minAngle = -180_deg;
-      constexpr auto invertedAngle = -180_deg;
+      constexpr auto minAngle = -20_deg;
+      constexpr auto invertedAngle = 180_deg;
       constexpr auto nominalAngle = 0_deg;
-      constexpr auto maxAngle = 90_deg;
+      constexpr auto maxAngle = 180_deg;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 0_deg;
@@ -62,14 +62,16 @@ namespace measure_up {
     constexpr auto minExtension = 3_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
-  constexpr std::array<path_planning::ArmPathPoint, 11> PathPlanningKeepOutZone = {
+  constexpr std::array<path_planning::ArmPathPoint, 13> PathPlanningKeepOutZone = {
       path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 0_in},
       path_planning::ArmPathPoint{-chassis::length / 2 - 48_in, 0_in},
       path_planning::ArmPathPoint{-chassis::length / 2 - 48_in, 78_in},
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 78_in},
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 0_in},
       path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 0_in},
-      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 12_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 18_in},
+      path_planning::ArmPathPoint{chassis::length / 2 - bumperExtension, 18_in},
+      path_planning::ArmPathPoint{chassis::length / 2 - bumperExtension, 12_in},
       path_planning::ArmPathPoint{0_in, 12_in},
       path_planning::ArmPathPoint{lifter::fulcrumPosition.X(), lifter::fulcrumPosition.Y()},
       path_planning::ArmPathPoint{-chassis::length / 2, 8_in},

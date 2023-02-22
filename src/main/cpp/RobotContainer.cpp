@@ -13,6 +13,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/CommandScheduler.h>
 #include <frc2/command/InstantCommand.h>
+#include <frc2/command/ParallelCommandGroup.h>
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
@@ -31,12 +32,16 @@ RobotContainer::RobotContainer()
     , m_bashSpeed(controllerMap::bashSpeed)
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
+    , m_buttonBox(address::comp_bot::controllers::buttonBox)
     , m_swerveDrive(m_instance)
     , m_lifter(m_instance)
     , m_intake(m_instance)
     , m_bash(m_instance)
     , m_homeArmExtensionCommand(m_lifter)
-    , m_bashGuardHomingCommand(m_bash) {
+    , m_bashGuardHomingCommand(m_bash)
+    , m_scoreConeCommand{m_lifter, m_bash, m_intake}
+    , m_autoNothing{}
+    , m_autoSelector{{&m_autoNothing}, &m_autoNothing} {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
@@ -182,8 +187,11 @@ void RobotContainer::ConfigureBindings() {
         {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
   }});
 
-  auto goToPositionTrigger =
-      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
+  // BUTTON BOX
+  auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
+  auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
+
+  auto scoreConeTrigger = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
 
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
@@ -245,12 +253,28 @@ void RobotContainer::ConfigureBindings() {
 
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
   (intakeForwardTrigger && exclusiveIntakeTrigger)
-      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeForward(); }, {&m_intake}).ToPtr());
+      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
+                                         SetArmPoseCommand(m_lifter,
+                                                           m_bash,
+                                                           ScoringPosition{.column = ScoringColumn::intake},
+                                                           [this]() { return m_buttonBox.GetBashGuardStatus(); }))
+                  .ToPtr());
   (intakeReverseTrigger && exclusiveIntakeTrigger)
-      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeReverse(); }, {&m_intake}).ToPtr());
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCone(); }, {&m_intake}).ToPtr());
   (intakeFastReverse && exclusiveIntakeTrigger)
-      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeFastReverse(); }, {&m_intake}).ToPtr());
-  exclusiveIntakeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
+      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
+                                         SetArmPoseCommand(m_lifter,
+                                                           m_bash,
+                                                           ScoringPosition{.column = ScoringColumn::intake},
+                                                           [this]() { return m_buttonBox.GetBashGuardStatus(); }))
+                  .ToPtr());
+  exclusiveIntakeTrigger.OnFalse(
+      frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}),
+                                 SetArmPoseCommand(m_lifter,
+                                                   m_bash,
+                                                   ScoringPosition{.column = ScoringColumn::stow},
+                                                   [this]() { return m_buttonBox.GetBashGuardStatus(); }))
+          .ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
@@ -261,25 +285,25 @@ void RobotContainer::ConfigureBindings() {
 
   startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
 
-  frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 120.0);
-  frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 120.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
+  frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetX (in)", 50.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetY (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
 
-  // This might be bad... I think when called this way, the network tables reads only happen once at startup
-  goToPositionTrigger.OnTrue(
-      SetArmPoseCommand(
-          m_lifter,
-          m_bash,
-          {units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
-           units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetY (in)", 18.0))},
-          static_cast<BashGuardPosition>(frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)),
-          units::make_unit<units::inches_per_second_t>(
-              frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 120.0)),
-          units::make_unit<units::inches_per_second_squared_t>(
-              frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 120.0)))
-          .ToPtr());
+  scoreConeTrigger.OnTrue(&m_scoreConeCommand);
+
+  newTargetTrigger.OnTrue(SetArmPoseCommand(
+                              m_lifter,
+                              m_bash,
+                              [this]() { return m_buttonBox.GetScoringPosition(); },
+                              [this]() { return m_buttonBox.GetBashGuardStatus(); })
+                              .ToPtr());
+  stowPositionTrigger.OnTrue(
+      SetArmPoseCommand(m_lifter, m_bash, ScoringPosition{.column = ScoringColumn::stow}, [this]() {
+        return m_buttonBox.GetBashGuardStatus();
+      }).ToPtr());
+  stowPositionTrigger.OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
 }
 
 void RobotContainer::Disable() {
@@ -288,6 +312,6 @@ void RobotContainer::Disable() {
   m_bash.Disable();
 }
 
-frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
-  return frc2::InstantCommand().ToPtr();
+frc2::Command* RobotContainer::GetAutonomousCommand() {
+  return m_autoSelector.GetSelectedCommand();
 }

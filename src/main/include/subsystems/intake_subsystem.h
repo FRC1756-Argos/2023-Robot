@@ -18,9 +18,10 @@ class IntakeSubsystem : public frc2::SubsystemBase {
    */
   void Periodic() override;
 
-  void IntakeForward();
-  void IntakeReverse();
-  void IntakeFastReverse();
+  void IntakeCone();
+  void EjectCone();
+  void IntakeCube();
+  void EjectCube();
   void IntakeStop();
   void Disable();
 
@@ -28,4 +29,6 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
   WPI_TalonSRX m_intakeMotor;
+  bool m_haveCone;
+  bool m_haveCube;
 };

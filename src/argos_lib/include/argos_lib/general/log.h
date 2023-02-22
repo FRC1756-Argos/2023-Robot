@@ -24,7 +24,7 @@ namespace argos_lib {
     ArgosLogger() = delete;
     explicit ArgosLogger(std::string tag) : m_tag{tag} {}
 
-    void Log(LogLevel level, const char* fmt, ...) {
+    void Log(LogLevel level, const char* fmt, ...) const {
       va_list lst;
       va_start(lst, fmt);
       switch (level) {
