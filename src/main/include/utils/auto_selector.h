@@ -6,6 +6,7 @@
 
 #include <commands/autonomous/autonomous_command.h>
 #include <frc2/command/Command.h>
+#include <argos_lib/general/log.h>
 
 #include <initializer_list>
 #include <vector>
@@ -60,6 +61,7 @@ class AutoSelector {
  private:
   std::vector<AutonomousCommand*> m_commands;  ///< All autonomous commands that can be selected
   AutonomousCommand* m_default;                ///< Command to run if dashboard selection is invalid
+  argos_lib::ArgosLogger m_log;
 
   /**
    * @brief Update dashboard with latest command list

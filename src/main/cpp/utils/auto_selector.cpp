@@ -6,12 +6,12 @@
 
 #include <networktables/NetworkTableInstance.h>
 
-AutoSelector::AutoSelector() {
+AutoSelector::AutoSelector() : m_log{"AUTO_SELECTOR"} {
   UpdateSelectorEntries();
 }
 
 AutoSelector::AutoSelector(std::initializer_list<AutonomousCommand*> commands, AutonomousCommand* defaultCommand)
-    : m_commands{commands}, m_default{defaultCommand} {
+    : m_commands{commands}, m_default{defaultCommand}, m_log{"AUTO_SELECTOR"} {
   UpdateSelectorEntries();
 }
 
@@ -45,6 +45,10 @@ frc2::Command* AutoSelector::GetSelectedCommand() const {
   if (m_default != nullptr) {
     return m_default->GetCommand();
   }
+
+  // No valid default found, log error
+  m_log.Log(argos_lib::LogLevel::ERR, "Default auto command is nullptr\n");
+
   // No valid default either... :(
   return nullptr;
 }
