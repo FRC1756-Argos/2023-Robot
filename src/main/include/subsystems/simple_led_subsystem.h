@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include <argos_lib/general/log.h>
 #include <ctre/Phoenix.h>
 #include <frc/util/Color.h>
 #include <frc2/command/SubsystemBase.h>
-#include <argos_lib/general/log.h>
 
 #include "argos_lib/config/config_types.h"
 
