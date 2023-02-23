@@ -24,6 +24,11 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   void IntakeForward();
   void IntakeReverse();
   void IntakeFastReverse();
+
+  void IntakeCone();
+  void EjectCone();
+  void IntakeCube();
+  void EjectCube();
   void IntakeStop();
   void Disable();
 
@@ -38,4 +43,6 @@ class IntakeSubsystem : public frc2::SubsystemBase {
 
   /// @brief ToF sensor thingy
   frc::TimeOfFlight m_intakeSensor;
+  bool m_haveCone;
+  bool m_haveCube;
 };

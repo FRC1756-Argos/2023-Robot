@@ -135,7 +135,7 @@ namespace motorConfig {
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::armExtension::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::armExtension::allowableError;
       };
-      struct shoulderLeader {
+      struct shoulderDrive {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
@@ -152,6 +152,8 @@ namespace motorConfig {
         constexpr static auto pid0_kF = controlLoop::comp_bot::lifter::shoulder::kF;
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::shoulder::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::shoulder::allowableError;
+        constexpr static double peakOutputForward = 1;
+        constexpr static double peakOutputReverse = -1;
       };
       struct shoulderFollower {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::FollowMaster;
@@ -208,7 +210,7 @@ namespace motorConfig {
     }  // namespace intake
     namespace bash_guard {
       struct extension {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = false;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
@@ -303,8 +305,7 @@ namespace motorConfig {
     }  // namespace drive
     namespace lifter {
       using armExtension = motorConfig::comp_bot::lifter::armExtension;
-      using shoulderLeader = motorConfig::comp_bot::lifter::shoulderLeader;
-      using shoulderFollower = motorConfig::comp_bot::lifter::shoulderFollower;
+      using shoulderDrive = motorConfig::comp_bot::lifter::shoulderDrive;
       using wrist = motorConfig::comp_bot::lifter::wrist;
     }  // namespace lifter
     namespace intake {

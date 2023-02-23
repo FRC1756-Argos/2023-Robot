@@ -46,11 +46,15 @@ namespace address {
     struct controllers {
       constexpr static const char driver = 0;
       constexpr static const char secondary = 1;
+      constexpr static const char buttonBox = 2;
     };
     struct solenoids {};
     struct sensors {
       constexpr static argos_lib::CANAddress pigeonIMU{1, "drive"};
       constexpr static const char tofSensorIntake = 1;
+    };
+    struct led {
+      constexpr static argos_lib::CANAddress CANdle{1, "drive"};
     };
   }  // namespace comp_bot
   namespace practice_bot {
@@ -62,6 +66,7 @@ namespace address {
     using controllers = address::comp_bot::controllers;
     using solenoids = address::comp_bot::solenoids;
     using sensors = address::comp_bot::sensors;
+    using led = address::comp_bot::led;
   }  // namespace practice_bot
 
 }  // namespace address

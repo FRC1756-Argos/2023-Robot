@@ -7,32 +7,36 @@
 #include <argos_lib/config/cancoder_config.h>
 #include <argos_lib/config/config_types.h>
 #include <argos_lib/config/falcon_config.h>
-#include <argos_lib/general/swerve_utils.h>
+#include <argos_lib/general/angle_utils.h>
 #include <constants/addresses.h>
 #include <constants/encoders.h>
 #include <constants/measure_up.h>
 #include <constants/motors.h>
-#include <frc/smartdashboard/SmartDashboard.h>
 #include <units/time.h>
 #include <utils/sensor_conversions.h>
 
+#include <algorithm>
+
 #include "Constants.h"
+#include "argos_lib/config/cancoder_config.h"
+#include "argos_lib/config/config_types.h"
+#include "argos_lib/config/falcon_config.h"
+#include "argos_lib/general/swerve_utils.h"
+#include "constants/addresses.h"
+#include "constants/encoders.h"
+#include "constants/motors.h"
+#include "units/time.h"
+#include "utils/sensor_conversions.h"
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
 LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
-    : m_shoulderLeader{GetCANAddr(address::comp_bot::lifter::frontShoulder,
-                                  address::practice_bot::lifter::frontShoulder,
-                                  instance),
-                       std::string(GetCANBus(address::comp_bot::lifter::frontShoulder,
-                                             address::practice_bot::lifter::frontShoulder,
-                                             instance))}
-    , m_shoulderFollower{GetCANAddr(address::comp_bot::lifter::backShoulder,
-                                    address::practice_bot::lifter::backShoulder,
-                                    instance),
-                         std::string(GetCANBus(address::comp_bot::lifter::backShoulder,
-                                               address::practice_bot::lifter::backShoulder,
-                                               instance))}
+    : m_shoulderDrive{GetCANAddr(address::comp_bot::lifter::frontShoulder,
+                                 address::practice_bot::lifter::frontShoulder,
+                                 instance),
+                      std::string(GetCANBus(address::comp_bot::lifter::frontShoulder,
+                                            address::practice_bot::lifter::frontShoulder,
+                                            instance))}
     , m_armExtensionMotor{GetCANAddr(address::comp_bot::lifter::armExtension,
                                      address::practice_bot::lifter::armExtension,
                                      instance),
@@ -53,7 +57,11 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                      std::string(GetCANBus(address::comp_bot::encoders::wristEncoder,
                                            address::practice_bot::encoders::wristEncoder,
                                            instance))}
-    , m_shoulderHomeStorage{paths::shoulderHome}
+    , m_kinematics{measure_up::lifter::fulcrumPosition,
+                   measure_up::lifter::armBar::centerOfRotDis,
+                   measure_up::lifter::effector::effectorFromArm}
+    , m_logger{"LIFTER_SUBSYSTEM"}
+    , m_shoulderHomeStorage{"homes/shoulderHome"}
     , m_wristHomingStorage{paths::wristHomesPath}
     , m_extensionTuner{"argos/lifter/extension",
                        {&m_armExtensionMotor},
@@ -70,6 +78,13 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle),
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToVelocity),
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle)}}
+    , m_shoulderTuner{"argos/shoulderTune",
+                      {&m_shoulderDrive},
+                      0,
+                      argos_lib::ClosedLoopSensorConversions{
+                          argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::shoulder::ToAngle),
+                          1.0,
+                          argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::shoulder::ToAngle)}}
     , m_shoulderHomed{false}
     , m_extensionHomed{false}
     , m_wristHomed{false}
@@ -78,12 +93,9 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
     , m_wristManualOverride{false} {
   /* ———————————————————————— MOTOR CONFIGURATION ———————————————————————— */
 
-  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderLeader,
-                                         motorConfig::practice_bot::lifter::shoulderLeader>(
-      m_shoulderLeader, 100_ms, instance);
-  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderFollower,
-                                         motorConfig::practice_bot::lifter::shoulderFollower>(
-      m_shoulderFollower, 100_ms, instance);
+  argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::shoulderDrive,
+                                         motorConfig::practice_bot::lifter::shoulderDrive>(
+      m_shoulderDrive, 100_ms, instance);
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::lifter::armExtension,
                                          motorConfig::practice_bot::lifter::armExtension>(
       m_armExtensionMotor, 100_ms, instance);
@@ -94,19 +106,16 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   bool wristSuccess =
       argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::wristEncoder>(m_wristEncoder, 100_ms);
   if (!wristSuccess) {
-    std::printf("{CRITICAL ERROR}%d Wirst encoder configuration failed\n", __LINE__);
+    m_logger.Log(argos_lib::LogLevel::ERR, "Wirst encoder configuration failed\n");
   } else {
     InitializeWristHomes();
   }
-
-  // Make back shoulder motor follow front shoulder motor
-  m_shoulderFollower.Follow(m_shoulderLeader);
 
   bool shoulderSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::shoulderEncoderConf>(
       m_shoulderEncoder, 100_ms);
 
   if (!shoulderSuccess) {
-    std::printf("ERROR%d Shoulder encoder configuration failed, shoulder not homed\n", __LINE__);
+    m_logger.Log(argos_lib::LogLevel::ERR, "Shoulder encoder configuration failed, shoulder not homed\n");
     m_shoulderHomed = false;
   } else {
     InitializeShoulderHome();
@@ -116,12 +125,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
 /* —————————————————— LifterSubsystem Member Functions ————————————————— */
 
 void LifterSubsystem::SetShoulderSpeed(double speed) {
-  m_shoulderLeader.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+  m_shoulderDrive.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
 void LifterSubsystem::StopShoulder() {
-  m_shoulderLeader.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
-  m_shoulderLeader.Set(0.0);
+  m_shoulderDrive.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+  m_shoulderDrive.Set(0.0);
 }
 
 void LifterSubsystem::SetArmExtensionSpeed(double speed) {
@@ -129,11 +138,19 @@ void LifterSubsystem::SetArmExtensionSpeed(double speed) {
 }
 
 void LifterSubsystem::SetArmExtension(units::inch_t extension) {
-  if (IsArmExtensionHomed()) {
-    SetExtensionManualOverride(false);
-    m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
-                            sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
+  if (!IsArmExtensionHomed()) {
+    m_logger.Log(argos_lib::LogLevel::ERR, "Arm extension commanded while not home\n");
+    return;
   }
+
+  SetExtensionManualOverride(false);
+
+  // guard against out of bounds commandds by clamping to min and max
+  extension = std::clamp<units::inch_t>(
+      extension, measure_up::lifter::arm_extension::minExtension, measure_up::lifter::arm_extension::maxExtension);
+
+  m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
+                          sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
 }
 
 void LifterSubsystem::StopArmExtension() {
@@ -175,22 +192,16 @@ void LifterSubsystem::SetWristManualOverride(bool overrideState) {
 }
 
 void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
-  // REMOVEME
-  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint", wristAngle.to<double>());
-
   if (!m_wristHomed) {
     Disable();
     return;
   }
 
-  if (wristAngle < measure_up::lifter::wrist::minAngle) {
-    wristAngle = measure_up::lifter::wrist::minAngle;
-  } else if (wristAngle > measure_up::lifter::wrist::maxAngle) {
-    wristAngle = measure_up::lifter::wrist::maxAngle;
-  }
+  SetWristManualOverride(false);
 
-  frc::SmartDashboard::PutNumber("Set Wrist Angle Degrees Setpoint (SensorUnits)",
-                                 sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
+  // Guard against out of bounds commands by clamping to min and max
+  wristAngle =
+      std::clamp<units::degree_t>(wristAngle, measure_up::lifter::wrist::minAngle, measure_up::lifter::wrist::maxAngle);
 
   m_wrist.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
               sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
@@ -200,6 +211,9 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
 void LifterSubsystem::Periodic() {}
 
 void LifterSubsystem::Disable() {
+  m_shoulderStream.Clear();
+  m_extensionStream.Clear();
+  m_wristStream.Clear();
   StopShoulder();
   StopArmExtension();
   StopWrist();
@@ -213,6 +227,7 @@ void LifterSubsystem::UpdateArmExtensionHome() {
   m_armExtensionMotor.SetSelectedSensorPosition(
       sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
   m_extensionHomed = true;
+  EnableArmExtensionSoftLimits();
 }
 
 void LifterSubsystem::InitializeWristHomes() {
@@ -220,11 +235,14 @@ void LifterSubsystem::InitializeWristHomes() {
   if (wristHomes) {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
 
-    units::degree_t calcValue = argos_lib::swerve::ConstrainAngle(currentencoder - wristHomes.value(), 0_deg, 360_deg);
+    units::degree_t calcValue =
+        argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
 
     m_wristEncoder.SetPosition(calcValue.to<double>());
 
     m_wristHomed = true;
+
+    EnableWristSoftLimits();
   } else {
     m_wristHomed = false;
   }
@@ -233,64 +251,102 @@ void LifterSubsystem::InitializeWristHomes() {
 void LifterSubsystem::UpdateWristHome() {
   const auto homeAngle = measure_up::lifter::wrist::homeAngle;
   units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-  auto valToSave = argos_lib::swerve::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg);
+  auto valToSave = argos_lib::angle::ConstrainAngle(currentEncoder - homeAngle, -180_deg, 180_deg);
   bool saved = m_wristHomingStorage.Save(valToSave);
   if (!saved) {
-    std::printf("[CRITICAL ERROR]%d Wrist homes failed to save to to file system\n", __LINE__);
+    m_logger.Log(argos_lib::LogLevel::ERR, "Wrist homes failed to save to to file system\n");
     m_wristHomed = false;
     return;
   }
 
-  ErrorCode rslt = m_wristEncoder.SetPosition(homeAngle.to<double>());
-  if (rslt != ErrorCode::OKAY) {
-    std::printf("[CRITICAL ERROR]%d Error code %d returned by wristEncoder on position set attempt\n", __LINE__, rslt);
-    m_wristHomed = false;
-    return;
-  }
-  m_wristHomed = true;
+  InitializeWristHomes();
 }
 
 void LifterSubsystem::InitializeShoulderHome() {
   const std::optional<units::degree_t> curHome = m_shoulderHomeStorage.Load();  // Try to load homes from fs
   if (curHome) {                                                                // if homes found
     units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
-    units::degree_t newPosition = curEncoder - curHome.value();
+    units::degree_t newPosition = argos_lib::angle::ConstrainAngle(curEncoder - curHome.value(), -180_deg, 180_deg);
 
     // Error check
     ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
     if (rslt != ErrorCode::OKAY) {
-      std::printf("[CRITICAL ERROR]%d Error code %d returned by shoulderEncoder on home set attempt\n", __LINE__, rslt);
+      m_logger.Log(argos_lib::LogLevel::ERR, "Error code %d returned by shoulderEncoder on home set attempt\n", rslt);
       m_shoulderHomed = false;
     } else {
       m_shoulderHomed = true;
     }
 
   } else {  // if homes not found
-    std::printf("[CRITICAL ERROR]%d Homes were unable to be initialized\n", __LINE__);
+    m_logger.Log(argos_lib::LogLevel::ERR, "Shoulder homes were unable to be initialized\n");
     m_shoulderHomed = false;
   }
+
+  EnableShoulderSoftLimits();
 }
 
 void LifterSubsystem::UpdateShoulderHome() {
   // save current position as home
   const auto homeAngle = measure_up::lifter::shoulder::homeAngle;
   const units::degree_t curEncoder = units::make_unit<units::degree_t>(m_shoulderEncoder.GetAbsolutePosition());
-  bool saved = m_shoulderHomeStorage.Save(argos_lib::swerve::ConstrainAngle(curEncoder - homeAngle, 0_deg, 360_deg));
+  bool saved = m_shoulderHomeStorage.Save(argos_lib::angle::ConstrainAngle(curEncoder - homeAngle, -180_deg, 180_deg));
   if (!saved) {
-    std::printf("[CRITICAL ERROR]%d Shoulder homes failed to save to file system\n", __LINE__);
-    m_shoulderHomed = false;
-    return;
-  }
-
-  ErrorCode rslt = m_shoulderEncoder.SetPosition(homeAngle.to<double>());
-  if (rslt != ErrorCode::OKAY) {
-    std::printf(
-        "[CRITICAL ERROR]%d Error code %d returned by shoulderEncoder on position set attempt\n", __LINE__, rslt);
+    m_logger.Log(argos_lib::LogLevel::ERR, "Shoulder homes failed to save to file system\n");
     m_shoulderHomed = false;
     return;
   }
 
   m_shoulderHomed = true;
+
+  InitializeShoulderHome();
+}
+
+void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
+  if (!m_shoulderHomed) {  // If shoulder is not homed, return and do nothing
+    return;
+  }
+
+  SetShoulderManualOverride(false);
+
+  angle = argos_lib::angle::ConstrainAngle(angle, -180_deg, 180_deg);  // Constrain to 0 to 360
+
+  if (angle < measure_up::lifter::shoulder::minAngle) {  // Handle angle below bound, clamp to min
+    angle = measure_up::lifter::shoulder::minAngle;
+    m_logger.Log(argos_lib::INFO,
+                 "Shoulder commanded to angle [%f] below bound of [%f]\n",
+                 angle.to<double>(),
+                 measure_up::lifter::shoulder::minAngle.to<double>());
+  } else if (angle > measure_up::lifter::shoulder::maxAngle) {  // Handle angle above bound, clamp to max
+    angle = measure_up::lifter::shoulder::maxAngle;
+    m_logger.Log(argos_lib::INFO,
+                 "Shoulder commanded to angle [%f] above bound of [%f]\n",
+                 angle.to<double>(),
+                 measure_up::lifter::shoulder::minAngle.to<double>());
+  }
+
+  m_shoulderDrive.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
+}
+
+frc::Translation2d LifterSubsystem::GetArmPose() {
+  LifterPosition lfPose = GetLifterPosition();
+  return m_kinematics.GetPose(ArmState{lfPose.state});
+}
+
+LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(frc::Translation2d desPose, bool effectorInverted) {
+  SetWristManualOverride(false);
+  SetShoulderManualOverride(false);
+  SetExtensionManualOverride(false);
+
+  LifterPosition lfPos;
+  lfPos.wristAngle =
+      effectorInverted ? measure_up::lifter::wrist::invertedAngle : measure_up::lifter::wrist::nominalAngle;
+  lfPos.state = m_kinematics.GetJoints(desPose);
+
+  SetWristAngle(lfPos.wristAngle);
+  SetArmExtension(lfPos.state.armLen);
+  SetShoulderAngle(lfPos.state.shoulderAngle);
+
+  return lfPos;  // return the lfPos for use elsewhere
 }
 
 bool LifterSubsystem::IsArmExtensionHomed() {
@@ -304,8 +360,98 @@ units::inch_t LifterSubsystem::GetArmExtension() {
   return sensor_conversions::lifter::arm_extension::ToExtension(m_armExtensionMotor.GetSelectedSensorPosition());
 }
 units::degree_t LifterSubsystem::GetShoulderAngle() {
-  return sensor_conversions::lifter::shoulder::ToAngle(m_shoulderLeader.GetSelectedSensorPosition());
+  return sensor_conversions::lifter::shoulder::ToAngle(m_shoulderDrive.GetSelectedSensorPosition());
 }
 LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
-  return {GetWristAngle(), GetArmExtension(), GetShoulderAngle()};
+  return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderAngle()}};
+}
+
+ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, bool effectorInverted) const {
+  return m_kinematics.GetJoints(pose, effectorInverted);
+}
+
+bool LifterSubsystem::IsShoulderMPComplete() {
+  return m_shoulderDrive.IsMotionProfileFinished();
+}
+bool LifterSubsystem::IsExtensionMPComplete() {
+  return m_armExtensionMotor.IsMotionProfileFinished();
+}
+bool LifterSubsystem::IsWristMPComplete() {
+  return m_wrist.IsMotionProfileFinished();
+}
+
+ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetShoulderMPStream() {
+  return m_shoulderStream;
+}
+ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetExtensionMPStream() {
+  return m_extensionStream;
+}
+ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetWristMPStream() {
+  return m_wristStream;
+}
+
+void LifterSubsystem::StartMotionProfile(size_t shoulderStreamSize,
+                                         size_t extensionStreamSize,
+                                         size_t wristStreamSize) {
+  m_shoulderManualOverride = false;
+  m_extensionManualOverride = false;
+  m_shoulderDrive.StartMotionProfile(m_shoulderStream,
+                                     std::min<size_t>(10, shoulderStreamSize),
+                                     ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+  m_armExtensionMotor.StartMotionProfile(m_extensionStream,
+                                         std::min<size_t>(10, extensionStreamSize),
+                                         ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
+}
+void LifterSubsystem::EnableWristSoftLimits() {
+  if (!m_wristHomed) {
+    m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable wrist soft limits without homes\n");
+    return;
+  }
+  m_wrist.ConfigForwardSoftLimitThreshold(
+      sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::maxAngle));
+  m_wrist.ConfigReverseSoftLimitThreshold(
+      sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::minAngle));
+  m_wrist.ConfigForwardSoftLimitEnable(true);
+  m_wrist.ConfigReverseSoftLimitEnable(true);
+}
+
+void LifterSubsystem::DisableWristSoftLimits() {
+  m_wrist.ConfigForwardSoftLimitEnable(false);
+  m_wrist.ConfigReverseSoftLimitEnable(false);
+}
+
+void LifterSubsystem::EnableArmExtensionSoftLimits() {
+  if (!m_extensionHomed) {
+    m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable extension soft limits without homes\n");
+    return;
+  }
+  m_armExtensionMotor.ConfigForwardSoftLimitThreshold(
+      sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::maxExtension));
+  m_armExtensionMotor.ConfigReverseSoftLimitThreshold(
+      sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::minExtension));
+  m_armExtensionMotor.ConfigForwardSoftLimitEnable(true);
+  m_armExtensionMotor.ConfigReverseSoftLimitEnable(true);
+}
+
+void LifterSubsystem::DisableArmExtensionSoftLimits() {
+  m_armExtensionMotor.ConfigForwardSoftLimitEnable(false);
+  m_armExtensionMotor.ConfigReverseSoftLimitEnable(false);
+}
+
+void LifterSubsystem::EnableShoulderSoftLimits() {
+  if (!m_shoulderHomed) {
+    m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable shoulder soft limits without homes\n");
+    return;
+  }
+  m_shoulderDrive.ConfigForwardSoftLimitThreshold(
+      sensor_conversions::lifter::shoulder::ToSensorUnit(measure_up::lifter::shoulder::maxAngle));
+  m_shoulderDrive.ConfigReverseSoftLimitThreshold(
+      sensor_conversions::lifter::shoulder::ToSensorUnit(measure_up::lifter::shoulder::minAngle));
+  m_shoulderDrive.ConfigForwardSoftLimitEnable(true);
+  m_shoulderDrive.ConfigReverseSoftLimitEnable(true);
+}
+
+void LifterSubsystem::DisableShoulderSoftLimits() {
+  m_shoulderDrive.ConfigForwardSoftLimitEnable(false);
+  m_shoulderDrive.ConfigReverseSoftLimitEnable(false);
 }

@@ -112,7 +112,7 @@ namespace argos_lib {
    private:
     fs::path GetFilePath() {
       static const fs::path homeDir{"/home/lvuser"};
-      static const fs::path configFile{homeDir / m_homesPath};
+      const fs::path configFile{homeDir / m_homesPath};
 
       std::cout << "############# Path: " << configFile << '\n';
 

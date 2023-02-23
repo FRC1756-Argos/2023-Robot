@@ -6,15 +6,21 @@
 
 #include <argos_lib/config/config_types.h>
 #include <argos_lib/subsystems/swappable_controllers_subsystem.h>
+#include <commands/bashguard_homing_command.h>
 #include <commands/home_arm_extension_command.h>
+#include <commands/score_cone_command.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "commands/autonomous/autonomous_nothing.h"
+#include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
+#include "subsystems/simple_led_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
+#include "utils/auto_selector.h"
 
 /**
  * This class is where the bulk of the robot should be declared.  Since
@@ -27,7 +33,7 @@ class RobotContainer {
  public:
   RobotContainer();
 
-  frc2::CommandPtr GetAutonomousCommand();
+  frc2::Command* GetAutonomousCommand();
 
  private:
   // Interpolation of controller inputs. Used for making the inputs non-linear, allowing finer control of how the robot responds to the joystick.
@@ -49,11 +55,20 @@ class RobotContainer {
 
   // The robot's subsystems are defined here...
   argos_lib::SwappableControllersSubsystem m_controllers;
+  OperatorControlBox m_buttonBox;
   SwerveDriveSubsystem m_swerveDrive;
   LifterSubsystem m_lifter;
   IntakeSubsystem m_intake;
   BashGuardSubsystem m_bash;
+  SimpleLedSubsystem m_ledSubSystem;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
+  BashGuardHomingCommand m_bashGuardHomingCommand;
+  ScoreConeCommand m_scoreConeCommand;
+
+  // Autonomous
+  AutonomousNothing m_autoNothing;
+
+  AutoSelector m_autoSelector;
 
   void ConfigureBindings();
 
