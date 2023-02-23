@@ -2,11 +2,10 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include "subsystems/intake_subsystem.h"
-
 #include "argos_lib/config/talonsrx_config.h"
 #include "constants/addresses.h"
 #include "constants/motors.h"
+#include "subsystems/intake_subsystem.h"
 
 IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
     : m_intakeMotor{GetCANAddr(
@@ -14,17 +13,17 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
           address::comp_bot::intake::intakeMotor, address::comp_bot::intake::intakeMotor, instance)}
     , m_intakeSensor(instance == argos_lib::RobotInstance::Competition ?
                          address::comp_bot::sensors::tofSensorIntake :
-                         address::practice_bot::sensors::tofSensorIntake) {
+                         address::practice_bot::sensors::tofSensorIntake){
 =======
           address::comp_bot::intake::intakeMotor, address::practice_bot::intake::intakeMotor, instance)}
     , m_haveCone(false)
     , m_haveCube(false) {
 >>>>>>> main
-  argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
-                                             motorConfig::practice_bot::intake::intake>(
-      m_intakeMotor, 100_ms, instance);
-  m_intakeSensor.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
-  m_intakeSensor.SetRangeOfInterest(8, 8, 12, 12);
+          argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
+                                                     motorConfig::practice_bot::intake::intake>(
+              m_intakeMotor, 100_ms, instance);
+m_intakeSensor.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
+m_intakeSensor.SetRangeOfInterest(8, 8, 12, 12);
 }
 
 // This method will be called once per scheduler run

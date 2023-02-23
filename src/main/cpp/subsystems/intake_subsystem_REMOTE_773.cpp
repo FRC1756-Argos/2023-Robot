@@ -2,11 +2,10 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include "subsystems/intake_subsystem.h"
-
 #include "argos_lib/config/talonsrx_config.h"
 #include "constants/addresses.h"
 #include "constants/motors.h"
+#include "subsystems/intake_subsystem.h"
 
 IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
     : m_intakeMotor{GetCANAddr(
