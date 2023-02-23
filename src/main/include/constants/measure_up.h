@@ -43,6 +43,7 @@ namespace measure_up {
       constexpr auto invertedAngle = 180_deg;
       constexpr auto nominalAngle = 0_deg;
       constexpr auto maxAngle = 180_deg;
+      constexpr auto wristWidth = 18.5_in;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 0_deg;

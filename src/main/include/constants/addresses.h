@@ -52,6 +52,7 @@ namespace address {
     struct sensors {
       constexpr static argos_lib::CANAddress pigeonIMU{1, "drive"};
       constexpr static const char tofSensorIntake = 1;
+      constexpr static const char tofSensorIntake2 = 2;
     };
     struct led {
       constexpr static argos_lib::CANAddress CANdle{1, "drive"};

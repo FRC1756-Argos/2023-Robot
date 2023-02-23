@@ -6,6 +6,8 @@
 
 #include "argos_lib/config/talonsrx_config.h"
 #include "constants/addresses.h"
+#include "constants/field_points.h"
+#include "constants/measure_up.h"
 #include "constants/motors.h"
 
 IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
@@ -14,6 +16,9 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
     , m_intakeSensor(instance == argos_lib::RobotInstance::Competition ?
                          address::comp_bot::sensors::tofSensorIntake :
                          address::practice_bot::sensors::tofSensorIntake)
+    , m_intakeSensor2(instance == argos_lib::RobotInstance::Competition ?
+                          address::comp_bot::sensors::tofSensorIntake2 :
+                          address::practice_bot::sensors::tofSensorIntake2)
     , m_haveCone(false)
     , m_haveCube(false) {
   argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
@@ -21,6 +26,8 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
       m_intakeMotor, 100_ms, instance);
   m_intakeSensor.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
   m_intakeSensor.SetRangeOfInterest(8, 8, 12, 12);
+  m_intakeSensor2.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
+  m_intakeSensor2.SetRangeOfInterest(8, 8, 12, 12);
 }
 
 // This method will be called once per scheduler run
@@ -65,5 +72,13 @@ void IntakeSubsystem::Disable() {
 
 units::inch_t IntakeSubsystem::GetIntakeDistance() {
   units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor.GetRange());
-  return GetIntakeDistance;
+  return (measure_up::lifter::wrist::wristWidth / 2) - (GetIntakeDistance + cone::coneWidth / 2);
+}
+
+bool IntakeSubsystem::IsConeFaceDown() {
+  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor2.GetRange());
+  if (GetIntakeDistance > 1_in || GetIntakeDistance < 18_in) {
+    return true;
+  }
+  return false;
 }

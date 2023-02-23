@@ -140,3 +140,7 @@ namespace field_points {
     }  // namespace blue_alliance
   }    // namespace grids
 }  // namespace field_points
+
+namespace cone {
+  constexpr auto coneWidth = 8.5_in;
+}  // namespace cone
