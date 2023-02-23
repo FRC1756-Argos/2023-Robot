@@ -152,6 +152,7 @@ class LifterSubsystem : public frc2::SubsystemBase {
   ctre::phoenix::motion::BufferedTrajectoryPointStream& GetExtensionMPStream();
   ctre::phoenix::motion::BufferedTrajectoryPointStream& GetWristMPStream();
 
+  void StopMotionProfile();
   void StartMotionProfile(size_t shoulderStreamSize, size_t extensionStreamSize, size_t wristStreamSize);
 
  private:

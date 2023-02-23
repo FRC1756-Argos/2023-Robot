@@ -211,12 +211,7 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
 void LifterSubsystem::Periodic() {}
 
 void LifterSubsystem::Disable() {
-  m_shoulderStream.Clear();
-  m_extensionStream.Clear();
-  m_wristStream.Clear();
-  StopShoulder();
-  StopArmExtension();
-  StopWrist();
+  StopMotionProfile();
 }
 
 bool LifterSubsystem::IsArmExtensionMoving() {
@@ -388,6 +383,18 @@ ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetExtens
 }
 ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetWristMPStream() {
   return m_wristStream;
+}
+
+void LifterSubsystem::StopMotionProfile() {
+  m_shoulderStream.Clear();
+  m_wristStream.Clear();
+  m_extensionStream.Clear();
+  StopArmExtension();
+  StopWrist();
+  StopArmExtension();
+  m_shoulderDrive.ClearMotionProfileTrajectories();
+  m_wrist.ClearMotionProfileTrajectories();
+  m_armExtensionMotor.ClearMotionProfileTrajectories();
 }
 
 void LifterSubsystem::StartMotionProfile(size_t shoulderStreamSize,

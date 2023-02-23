@@ -44,6 +44,8 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
 
   bool IsFinished() override;
 
+  frc2::Command::InterruptionBehavior GetInterruptionBehavior() const override;
+
  private:
   LifterSubsystem& m_lifter;
   BashGuardSubsystem& m_bashGuard;

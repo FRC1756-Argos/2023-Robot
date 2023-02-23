@@ -201,13 +201,16 @@ void SetArmPoseCommand::Execute() {
 // Called once the command ends or is interrupted.
 void SetArmPoseCommand::End(bool interrupted) {
   if (interrupted) {
-    m_lifter.StopArmExtension();
-    m_lifter.StopShoulder();
-    m_bashGuard.Stop();
+    m_lifter.StopMotionProfile();
+    m_bashGuard.StopMotionProfile();
   }
 }
 
 // Returns true when the command should end.
 bool SetArmPoseCommand::IsFinished() {
   return m_lifter.IsExtensionMPComplete() && m_lifter.IsShoulderMPComplete() && m_bashGuard.IsBashGuardMPComplete();
+}
+
+frc2::Command::InterruptionBehavior SetArmPoseCommand::GetInterruptionBehavior() const {
+  return InterruptionBehavior::kCancelSelf;
 }
