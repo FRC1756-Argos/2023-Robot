@@ -11,11 +11,71 @@
 
 SimpleLedSubsystem::SimpleLedSubsystem(argos_lib::RobotInstance instance)
     : m_CANdle{GetCANAddr(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance),
-               std::string(GetCANBus(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance))} {
-  FireEverywhere();
+               std::string(GetCANBus(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance))}
+    , m_log{"SIMPLE_LED_SUBSYSTEM"} {
+  SetAllGropusOff();
 }
 // This method will be called once per scheduler run
 void SimpleLedSubsystem::Periodic() {}
+
+void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, frc::Color color) {
+  m_CANdle.ClearAnimation(0);
+  int startIndx = -1;
+  int len = -1;
+  switch (group) {
+    case LedGroup::SIDES:
+      startIndx = startIndex_sideFront;
+      len = length_sideBack + length_sideFront;
+      break;
+    case LedGroup::BACK:
+      startIndx = startIndex_backRight;
+      len = length_backRight + length_backLeft;
+      break;
+    case LedGroup::FRONT:
+      startIndx = startIndex_frontLeft;
+      len = length_frontLeft + length_frontRight;
+      break;
+
+    default:
+      break;
+  }
+
+  if (startIndx < 0 || len < 0) {
+    m_log.Log(argos_lib::LogLevel::ERR, "INVALID LED LENGTH OR START INDEX\n");
+  }
+
+  ctre::phoenix::ErrorCode rslt;
+  rslt = m_CANdle.SetLEDs(color.red, color.green, color.blue, 255, startIndx, len);
+  if (rslt != ctre::phoenix::ErrorCode::OKAY) {
+    m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
+  }
+}
+
+void SimpleLedSubsystem::SetAllGroupsColor(frc::Color color) {
+  int len =
+      length_backLeft + length_backRight + length_sideBack + length_sideFront + length_frontLeft + length_frontRight;
+  ctre::phoenix::ErrorCode rslt;
+  rslt = m_CANdle.SetLEDs(color.red, color.green, color.blue, 255, startIndex_frontLeft, len);
+  if (rslt != ctre::phoenix::ErrorCode::OKAY) {
+    m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
+  }
+}
+
+void SimpleLedSubsystem::SetAllGropusOff() {
+  m_CANdle.ClearAnimation(0);
+  m_CANdle.ClearAnimation(1);
+  m_CANdle.ClearAnimation(2);
+  m_CANdle.ClearAnimation(3);
+  m_CANdle.ClearAnimation(4);
+  m_CANdle.ClearAnimation(5);
+  int len =
+      length_backLeft + length_backRight + length_sideBack + length_sideFront + length_frontLeft + length_frontRight;
+  ctre::phoenix::ErrorCode rslt;
+  rslt = m_CANdle.SetLEDs(0, 0, 0, 0, startIndex_frontLeft, len);
+  if (rslt != ctre::phoenix::ErrorCode::OKAY) {
+    m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
+  }
+}
 
 void SimpleLedSubsystem::SetBackLeftSolidColor(frc::Color color) {
   m_CANdle.ClearAnimation(0);  // Stop any animations so we can do solid color

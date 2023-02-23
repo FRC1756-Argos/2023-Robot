@@ -176,6 +176,22 @@ void RobotContainer::ConfigureBindings() {
 
   auto startupBashGuardHomeTrigger = robotEnableTrigger && bashGuardHomeRequiredTrigger;
 
+  // ROBOT STATE TRIGGERS
+  robotEnableTrigger.OnTrue(frc2::InstantCommand(
+                                [this]() {
+                                  frc::SmartDashboard::PutBoolean("TeleopEnabled", true);
+                                  m_ledSubSystem.SetAllGroupsColor(frc::Color::kGreen);
+                                },
+                                {})
+                                .ToPtr());
+  robotEnableTrigger.OnFalse(frc2::InstantCommand(
+                                 [this]() {
+                                   frc::SmartDashboard::PutBoolean("TeleopEnabled", false);
+                                   m_ledSubSystem.SetAllGroupsColor(frc::Color::kRed);
+                                 },
+                                 {})
+                                 .ToPtr());
+
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {
     return m_controllers.OperatorController().GetDebouncedButton(
@@ -200,7 +216,6 @@ void RobotContainer::ConfigureBindings() {
                                                                       argos_lib::XboxController::Button::kB});
 
   auto controlMode = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
-  auto ledTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kDown);
   auto fieldHome = m_controllers.DriverController().TriggerDebounced(argos_lib::XboxController::Button::kY);
   auto intakeForwardTrigger =
       m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger);
@@ -241,11 +256,6 @@ void RobotContainer::ConfigureBindings() {
       frc2::InstantCommand([this]() { m_bash.SetBashGuardManualOverride(true); }, {}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
-  ledTrigger.OnFalse(frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
-  ledTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_ledSubSystem.SetBackLeftSolidColor(frc::Color::kCyan); }, {&m_ledSubSystem})
-          .ToPtr());
-
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
   (intakeForwardTrigger && exclusiveIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
@@ -302,6 +312,8 @@ void RobotContainer::ConfigureBindings() {
 }
 
 void RobotContainer::Disable() {
+  m_ledSubSystem.SetAllGroupsColor(frc::Color::kRed);
+
   m_lifter.Disable();
   m_intake.Disable();
   m_bash.Disable();
