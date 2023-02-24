@@ -10,7 +10,6 @@
 #include <frc2/command/CommandHelper.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/InstantCommand.h>
-#include <frc2/command/SequentialCommandGroup.h>
 #include <subsystems/bash_guard_subsystem.h>
 #include <subsystems/intake_subsystem.h>
 #include <subsystems/lifter_subsystem.h>
@@ -55,5 +54,5 @@ class ScoreConeCommand : public frc2::CommandHelper<frc2::CommandBase, ScoreCone
   BashGuardSubsystem& m_bash;
   // Game Piece manipulation
   frc2::InstantCommand m_retractIntake;
-  std::unique_ptr<frc2::SequentialCommandGroup> m_allCommands;
+  frc2::CommandPtr m_allCommands;
 };

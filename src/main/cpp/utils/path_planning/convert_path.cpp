@@ -95,6 +95,8 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
     auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), false);
     compositePath.extensionPath.emplace_back(point.time, joints.armLen, velocities.v_radial);
     compositePath.shoulderPath.emplace_back(point.time, joints.shoulderAngle, velocities.v_tangential);
+    // Pad shoulder to account for delay in motor start times
+    compositePath.shoulderPath = PadProfile(compositePath.shoulderPath, 250_ms, true);
   }
   return compositePath;
 }
@@ -179,11 +181,6 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
   segmentAngles.reserve(segmentLengths.size());
   cosSegmentAngles.reserve(segmentLengths.size());
   sinSegmentAngles.reserve(segmentLengths.size());
-
-  auto pathLength = std::accumulate(
-      segmentLengths.begin(), segmentLengths.end(), 0_in, [](units::inch_t sum, units::inch_t segmentLength) {
-        return sum + segmentLength;
-      });
 
   std::vector<frc::TrapezoidProfile<units::inch>> segmentProfiles;
   auto lastVelocity = 0_ips;
