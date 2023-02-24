@@ -1,4 +1,3 @@
-
 /// \copyright Copyright (c) Argos FRC Team 1756.
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
@@ -7,13 +6,13 @@
 
 #include <fmt/format.h>
 #include <frc/DataLogManager.h>
+#include <networktables/NetworkTableInstance.h>
+#include <networktables/StringArrayTopic.h>
 #include <wpi/DataLog.h>
 
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <networktables/NetworkTableInstance.h>
-#include <networktables/StringArrayTopic.h>
 
 namespace argos_lib {
 
@@ -21,7 +20,8 @@ namespace argos_lib {
 
   class ArgosLogger {
    public:
-    ArgosLogger(const std::string& tag) : m_tag{tag}, m_fsEnabled{false}, m_log{frc::DataLogManager::GetLog()} {}
+    explicit ArgosLogger(const std::string& tag)
+        : m_tag{tag}, m_fsEnabled{false}, m_log{frc::DataLogManager::GetLog()} {}
 
     /// @brief Log Info
     /// @param fmt Input log message
