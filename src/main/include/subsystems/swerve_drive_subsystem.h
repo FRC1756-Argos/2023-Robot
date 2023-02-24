@@ -5,6 +5,7 @@
 #pragma once
 
 #include <frc/ADIS16448_IMU.h>
+#include <frc/Timer.h>
 #include <frc/controller/HolonomicDriveController.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
@@ -19,7 +20,10 @@
 #include "argos_lib/general/nt_motor_pid_tuner.h"
 #include "argos_lib/homing/fs_homing.h"
 #include "ctre/Phoenix.h"
+#include "frc/StateSpaceUtil.h"
+#include "frc/estimator/SwerveDrivePoseEstimator.h"
 #include "utils/swerve_trapezoidal_profile.h"
+#include "vision_subsystem.h"
 
 class SwerveModule {
  public:
@@ -102,6 +106,8 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   frc::Rotation2d GetContinuousOdometryAngle();
 
+  frc::Rotation2d GetContinuousPoseEstAngle();
+
   frc::Pose2d GetContinuousOdometry();
 
   /**
@@ -110,6 +116,13 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    * @return Estimate of robot pose
    */
   frc::Pose2d UpdateOdometry();
+
+  /**
+   * @brief Reads module states & gyro, updates pose estimator, and returns latest pose estimate
+   *
+   * @return Estimate of robot pose
+   */
+  frc::Pose2d UpdateEstimatedPose();
 
   /**
    * @brief Get the field-centric angle of the robot based on gyro and saved reference orientation
@@ -124,7 +137,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    *
    * @return Latest pose
    */
-  frc::Pose2d GetPoseEstimate();
+  frc::Pose2d GetPoseEstimate(const LimelightTarget::tValues& visionMeasurement);
 
   void SetControlMode(SwerveDriveSubsystem::DriveControlMode controlMode);
 
@@ -219,6 +232,8 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   frc::SwerveDriveOdometry<4> m_odometry;      ///< Odometry to track robot
   units::degree_t m_prevOdometryAngle;         ///< Last odometry angle used for continuous calculations
   units::degree_t m_continuousOdometryOffset;  ///< Offset to convert [-180,180] odometry angle to continuous angle
+
+  frc::SwerveDrivePoseEstimator<4> m_poseEstimator;  ///< accounts vision-based measurements for odometry
 
   // std::FILE SYSTEM HOMING STORAGE
   argos_lib::SwerveFSHomingStorage m_fsStorage;  ///< Roborio filesystem access for homes
