@@ -10,16 +10,17 @@
 #include <frc2/command/SubsystemBase.h>
 
 #include "argos_lib/config/config_types.h"
+#include "argos_lib/general/color.h"
 
 enum LedGroup { SIDES, BACK, FRONT };
 
 class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:
   explicit SimpleLedSubsystem(argos_lib::RobotInstance instance);
-  void SetLedGroupColor(LedGroup group, frc::Color color);
-  void SetAllGroupsColor(frc::Color color);
+  void SetLedGroupColor(LedGroup group, argos_lib::ArgosColor color);
+  void SetAllGroupsColor(argos_lib::ArgosColor color);
   void SetAllGropusOff();
-  void SetBackLeftSolidColor(frc::Color color);
+  void SetBackLeftSolidColor(argos_lib::ArgosColor color);
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */

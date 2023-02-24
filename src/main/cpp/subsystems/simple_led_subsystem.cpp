@@ -18,7 +18,7 @@ SimpleLedSubsystem::SimpleLedSubsystem(argos_lib::RobotInstance instance)
 // This method will be called once per scheduler run
 void SimpleLedSubsystem::Periodic() {}
 
-void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, frc::Color color) {
+void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, argos_lib::ArgosColor color) {
   m_CANdle.ClearAnimation(0);
   int startIndx = -1;
   int len = -1;
@@ -45,17 +45,17 @@ void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, frc::Color color) {
   }
 
   ctre::phoenix::ErrorCode rslt;
-  rslt = m_CANdle.SetLEDs(color.red, color.green, color.blue, 255, startIndx, len);
+  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 255, startIndx, len);
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
   }
 }
 
-void SimpleLedSubsystem::SetAllGroupsColor(frc::Color color) {
+void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color) {
   int len =
       length_backLeft + length_backRight + length_sideBack + length_sideFront + length_frontLeft + length_frontRight;
   ctre::phoenix::ErrorCode rslt;
-  rslt = m_CANdle.SetLEDs(color.red, color.green, color.blue, 255, startIndex_frontLeft, len);
+  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 255, startIndex_frontLeft, len);
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
   }
@@ -77,9 +77,9 @@ void SimpleLedSubsystem::SetAllGropusOff() {
   }
 }
 
-void SimpleLedSubsystem::SetBackLeftSolidColor(frc::Color color) {
+void SimpleLedSubsystem::SetBackLeftSolidColor(argos_lib::ArgosColor color) {
   m_CANdle.ClearAnimation(0);  // Stop any animations so we can do solid color
-  m_CANdle.SetLEDs(color.red, color.green, color.blue, 0, startIndex_backLeft, length_backLeft);
+  m_CANdle.SetLEDs(color.r, color.g, color.b, 0, startIndex_backLeft, length_backLeft);
 }
 
 void SimpleLedSubsystem::FireEverywhere() {

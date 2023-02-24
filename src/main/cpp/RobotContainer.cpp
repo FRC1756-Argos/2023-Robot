@@ -6,6 +6,7 @@
 
 #include <argos_lib/commands/swap_controllers_command.h>
 #include <argos_lib/controller/trigger_composition.h>
+#include <argos_lib/general/color.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
 #include <frc/RobotState.h>
@@ -164,7 +165,8 @@ void RobotContainer::ConfigureBindings() {
                argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
   }});
 
-  auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::RobotState::IsEnabled(); }});
+  auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
+  auto robotDisableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsDisabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
 
@@ -179,15 +181,15 @@ void RobotContainer::ConfigureBindings() {
   // ROBOT STATE TRIGGERS
   robotEnableTrigger.OnTrue(frc2::InstantCommand(
                                 [this]() {
-                                  frc::SmartDashboard::PutBoolean("TeleopEnabled", true);
-                                  m_ledSubSystem.SetAllGroupsColor(frc::Color::kGreen);
+                                  frc::SmartDashboard::PutBoolean("RobotEnabled", true);
+                                  Enable();  // Call robot container enable
                                 },
                                 {})
                                 .ToPtr());
-  robotEnableTrigger.OnFalse(frc2::InstantCommand(
+  robotDisableTrigger.OnTrue(frc2::InstantCommand(
                                  [this]() {
-                                   frc::SmartDashboard::PutBoolean("TeleopEnabled", false);
-                                   m_ledSubSystem.SetAllGroupsColor(frc::Color::kRed);
+                                   frc::SmartDashboard::PutBoolean("RobotEnabled", false);
+                                   Disable();  // Call robot container disable
                                  },
                                  {})
                                  .ToPtr());
@@ -312,11 +314,17 @@ void RobotContainer::ConfigureBindings() {
 }
 
 void RobotContainer::Disable() {
-  m_ledSubSystem.SetAllGroupsColor(frc::Color::kRed);
+  frc::SmartDashboard::PutBoolean("RC-DisableCalled", true);
+  m_ledSubSystem.SetAllGroupsColor(argos_lib::colors::kReallyRed);
 
   m_lifter.Disable();
   m_intake.Disable();
   m_bash.Disable();
+}
+
+void RobotContainer::Enable() {
+  frc::SmartDashboard::PutBoolean("RC-EnableCalled", true);
+  m_ledSubSystem.SetAllGroupsColor(argos_lib::colors::kReallyGreen);
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {
