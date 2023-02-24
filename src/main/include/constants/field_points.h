@@ -80,7 +80,6 @@ namespace field_points {
     constexpr auto innerGridLeftY = 20.185_in;
     constexpr auto innerGridMiddleY = 42.185_in;
     constexpr auto innerGridRightY = 64.185_in;
-    /// @todo fill in with rest of global y positions
     constexpr auto coopGridLeftY = 86.185_in;
     constexpr auto coopGridMiddleY = 108.185_in;
     constexpr auto coopGridRightY = 130.185_in;
@@ -99,7 +98,6 @@ namespace field_points {
         // Refer to /docs/ScoringGridNaming.png for how this grid is organized
         static const std::vector<Node> nodes = {
             Node{GamePiece::CONE, frc::Translation3d(highNodeX, innerGridLeftY, highConeNodeHeight)},
-            /// @todo maybe add some sort of heigh offset for scoring in the future?
             Node{GamePiece::CUBE, frc::Translation3d(highNodeX, innerGridMiddleY, highCubeNodeHeight)},
             Node{GamePiece::CONE, frc::Translation3d(highNodeX, innerGridRightY, highConeNodeHeight)},
             Node{GamePiece::CONE, frc::Translation3d(middleNodeX, innerGridLeftY, middleConeNodeHeight)},

@@ -271,7 +271,7 @@ void LifterSubsystem::InitializeShoulderHome() {
     // Error check
     ErrorCode rslt = m_shoulderEncoder.SetPosition(newPosition.to<double>(), 10);
     if (rslt != ErrorCode::OKAY) {
-      m_logger.LogE("Error code %d returned by shoulderEncoder on home set attempt\n", rslt);
+      m_logger.LogE("Error code {} returned by shoulderEncoder on home set attempt\n", 0);
       m_shoulderHomed = false;
     } else {
       m_shoulderHomed = true;
@@ -312,12 +312,12 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
 
   if (angle < measure_up::lifter::shoulder::minAngle) {  // Handle angle below bound, clamp to min
     angle = measure_up::lifter::shoulder::minAngle;
-    m_logger.LogI("Shoulder commanded to angle [%f] below bound of [%f]\n",
+    m_logger.LogI("Shoulder commanded to angle {} below bound of {}\n",
                   angle.to<double>(),
                   measure_up::lifter::shoulder::minAngle.to<double>());
   } else if (angle > measure_up::lifter::shoulder::maxAngle) {  // Handle angle above bound, clamp to max
     angle = measure_up::lifter::shoulder::maxAngle;
-    m_logger.LogI("Shoulder commanded to angle [%f] above bound of [%f]\n",
+    m_logger.LogI("Shoulder commanded to angle {} above bound of {}\n",
                   angle.to<double>(),
                   measure_up::lifter::shoulder::minAngle.to<double>());
   }
