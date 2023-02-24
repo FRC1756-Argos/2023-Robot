@@ -56,4 +56,12 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   units::velocity::inches_per_second_t m_maxVelocity;
   units::acceleration::inches_per_second_squared_t m_maxAcceleration;
   bool m_isTunable;
+
+  ScoringPosition m_latestScoringPosition;
+
+  bool m_hasShoulderMotion;
+  bool m_hasExtensionMotion;
+  bool m_hasBashGuardMotion;
+
+  unsigned m_id;
 };
