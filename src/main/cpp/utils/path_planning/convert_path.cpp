@@ -18,6 +18,19 @@
 
 using namespace path_planning;
 
+units::degree_t path_planning::CalculateCuspAngle(const ArmPath& path, const size_t segmentIndex) {
+  if (path.size() <= segmentIndex + 2) {
+    // End of path (or past end)
+    return 0_deg;
+  }
+
+  const ArmPathPoint& p1 = path.at(segmentIndex);
+  const ArmPathPoint& p2 = path.at(segmentIndex + 1);
+  const ArmPathPoint& p3 = path.at(segmentIndex + 2);
+
+  return units::math::atan2(p3.z - p2.z, p3.x - p2.x) - units::math::atan2(p1.z - p2.z, p1.x - p2.x);
+}
+
 VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPoint, const ArmPathPoint& armVector) {
   if (pathPoint.velocity.v == 0_ips) {
     return VelocityComponents{.v_radial = 0_ips, .v_tangential = 0_deg_per_s};
@@ -145,12 +158,11 @@ BashGuardMPPath path_planning::GenerateProfiledBashGuard(const BashGuardPoint& s
   return path;
 }
 
-ArmMPPath path_planning::GenerateProfiledPath(const ArmPathPoint& startPoint,
-                                              const ArmPathPoint& endPoint,
+ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
                                               const PathDynamicsConstraints& constraints,
                                               const Polygon& avoidancePolygon,
                                               units::millisecond_t resolution) {
-  auto avoidancePath = KeepOut(LineSegment{.start = startPoint, .end = endPoint}, avoidancePolygon);
+  auto avoidancePath = KeepOut(initialPath, avoidancePolygon);
 
   std::vector<units::inch_t> segmentLengths;
   std::vector<units::radian_t> segmentAngles;
@@ -224,7 +236,7 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPathPoint& startPoint,
     sampleTime += resolution;
   }
 
-  path.push_back({resolution, endPoint, {0_ips, 0_ips, 0_ips}});
+  path.push_back({resolution, initialPath.back(), {0_ips, 0_ips, 0_ips}});
 
   return path;
 }

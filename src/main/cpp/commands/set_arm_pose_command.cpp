@@ -150,8 +150,7 @@ void SetArmPoseCommand::Initialize() {
                                                {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},
                                                50_ms);
   auto generalArmPath = path_planning::GenerateProfiledPath(
-      path_planning::ArmPathPoint(initialPosition),
-      path_planning::ArmPathPoint(m_targetPose),
+      {path_planning::ArmPathPoint(initialPosition), path_planning::ArmPathPoint(m_targetPose)},
       {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},
       path_planning::Polygon(measure_up::PathPlanningKeepOutZone.begin(), measure_up::PathPlanningKeepOutZone.end()),
       50_ms);
