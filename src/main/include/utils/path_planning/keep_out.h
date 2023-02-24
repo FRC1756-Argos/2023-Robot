@@ -27,5 +27,5 @@ namespace path_planning {
 
   units::inch_t SegmentLength(const LineSegment& segment);
 
-  ArmPath KeepOut(LineSegment candidatePath, const Polygon& avoidancePolygon);
+  ArmPath KeepOut(const ArmPath& initialPath, const Polygon& avoidancePolygon);
 }  // namespace path_planning

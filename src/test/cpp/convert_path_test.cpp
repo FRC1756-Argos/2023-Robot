@@ -15,6 +15,69 @@
 using namespace path_planning;
 using argos_lib::testing::UnitEqual;
 
+TEST(CalcCuspAngleTest, Invalid) {
+  {
+    ArmPath path = {};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+    angle = CalculateCuspAngle(path, 100);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+  }
+  {
+    ArmPath path = {{1_in, 5_in}};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+    angle = CalculateCuspAngle(path, 1);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+  }
+  {
+    ArmPath path = {{1_in, 5_in}, {1_in, 10_in}};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+    angle = CalculateCuspAngle(path, 1);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+    angle = CalculateCuspAngle(path, 2);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+  }
+  {
+    ArmPath path = {{1_in, 5_in}, {1_in, 10_in}, {5_in, 10_in}};
+    auto angle = CalculateCuspAngle(path, 1);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+    angle = CalculateCuspAngle(path, 2);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+  }
+}
+
+TEST(CalcCuspAngleTest, Valid) {
+  {
+    ArmPath path = {{1_in, 5_in}, {1_in, 10_in}, {5_in, 10_in}};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, 90_deg));
+  }
+  {
+    ArmPath path = {{-5_in, -5_in}, {0_in, 0_in}, {5_in, 5_in}};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, 180_deg));
+  }
+  {
+    ArmPath path = {{-5_in, -5_in}, {0_in, 0_in}, {-5_in, -5_in}};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, 0_deg));
+  }
+  {
+    ArmPath path = {{5_in, 5_in}, {0_in, 0_in}, {0_in, -5_in}};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, -135_deg));
+  }
+  {
+    ArmPath path = {{5_in, 5_in}, {0_in, 0_in}, {0_in, -5_in}, {-5_in, 0_in}};
+    auto angle = CalculateCuspAngle(path, 0);
+    EXPECT_TRUE(UnitEqual(angle, -135_deg));
+    angle = CalculateCuspAngle(path, 1);
+    EXPECT_TRUE(UnitEqual(angle, 45_deg));
+  }
+}
+
 TEST(DecomposeVelocityTest, OriginFulcrum) {
   {
     auto components = DecomposeVelocity(

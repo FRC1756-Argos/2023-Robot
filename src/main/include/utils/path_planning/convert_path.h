@@ -11,6 +11,8 @@
 
 namespace path_planning {
 
+  [[nodiscard]] units::degree_t CalculateCuspAngle(const ArmPath& path, const size_t segmentIndex);
+
   [[nodiscard]] VelocityComponents DecomposeVelocity(const ArmMPPathPoint& pathPoint, const ArmPathPoint& armVector);
 
   [[nodiscard]] CompositeMPPath GenerateCompositeMPPath(ArmMPPath generalPath,
@@ -21,8 +23,7 @@ namespace path_planning {
                                                           const BashGuardPoint& endPoint,
                                                           const PathDynamicsConstraints& constraints,
                                                           units::millisecond_t resolution = 20_ms);
-  [[nodiscard]] ArmMPPath GenerateProfiledPath(const ArmPathPoint& startPoint,
-                                               const ArmPathPoint& endPoint,
+  [[nodiscard]] ArmMPPath GenerateProfiledPath(const ArmPath& initialPath,
                                                const PathDynamicsConstraints& constraints,
                                                const Polygon& avoidancePolygon,
                                                units::millisecond_t resolution = 20_ms);

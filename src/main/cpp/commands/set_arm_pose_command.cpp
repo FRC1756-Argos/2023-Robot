@@ -16,6 +16,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
                                      std::function<ScoringPosition()> scoringPositionCb,
                                      std::function<bool()> bashGuardModeCb,
+                                     PathType pathType,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration)
     : m_lifter(lifter)
@@ -28,6 +29,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
     , m_latestScoringPosition{}
+    , m_pathType{pathType}
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
@@ -42,6 +44,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
                                      ScoringPosition scoringPosition,
                                      std::function<bool()> bashGuardModeCb,
+                                     PathType pathType,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration)
     : m_lifter(lifter)
@@ -54,6 +57,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
     , m_latestScoringPosition{}
+    , m_pathType{pathType}
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
@@ -77,6 +81,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
                                      frc::Translation2d targetPose,
                                      BashGuardPosition desiredBashGuardPosition,
+                                     PathType pathType,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration,
                                      bool isTuneable)
@@ -90,6 +95,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{isTuneable}
     , m_latestScoringPosition{}
+    , m_pathType{pathType}
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
@@ -112,6 +118,8 @@ void SetArmPoseCommand::Initialize() {
   }
 
   bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
+
+  auto initialPosition = m_lifter.GetArmPose();
 
   if (m_scoringPositionCb) {
     m_latestScoringPosition = m_scoringPositionCb.value()();
@@ -142,7 +150,42 @@ void SetArmPoseCommand::Initialize() {
         frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
   }
 
-  auto initialPosition = m_lifter.GetArmPose();
+  path_planning::ArmPath desiredPath;
+  desiredPath.reserve(3);
+  desiredPath.emplace_back(initialPosition);
+
+  auto maxY = units::math::max(m_targetPose.Y(), initialPosition.Y());
+  auto minY = units::math::min(m_targetPose.Y(), initialPosition.Y());
+
+  bool upwardMotion = m_targetPose.Y() > initialPosition.Y();
+
+  if (upwardMotion) {
+    switch (m_pathType) {
+      case PathType::concaveDown:
+        desiredPath.emplace_back(initialPosition.X(), maxY);
+        break;
+      case PathType::concaveUp:
+        desiredPath.emplace_back(m_targetPose.X(), minY);
+        break;
+      case PathType::unmodified:
+        // Don't insert extra points
+        break;
+    }
+  } else {
+    switch (m_pathType) {
+      case PathType::concaveDown:
+        desiredPath.emplace_back(m_targetPose.X(), maxY);
+        break;
+      case PathType::concaveUp:
+        desiredPath.emplace_back(initialPosition.X(), minY);
+        break;
+      case PathType::unmodified:
+        // Don't insert extra points
+        break;
+    }
+  }
+
+  desiredPath.emplace_back(m_targetPose);
 
   auto bashGuardPath =
       path_planning::GenerateProfiledBashGuard(m_bashGuard.GetBashGuardExtension(),
@@ -150,8 +193,7 @@ void SetArmPoseCommand::Initialize() {
                                                {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},
                                                50_ms);
   auto generalArmPath = path_planning::GenerateProfiledPath(
-      path_planning::ArmPathPoint(initialPosition),
-      path_planning::ArmPathPoint(m_targetPose),
+      desiredPath,
       {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},
       path_planning::Polygon(measure_up::PathPlanningKeepOutZone.begin(), measure_up::PathPlanningKeepOutZone.end()),
       50_ms);

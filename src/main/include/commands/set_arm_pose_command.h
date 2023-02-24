@@ -12,12 +12,15 @@
 #include "subsystems/lifter_subsystem.h"
 #include "utils/custom_units.h"
 
+enum class PathType { unmodified, concaveDown, concaveUp };
+
 class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPoseCommand> {
  public:
   SetArmPoseCommand(LifterSubsystem& lifter,
                     BashGuardSubsystem& bashGuard,
                     std::function<ScoringPosition()> scoringPositionCb,
                     std::function<bool()> bashGuardModeCb,
+                    PathType pathType = PathType::unmodified,
                     units::velocity::inches_per_second_t maxVelocity = 90_ips,
                     units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2);
 
@@ -25,6 +28,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     BashGuardSubsystem& bashGuard,
                     ScoringPosition scoringPosition,
                     std::function<bool()> bashGuardModeCb,
+                    PathType pathType = PathType::unmodified,
                     units::velocity::inches_per_second_t maxVelocity = 90_ips,
                     units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2);
 
@@ -32,6 +36,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     BashGuardSubsystem& bashGuard,
                     frc::Translation2d targetPose,
                     BashGuardPosition desiredBashGuardPosition,
+                    PathType pathType = PathType::unmodified,
                     units::velocity::inches_per_second_t maxVelocity = 90_ips,
                     units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2,
                     bool isTunable = false);
@@ -58,6 +63,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   bool m_isTunable;
 
   ScoringPosition m_latestScoringPosition;
+  PathType m_pathType;
 
   bool m_hasShoulderMotion;
   bool m_hasExtensionMotion;
