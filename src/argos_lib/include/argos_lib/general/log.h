@@ -2,6 +2,10 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
+/*
+  Utility for logging to stdout, stderr, and on the rio
+*/
+
 #pragma once
 
 #include <fmt/format.h>
@@ -14,9 +18,12 @@
 #include <string>
 #include <string_view>
 
-namespace argos_lib {
-
+namespace {
   enum LogLevel { INFO, WARN, ERR };
+
+}
+
+namespace argos_lib {
 
   class ArgosLogger {
    public:
@@ -47,6 +54,8 @@ namespace argos_lib {
       Log(LogLevel::ERR, fmt, fmt::make_format_args(args...));
     }
 
+    /// @brief Sets config for logging to file system
+    /// @param fsEn  True -> Logging to FS on rio enabled, false if disabled
     void SetFSEnabled(bool fsEn) { m_fsEnabled = fsEn; }
 
    private:
@@ -78,6 +87,8 @@ namespace argos_lib {
     void Log(LogLevel level, fmt::string_view format, fmt::format_args args) const {
       std::string tag;
       std::string message = fmt::vformat(format, args);
+
+      // Gets the appropriate tag
       switch (level) {
         case LogLevel::INFO:
           tag = fmt::format("{}_INFO ", m_tag);
@@ -107,8 +118,8 @@ namespace argos_lib {
       }
     }
 
-    std::string m_tag;
-    bool m_fsEnabled = false;
-    wpi::log::DataLog& m_log;
+    std::string m_tag;         ///< Tag to prefix all log messages with
+    bool m_fsEnabled = false;  ///< True -> Logs to file system, otherwise logs do not save to file system
+    wpi::log::DataLog& m_log;  ///< Log reference for use in file system logging
   };
 }  // namespace argos_lib
