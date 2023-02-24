@@ -184,9 +184,23 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
       segmentLengths.begin(), segmentLengths.end(), 0_in, [](units::inch_t sum, units::inch_t segmentLength) {
         return sum + segmentLength;
       });
-  frc::TrapezoidProfile<units::inch> profile({constraints.maxVelocity, constraints.maxAcceleration},
-                                             {pathLength, 0_ips});
-  const auto totalProfiledTime = profile.TotalTime();
+
+  std::vector<frc::TrapezoidProfile<units::inch>> segmentProfiles;
+  auto lastVelocity = 0_ips;
+  for (size_t segmentIndex = 0; segmentIndex < segmentLengths.size(); ++segmentIndex) {
+    auto cuspAngle = CalculateCuspAngle(avoidancePath, segmentIndex);
+    auto transitionSpeed = constraints.maxVelocity * (-units::math::cos(cuspAngle) + 1) / 2;
+    segmentProfiles.emplace_back(
+        frc::TrapezoidProfile<units::inch>::Constraints{constraints.maxVelocity, constraints.maxAcceleration},
+        frc::TrapezoidProfile<units::inch>::State{segmentLengths.at(segmentIndex), transitionSpeed},
+        frc::TrapezoidProfile<units::inch>::State{0_in, lastVelocity});
+    lastVelocity = transitionSpeed;
+  }
+  const auto totalProfiledTime = std::accumulate(
+      segmentProfiles.begin(),
+      segmentProfiles.end(),
+      0_s,
+      [](units::second_t sum, const frc::TrapezoidProfile<units::inch>& profile) { return sum + profile.TotalTime(); });
 
   ArmMPPath path;
   path.reserve(std::ceil((totalProfiledTime / resolution).to<double>()) + 1);
@@ -210,23 +224,25 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
 
   size_t segmentsCompleted = 0;
   units::inch_t completedSegmentsLength = 0_in;
+  units::second_t completedSegmentsTime = 0_s;
 
   while (sampleTime < totalProfiledTime) {
     ArmMPPathPoint newPoint;
 
     newPoint.time = resolution;
 
-    auto state = profile.Calculate(sampleTime);
-
-    while (state.position - completedSegmentsLength > segmentLengths[segmentsCompleted] &&
-           segmentsCompleted < segmentLengths.size() - 1) {
-      completedSegmentsLength += segmentLengths[segmentsCompleted];
+    while (segmentsCompleted < (segmentLengths.size() - 1) &&
+           sampleTime - completedSegmentsTime > segmentProfiles.at(segmentsCompleted).TotalTime()) {
+      completedSegmentsLength += segmentLengths.at(segmentsCompleted);
+      completedSegmentsTime += segmentProfiles.at(segmentsCompleted).TotalTime();
       ++segmentsCompleted;
     }
 
+    auto state = segmentProfiles.at(segmentsCompleted).Calculate(sampleTime);
+
     newPoint.position = lerp(avoidancePath.at(segmentsCompleted),
                              avoidancePath.at(segmentsCompleted + 1),
-                             (state.position - completedSegmentsLength) / segmentLengths.at(segmentsCompleted));
+                             (state.position) / segmentLengths.at(segmentsCompleted));
     newPoint.velocity = {.v = state.velocity,
                          .v_x = state.velocity * cosSegmentAngles.at(segmentsCompleted),
                          .v_z = state.velocity * sinSegmentAngles.at(segmentsCompleted)};
