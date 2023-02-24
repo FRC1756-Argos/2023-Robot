@@ -95,8 +95,6 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
     auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), false);
     compositePath.extensionPath.emplace_back(point.time, joints.armLen, velocities.v_radial);
     compositePath.shoulderPath.emplace_back(point.time, joints.shoulderAngle, velocities.v_tangential);
-    // Pad shoulder to account for delay in motor start times
-    compositePath.shoulderPath = PadProfile(compositePath.shoulderPath, 250_ms, true);
   }
   return compositePath;
 }

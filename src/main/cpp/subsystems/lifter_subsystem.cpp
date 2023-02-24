@@ -403,10 +403,10 @@ void LifterSubsystem::StartMotionProfile(size_t shoulderStreamSize,
   m_shoulderManualOverride = false;
   m_extensionManualOverride = false;
   m_shoulderDrive.StartMotionProfile(m_shoulderStream,
-                                     std::min<size_t>(10, shoulderStreamSize),
+                                     std::min<size_t>(5, shoulderStreamSize),
                                      ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
   m_armExtensionMotor.StartMotionProfile(m_extensionStream,
-                                         std::min<size_t>(10, extensionStreamSize),
+                                         std::min<size_t>(5, extensionStreamSize),
                                          ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
 }
 void LifterSubsystem::EnableWristSoftLimits() {
