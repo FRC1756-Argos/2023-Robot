@@ -21,7 +21,7 @@
 namespace {
   enum LogLevel { INFO, WARN, ERR };
 
-}
+}  // namespace
 
 namespace argos_lib {
 
