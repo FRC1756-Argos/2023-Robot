@@ -95,6 +95,8 @@ constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition grid
     } else {
       return std::nullopt;
     }
+  } else {
+    return std::nullopt;
   }
 
   return SetpointPosition{targetPosition.endEffectorPosition,

@@ -42,6 +42,12 @@ ctre::phoenix::motion::BufferedTrajectoryPointStream& BashGuardSubsystem::GetMPS
   return m_bashStream;
 }
 
+void BashGuardSubsystem::StopMotionProfile() {
+  m_bashStream.Clear();
+  Stop();
+  m_bashGuard.ClearMotionProfileTrajectories();
+}
+
 void BashGuardSubsystem::StartMotionProfile(size_t streamSize) {
   SetBashGuardManualOverride(false);
   m_bashGuard.StartMotionProfile(
@@ -49,8 +55,7 @@ void BashGuardSubsystem::StartMotionProfile(size_t streamSize) {
 }
 
 void BashGuardSubsystem::Disable() {
-  m_bashGuard.Set(0.0);
-  m_bashStream.Clear();
+  StopMotionProfile();
 }
 
 void BashGuardSubsystem::Stop() {

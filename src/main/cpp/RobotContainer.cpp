@@ -166,7 +166,6 @@ void RobotContainer::ConfigureBindings() {
   }});
 
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
-  auto robotDisableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsDisabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
 
@@ -181,18 +180,10 @@ void RobotContainer::ConfigureBindings() {
   // ROBOT STATE TRIGGERS
   robotEnableTrigger.OnTrue(frc2::InstantCommand(
                                 [this]() {
-                                  frc::SmartDashboard::PutBoolean("RobotEnabled", true);
                                   Enable();  // Call robot container enable
                                 },
                                 {})
                                 .ToPtr());
-  robotDisableTrigger.OnTrue(frc2::InstantCommand(
-                                 [this]() {
-                                   frc::SmartDashboard::PutBoolean("RobotEnabled", false);
-                                   Disable();  // Call robot container disable
-                                 },
-                                 {})
-                                 .ToPtr());
 
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {

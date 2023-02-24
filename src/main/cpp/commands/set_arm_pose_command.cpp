@@ -26,7 +26,14 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_bashGuardTarget()
     , m_maxVelocity(maxVelocity)
     , m_maxAcceleration(maxAcceleration)
-    , m_isTunable{false} {
+    , m_isTunable{false}
+    , m_latestScoringPosition{}
+    , m_hasShoulderMotion{false}
+    , m_hasExtensionMotion{false}
+    , m_hasBashGuardMotion{false}
+    , m_id{static_cast<unsigned>(
+          std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
+              .count())} {
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 }
@@ -45,7 +52,14 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_bashGuardTarget()
     , m_maxVelocity(maxVelocity)
     , m_maxAcceleration(maxAcceleration)
-    , m_isTunable{false} {
+    , m_isTunable{false}
+    , m_latestScoringPosition{}
+    , m_hasShoulderMotion{false}
+    , m_hasExtensionMotion{false}
+    , m_hasBashGuardMotion{false}
+    , m_id{static_cast<unsigned>(
+          std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
+              .count())} {
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 
@@ -74,28 +88,41 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_bashGuardTarget(desiredBashGuardPosition)
     , m_maxVelocity(maxVelocity)
     , m_maxAcceleration(maxAcceleration)
-    , m_isTunable{isTuneable} {
+    , m_isTunable{isTuneable}
+    , m_latestScoringPosition{}
+    , m_hasShoulderMotion{false}
+    , m_hasExtensionMotion{false}
+    , m_hasBashGuardMotion{false}
+    , m_id{static_cast<unsigned>(
+          std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
+              .count())} {
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 }
 
 // Called when the command is initially scheduled.
 void SetArmPoseCommand::Initialize() {
+  m_hasShoulderMotion = false;
+  m_hasExtensionMotion = false;
+  m_hasBashGuardMotion = false;
+
   if (!m_bashGuard.IsBashGuardHomed() || !m_lifter.IsArmExtensionHomed()) {
     Cancel();
+    return;
   }
 
   bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
 
   if (m_scoringPositionCb) {
-    auto targetScoringPosition = m_scoringPositionCb.value()();
-    auto targetEffectorPosition = GetTargetPosition(targetScoringPosition, bashGuardEnable);
+    m_latestScoringPosition = m_scoringPositionCb.value()();
+    auto targetEffectorPosition = GetTargetPosition(m_latestScoringPosition, bashGuardEnable);
 
     if (targetEffectorPosition) {
       m_targetPose = targetEffectorPosition.value().endEffectorPosition;
       m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
     } else {
-      m_targetPose = m_lifter.GetArmPose();
+      Cancel();
+      return;
     }
   }
 
@@ -186,6 +213,10 @@ void SetArmPoseCommand::Initialize() {
         false));
   }
 
+  m_hasBashGuardMotion = compositePath.bashGuardPath.size() > 0;
+  m_hasShoulderMotion = compositePath.shoulderPath.size() > 0;
+  m_hasExtensionMotion = compositePath.extensionPath.size() > 0;
+
   m_bashGuard.StartMotionProfile(compositePath.bashGuardPath.size());
   m_lifter.StartMotionProfile(compositePath.shoulderPath.size(), compositePath.extensionPath.size(), 0);
 }
@@ -195,19 +226,33 @@ void SetArmPoseCommand::Execute() {
   if (m_bashGuard.IsBashGuardManualOverride() || m_lifter.IsExtensionManualOverride() ||
       m_lifter.IsShoulderManualOverride()) {
     Cancel();
+    return;
+  }
+  if (m_scoringPositionCb) {
+    auto updatedScoringPosition = m_scoringPositionCb.value()();
+    if (updatedScoringPosition != m_latestScoringPosition) {
+      m_lifter.StopMotionProfile();
+      m_bashGuard.StopMotionProfile();
+      Initialize();
+    }
   }
 }
 
 // Called once the command ends or is interrupted.
 void SetArmPoseCommand::End(bool interrupted) {
   if (interrupted) {
-    m_lifter.StopArmExtension();
-    m_lifter.StopShoulder();
-    m_bashGuard.Stop();
+    m_lifter.StopMotionProfile();
+    m_bashGuard.StopMotionProfile();
   }
 }
 
 // Returns true when the command should end.
 bool SetArmPoseCommand::IsFinished() {
-  return m_lifter.IsExtensionMPComplete() && m_lifter.IsShoulderMPComplete() && m_bashGuard.IsBashGuardMPComplete();
+  return (!m_hasExtensionMotion || m_lifter.IsExtensionMPComplete()) &&
+         (!m_hasShoulderMotion || m_lifter.IsShoulderMPComplete()) &&
+         (!m_hasBashGuardMotion || m_bashGuard.IsBashGuardMPComplete());
+}
+
+frc2::Command::InterruptionBehavior SetArmPoseCommand::GetInterruptionBehavior() const {
+  return InterruptionBehavior::kCancelSelf;
 }
