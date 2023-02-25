@@ -27,12 +27,20 @@ void ScoreConeCommand::Initialize() {
                                    BashGuardPosition::Retracted,
                                    WristPosition::Unknown,
                                    PathType::concaveUp,
-                                   speeds::armKinematicSpeeds::effectorVelocity,
+                                   30_ips,
                                    speeds::armKinematicSpeeds::effectorAcceleration};
+  auto safteyRaise = SetArmPoseCommand{m_lifter,
+                                       m_bash,
+                                       GetRelativePose(m_lifter.GetArmPose(WristPosition::Unknown), -10_in, 0_in),
+                                       BashGuardPosition::Retracted,
+                                       WristPosition::Unknown,
+                                       PathType::unmodified,
+                                       30_ips,
+                                       speeds::armKinematicSpeeds::effectorAcceleration};
 
-  m_allCommands =
-      frc2::ParallelCommandGroup(gpScore, frc2::SequentialCommandGroup(frc2::WaitCommand(500_ms), m_retractIntake))
-          .ToPtr();
+  m_allCommands = frc2::ParallelCommandGroup(frc2::SequentialCommandGroup(gpScore, safteyRaise),
+                                             frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms), m_retractIntake))
+                      .ToPtr();
   // Initialize all commands
   m_allCommands.get()->Initialize();
 }

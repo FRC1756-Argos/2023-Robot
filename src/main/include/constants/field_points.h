@@ -72,9 +72,9 @@ namespace field_points {
     constexpr auto middleCubeNodeDepth = 22.75_in;
     // low cone and cube node heights from floor and depths
     constexpr auto lowConeNodeHeight = 0_in;
-    constexpr auto lowConeNodeDepth = 8_in;
+    constexpr auto lowConeNodeDepth = 12_in;
     constexpr auto lowCubeNodeHeight = 0_in;
-    constexpr auto lowCubeNodeDepth = 8_in;
+    constexpr auto lowCubeNodeDepth = 12_in;
 
     // Global Y-Positions for nodes
     // Columns are named left, middle, right as if you are facing them from inside the field
