@@ -4,8 +4,9 @@
 
 #include "subsystems/intake_subsystem.h"
 
-#include "argos_lib/config/talonsrx_config.h"
 #include <frc/smartdashboard/SmartDashboard.h>
+
+#include "argos_lib/config/talonsrx_config.h"
 #include "constants/addresses.h"
 #include "constants/field_points.h"
 #include "constants/measure_up.h"
