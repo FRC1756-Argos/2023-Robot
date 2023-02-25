@@ -27,7 +27,7 @@ void ScoreConeCommand::Initialize() {
                                    BashGuardPosition::Retracted,
                                    WristPosition::Unknown,
                                    PathType::concaveUp,
-                                   speeds::armKinematicSpeeds::effectorVelocity,
+                                   30_ips,
                                    speeds::armKinematicSpeeds::effectorAcceleration};
 
   m_allCommands =

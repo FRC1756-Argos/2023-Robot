@@ -42,7 +42,7 @@ void IntakeSubsystem::EjectCube() {
 
 void IntakeSubsystem::IntakeStop() {
   if (m_haveCone) {
-    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.2);
+    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.3);
   } else if (m_haveCube) {
     m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.2);
   } else {
