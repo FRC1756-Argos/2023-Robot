@@ -298,15 +298,14 @@ void RobotContainer::ConfigureBindings() {
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
 
-  newTargetTrigger.OnTrue(
-      SetArmPoseCommand(
-          m_lifter,
-          m_bash,
-          [this]() { return m_buttonBox.GetScoringPosition(); },
-          [this]() { return m_buttonBox.GetBashGuardStatus(); },
-          [this]() { return m_buttonBox.GetSpareSwitchStatus(); },  /// @todo Replace with intake feedback (#53)
-          PathType::concaveDown)
-          .ToPtr());
+  newTargetTrigger.OnTrue(SetArmPoseCommand(
+                              m_lifter,
+                              m_bash,
+                              [this]() { return m_buttonBox.GetScoringPosition(); },
+                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                              [this]() { return m_intake.IsConeFaceDown(); },
+                              PathType::concaveDown)
+                              .ToPtr());
   stowPositionTrigger.OnTrue(SetArmPoseCommand(
                                  m_lifter,
                                  m_bash,
