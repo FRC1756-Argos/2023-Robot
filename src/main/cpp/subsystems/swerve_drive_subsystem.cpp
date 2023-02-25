@@ -71,6 +71,7 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
     , m_odometry{m_swerveDriveKinematics, frc::Rotation2d(GetIMUYaw()), GetCurrentModulePositions(), frc::Pose2d{}}
     , m_prevOdometryAngle{0_deg}
     , m_continuousOdometryOffset{0_deg}
+    , m_poseEstimator{m_swerveDriveKinematics, frc::Rotation2d(GetIMUYaw()), GetCurrentModulePositions(), frc::Pose2d{}}
     , m_fsStorage(paths::swerveHomesPath)
     , m_followingProfile(false)
     , m_profileComplete(false)
@@ -216,7 +217,7 @@ wpi::array<frc::SwerveModulePosition, 4> SwerveDriveSubsystem::GetCurrentModuleP
 void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
                                        const double& sideVelocity,
                                        const double& rotVelocity) {
-  UpdateOdometry();
+  UpdateEstimatedPose();
   if (fwVelocity == 0 && sideVelocity == 0 && rotVelocity == 0) {
     if (!m_followingProfile) {
       StopDrive();
@@ -246,8 +247,9 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
                                                                                    m_swerveProfileStartTime);
     if (!m_pActiveSwerveProfile->IsFinished(elapsedTime)) {
       desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
+
       const auto controllerChassisSpeeds = m_followerController.Calculate(
-          m_odometry.GetPose(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());
+          m_poseEstimator.GetEstimatedPosition(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());
       moduleStates = m_swerveDriveKinematics.ToSwerveModuleStates(controllerChassisSpeeds);
       frc::SmartDashboard::PutNumber("(SwerveFollower) Desired X",
                                      units::inch_t{desiredProfileState.pose.X()}.to<double>());
@@ -436,24 +438,37 @@ void SwerveDriveSubsystem::FieldHome(units::degree_t homeAngle, bool updateOdome
   m_fieldHomeOffset = -GetIMUYaw() - homeAngle;
   if (updateOdometry) {
     // Update odometry as well
-    const auto currentPose = m_odometry.GetPose();
-    m_odometry.ResetPosition(
+    const auto currentPose = m_poseEstimator.GetEstimatedPosition();
+    m_poseEstimator.ResetPosition(
         -GetIMUYaw(), GetCurrentModulePositions(), frc::Pose2d{currentPose.Translation(), frc::Rotation2d(homeAngle)});
-    m_prevOdometryAngle = m_odometry.GetPose().Rotation().Degrees();
+    m_prevOdometryAngle = m_poseEstimator.GetEstimatedPosition().Rotation().Degrees();
     m_continuousOdometryOffset = 0_deg;
   }
 }
 
 void SwerveDriveSubsystem::InitializeOdometry(const frc::Pose2d& currentPose) {
-  m_odometry.ResetPosition(-GetIMUYaw(), GetCurrentModulePositions(), currentPose);
-  m_prevOdometryAngle = m_odometry.GetPose().Rotation().Degrees();
+  m_poseEstimator.ResetPosition(-GetIMUYaw(), GetCurrentModulePositions(), currentPose);
+  m_prevOdometryAngle = m_poseEstimator.GetEstimatedPosition().Rotation().Degrees();
   m_continuousOdometryOffset = 0_deg;
   // Since we know the position, might as well update the driving orientation as well
   FieldHome(currentPose.Rotation().Degrees(), false);
 }
 
 frc::Rotation2d SwerveDriveSubsystem::GetContinuousOdometryAngle() {
-  const auto latestOdometry = m_odometry.GetPose();
+  const auto latestOdometry = m_poseEstimator.GetEstimatedPosition();
+
+  if (m_prevOdometryAngle > 90_deg && latestOdometry.Rotation().Degrees() < -(90_deg)) {
+    m_continuousOdometryOffset += 360_deg;
+  } else if (m_prevOdometryAngle < -(90_deg) && latestOdometry.Rotation().Degrees() > 90_deg) {
+    m_continuousOdometryOffset -= 360_deg;
+  }
+  m_prevOdometryAngle = latestOdometry.Rotation().Degrees();
+
+  return frc::Rotation2d{latestOdometry.Rotation().Degrees() + m_continuousOdometryOffset};
+}
+
+frc::Rotation2d SwerveDriveSubsystem::GetContinuousPoseEstAngle() {
+  const auto latestOdometry = m_poseEstimator.GetEstimatedPosition();
 
   if (m_prevOdometryAngle > 90_deg && latestOdometry.Rotation().Degrees() < -(90_deg)) {
     m_continuousOdometryOffset += 360_deg;
@@ -466,26 +481,49 @@ frc::Rotation2d SwerveDriveSubsystem::GetContinuousOdometryAngle() {
 }
 
 frc::Pose2d SwerveDriveSubsystem::GetContinuousOdometry() {
-  const auto discontinuousOdometry = m_odometry.GetPose();
-  return frc::Pose2d{discontinuousOdometry.Translation(), GetContinuousOdometryAngle()};
+  const auto discontinuousOdometry = m_poseEstimator.GetEstimatedPosition();
+  return frc::Pose2d{discontinuousOdometry.Translation(), GetContinuousPoseEstAngle()};
 }
 
-frc::Pose2d SwerveDriveSubsystem::UpdateOdometry() {
-  const auto newPose = m_odometry.Update(frc::Rotation2d{-GetIMUYaw()}, GetCurrentModulePositions());
-  const auto continuousOdometryAngle = GetContinuousOdometryAngle();
-  frc::SmartDashboard::PutNumber("(Odometry) X", units::inch_t{newPose.X()}.to<double>());
-  frc::SmartDashboard::PutNumber("(Odometry) Y", units::inch_t{newPose.Y()}.to<double>());
-  frc::SmartDashboard::PutNumber("(Odometry) Angle", newPose.Rotation().Degrees().to<double>());
-  frc::SmartDashboard::PutNumber("(Odometry) Continuous Angle", continuousOdometryAngle.Degrees().to<double>());
-  return frc::Pose2d{newPose.Translation(), continuousOdometryAngle};
+frc::Pose2d SwerveDriveSubsystem::UpdateEstimatedPose() {
+  const auto newEstPose = m_poseEstimator.Update(frc::Rotation2d{-GetIMUYaw()}, GetCurrentModulePositions());
+  const auto continuousEstPoseAngle = GetContinuousPoseEstAngle();
+  frc::SmartDashboard::PutNumber("(Odometry) X", units::inch_t{newEstPose.X()}.to<double>());
+  frc::SmartDashboard::PutNumber("(Odometry) Y", units::inch_t{newEstPose.Y()}.to<double>());
+  frc::SmartDashboard::PutNumber("(Odometry) Angle", newEstPose.Rotation().Degrees().to<double>());
+  frc::SmartDashboard::PutNumber("(Odometry) Continuous Angle", GetContinuousPoseEstAngle().Degrees().to<double>());
+  return frc::Pose2d{newEstPose.Translation(), continuousEstPoseAngle};
 }
 
 units::degree_t SwerveDriveSubsystem::GetFieldCentricAngle() const {
   return -GetIMUYaw() - m_fieldHomeOffset;
 }
 
-frc::Pose2d SwerveDriveSubsystem::GetPoseEstimate() {
-  return GetContinuousOdometry();
+frc::Pose2d SwerveDriveSubsystem::GetPoseEstimate(const frc::Pose2d& robotPose, const units::millisecond_t& latency) {
+  const auto newEstPose = m_poseEstimator.Update(frc::Rotation2d{-GetIMUYaw()}, GetCurrentModulePositions());
+  const auto continuousEstPoseAngle = GetContinuousPoseEstAngle();
+
+  // Account for Vision Measurement here
+  frc::Timer timer;
+  const auto timeStamp = timer.GetFPGATimestamp() - latency;
+  m_poseEstimator.AddVisionMeasurement(robotPose, timeStamp);
+
+  frc::SmartDashboard::PutNumber("(Est Pose) X", units::inch_t{newEstPose.X()}.to<double>());
+  frc::SmartDashboard::PutNumber("(Est Pose) Y", units::inch_t{newEstPose.Y()}.to<double>());
+  frc::SmartDashboard::PutNumber("(Est Pose) Angle", newEstPose.Rotation().Degrees().to<double>());
+  frc::SmartDashboard::PutNumber("(Est Pose) Continuous Angle", continuousEstPoseAngle.Degrees().to<double>());
+
+  frc::SmartDashboard::PutNumber("(Est Pose After Vision) X",
+                                 units::inch_t{m_poseEstimator.GetEstimatedPosition().X()}.to<double>());
+  frc::SmartDashboard::PutNumber("(Est Pose After Vision) Y",
+                                 units::inch_t{m_poseEstimator.GetEstimatedPosition().Y()}.to<double>());
+  frc::SmartDashboard::PutNumber("(Est Pose After Vision) Angle",
+                                 m_poseEstimator.GetEstimatedPosition().Rotation().Degrees().to<double>());
+  frc::SmartDashboard::PutNumber("(Est Pose After Vision) Continuous Angle",
+                                 GetContinuousPoseEstAngle().Degrees().to<double>());
+
+  return frc::Pose2d{m_poseEstimator.GetEstimatedPosition().Translation(), GetContinuousPoseEstAngle()};
+  // return GetContinuousOdometry();
 }
 
 void SwerveDriveSubsystem::SetControlMode(SwerveDriveSubsystem::DriveControlMode controlMode) {
