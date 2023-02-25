@@ -110,13 +110,6 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   frc::Pose2d GetContinuousOdometry();
 
   /**
-   * @brief Reads module states & gyro, updates odometry, and returns latest pose estimate
-   *
-   * @return Estimate of robot pose
-   */
-  frc::Pose2d UpdateOdometry();
-
-  /**
    * @brief Reads module states & gyro, updates pose estimator, and returns latest pose estimate
    *
    * @return Estimate of robot pose
