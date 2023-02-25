@@ -13,19 +13,11 @@
 #include <constants/measure_up.h>
 #include <constants/motors.h>
 #include <units/time.h>
-#include <utils/sensor_conversions.h>
 
 #include <algorithm>
 
-#include "Constants.h"
-#include "argos_lib/config/cancoder_config.h"
-#include "argos_lib/config/config_types.h"
-#include "argos_lib/config/falcon_config.h"
-#include "argos_lib/general/swerve_utils.h"
-#include "constants/addresses.h"
-#include "constants/encoders.h"
-#include "constants/motors.h"
-#include "units/time.h"
+#include <Constants.h>
+
 #include "utils/sensor_conversions.h"
 
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
@@ -211,12 +203,7 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
 void LifterSubsystem::Periodic() {}
 
 void LifterSubsystem::Disable() {
-  m_shoulderStream.Clear();
-  m_extensionStream.Clear();
-  m_wristStream.Clear();
-  StopShoulder();
-  StopArmExtension();
-  StopWrist();
+  StopMotionProfile();
 }
 
 bool LifterSubsystem::IsArmExtensionMoving() {
@@ -327,19 +314,20 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
   m_shoulderDrive.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
 }
 
-frc::Translation2d LifterSubsystem::GetArmPose() {
+frc::Translation2d LifterSubsystem::GetArmPose(const WristPosition wristPosition) {
   LifterPosition lfPose = GetLifterPosition();
-  return m_kinematics.GetPose(ArmState{lfPose.state});
+  return m_kinematics.GetPose(ArmState{lfPose.state}, WristPosition::RollersUp != wristPosition);
 }
 
-LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(frc::Translation2d desPose, bool effectorInverted) {
+LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(frc::Translation2d desPose,
+                                                               WristPosition effectorPosition) {
   SetWristManualOverride(false);
   SetShoulderManualOverride(false);
   SetExtensionManualOverride(false);
 
   LifterPosition lfPos;
-  lfPos.wristAngle =
-      effectorInverted ? measure_up::lifter::wrist::invertedAngle : measure_up::lifter::wrist::nominalAngle;
+  lfPos.wristAngle = effectorPosition != WristPosition::RollersUp ? measure_up::lifter::wrist::invertedAngle :
+                                                                    measure_up::lifter::wrist::nominalAngle;
   lfPos.state = m_kinematics.GetJoints(desPose);
 
   SetWristAngle(lfPos.wristAngle);
@@ -356,6 +344,18 @@ bool LifterSubsystem::IsArmExtensionHomed() {
 units::degree_t LifterSubsystem::GetWristAngle() {
   return sensor_conversions::lifter::wrist::ToAngle(m_wrist.GetSelectedSensorPosition());
 }
+
+WristPosition LifterSubsystem::GetWristPosition() {
+  if (!m_wristHomed) {
+    return WristPosition::Unknown;
+  }
+  auto angle = GetWristAngle();
+  if (units::math::abs(argos_lib::angle::ConstrainAngle(angle, -180_deg, 180_deg)) < 90_deg) {
+    return WristPosition::RollersDown;
+  }
+  return WristPosition::RollersUp;
+}
+
 units::inch_t LifterSubsystem::GetArmExtension() {
   return sensor_conversions::lifter::arm_extension::ToExtension(m_armExtensionMotor.GetSelectedSensorPosition());
 }
@@ -366,8 +366,8 @@ LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
   return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderAngle()}};
 }
 
-ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, bool effectorInverted) const {
-  return m_kinematics.GetJoints(pose, effectorInverted);
+ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const {
+  return m_kinematics.GetJoints(pose, effectorPosition != WristPosition::RollersUp);
 }
 
 bool LifterSubsystem::IsShoulderMPComplete() {
@@ -390,16 +390,28 @@ ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetWristM
   return m_wristStream;
 }
 
+void LifterSubsystem::StopMotionProfile() {
+  m_shoulderStream.Clear();
+  m_wristStream.Clear();
+  m_extensionStream.Clear();
+  StopArmExtension();
+  StopWrist();
+  StopArmExtension();
+  m_shoulderDrive.ClearMotionProfileTrajectories();
+  m_wrist.ClearMotionProfileTrajectories();
+  m_armExtensionMotor.ClearMotionProfileTrajectories();
+}
+
 void LifterSubsystem::StartMotionProfile(size_t shoulderStreamSize,
                                          size_t extensionStreamSize,
                                          size_t wristStreamSize) {
   m_shoulderManualOverride = false;
   m_extensionManualOverride = false;
   m_shoulderDrive.StartMotionProfile(m_shoulderStream,
-                                     std::min<size_t>(10, shoulderStreamSize),
+                                     std::min<size_t>(5, shoulderStreamSize),
                                      ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
   m_armExtensionMotor.StartMotionProfile(m_extensionStream,
-                                         std::min<size_t>(10, extensionStreamSize),
+                                         std::min<size_t>(5, extensionStreamSize),
                                          ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
 }
 void LifterSubsystem::EnableWristSoftLimits() {

@@ -34,6 +34,8 @@ enum class ScoringRow { low, middle, high, invalid };
 struct ScoringPosition {
   ScoringColumn column = ScoringColumn::invalid;
   ScoringRow row = ScoringRow::invalid;
+
+  auto operator<=>(const ScoringPosition& other) const = default;
 };
 
 enum GamePiece { CONE, CUBE, HYBRID };

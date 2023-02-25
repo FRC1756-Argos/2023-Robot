@@ -104,22 +104,27 @@ units::inch_t path_planning::SegmentLength(const LineSegment& segment) {
   return units::math::hypot(segment.end.x - segment.start.x, segment.end.z - segment.start.z);
 }
 
-ArmPath path_planning::KeepOut(LineSegment candidatePath, const Polygon& avoidancePolygon) {
-  ArmPath safePath;
-
-  safePath.reserve(4);
-
-  safePath.push_back(candidatePath.start);
+ArmPath path_planning::KeepOut(const ArmPath& initialPath, const Polygon& avoidancePolygon) {
+  if (initialPath.size() < 2) {
+    return initialPath;
+  }
 
   auto polygonSegments = PolygonSegments(avoidancePolygon);
 
-  std::vector<std::pair<size_t, units::inch_t>> segmentsWithIntersections;
+  std::vector<PathIntersection> segmentsWithIntersections;
 
-  for (size_t i = 0; i < polygonSegments.size(); ++i) {
-    auto intersectionPoint = Intersection(candidatePath, polygonSegments.at(i));
-    if (intersectionPoint) {
-      segmentsWithIntersections.emplace_back(i, SegmentLength({candidatePath.start, intersectionPoint.value()}));
+  auto cumulativePathLength = 0_in;
+
+  for (size_t pathIndex = 0; pathIndex < initialPath.size() - 1; ++pathIndex) {
+    for (size_t i = 0; i < polygonSegments.size(); ++i) {
+      auto intersectionPoint =
+          Intersection({initialPath.at(pathIndex), initialPath.at(pathIndex + 1)}, polygonSegments.at(i));
+      if (intersectionPoint) {
+        segmentsWithIntersections.emplace_back(
+            pathIndex, i, cumulativePathLength + SegmentLength({initialPath.at(pathIndex), intersectionPoint.value()}));
+      }
     }
+    cumulativePathLength += SegmentLength({initialPath.at(pathIndex), initialPath.at(pathIndex + 1)});
   }
 
   // If only one segment intersects, ignore since it's probably just hitting the endpoint
@@ -127,42 +132,58 @@ ArmPath path_planning::KeepOut(LineSegment candidatePath, const Polygon& avoidan
     // Order intersections by position along candidate path.  This should prevent back tracking output path
     std::sort(segmentsWithIntersections.begin(),
               segmentsWithIntersections.end(),
-              [](const std::pair<size_t, units::inch_t>& a, const std::pair<size_t, units::inch_t>& b) {
-                return a.second < b.second;
-              });
+              [](const PathIntersection& a, const PathIntersection& b) { return a.path1Distance < b.path1Distance; });
+
+    ArmPath safePath;
+    safePath.reserve(initialPath.size() + segmentsWithIntersections.size());
+    safePath.push_back(initialPath.front());
+
+    size_t initialPathIndexCheckpoint = 0;
 
     // Analyze pairs of intersections because these are where we need to follow the avoidance polygon
     for (auto intersectionIt = segmentsWithIntersections.begin();
          intersectionIt != std::prev(segmentsWithIntersections.end()) &&
          intersectionIt != segmentsWithIntersections.end();
          std::advance(intersectionIt, 2)) {
-      if (intersectionIt->first < std::next(intersectionIt)->first &&
-          std::next(intersectionIt)->first - intersectionIt->first <=
-              (avoidancePolygon.size() - std::next(intersectionIt)->first + intersectionIt->first)) {
+      if (intersectionIt->path1SegmentIndex > initialPathIndexCheckpoint) {
+        // Insert initial path points that aren't involved in intersection regions
+        safePath.insert(safePath.end(),
+                        std::next(initialPath.begin(), initialPathIndexCheckpoint + 1),
+                        std::next(initialPath.begin(), intersectionIt->path1SegmentIndex + 1));
+      }
+      // This handles removing points from initial path if needed
+      initialPathIndexCheckpoint = std::next(intersectionIt)->path1SegmentIndex;
+
+      if (intersectionIt->path2SegmentIndex < std::next(intersectionIt)->path2SegmentIndex &&
+          std::next(intersectionIt)->path2SegmentIndex - intersectionIt->path2SegmentIndex <=
+              (avoidancePolygon.size() - std::next(intersectionIt)->path2SegmentIndex +
+               intersectionIt->path2SegmentIndex)) {
         // Shortest path is forward order from first index to second index
-        for (size_t i = intersectionIt->first; i < std::next(intersectionIt)->first; ++i) {
+        for (size_t i = intersectionIt->path2SegmentIndex; i < std::next(intersectionIt)->path2SegmentIndex; ++i) {
           safePath.push_back(polygonSegments.at(i).end);
         }
-      } else if (intersectionIt->first - std::next(intersectionIt)->first <
-                 std::next(intersectionIt)->first + avoidancePolygon.size() - intersectionIt->first) {
+      } else if (intersectionIt->path2SegmentIndex - std::next(intersectionIt)->path2SegmentIndex <
+                 std::next(intersectionIt)->path2SegmentIndex + avoidancePolygon.size() -
+                     intersectionIt->path2SegmentIndex) {
         // Shortest path is reverse order from first index to second index
-        for (size_t i = intersectionIt->first; i > std::next(intersectionIt)->first; --i) {
+        for (size_t i = intersectionIt->path2SegmentIndex; i > std::next(intersectionIt)->path2SegmentIndex; --i) {
           safePath.push_back(polygonSegments.at(i).start);
         }
-      } else if (intersectionIt->first < std::next(intersectionIt)->first &&
-                 std::next(intersectionIt)->first - intersectionIt->first >
-                     (avoidancePolygon.size() - std::next(intersectionIt)->first + intersectionIt->first)) {
+      } else if (intersectionIt->path2SegmentIndex < std::next(intersectionIt)->path2SegmentIndex &&
+                 std::next(intersectionIt)->path2SegmentIndex - intersectionIt->path2SegmentIndex >
+                     (avoidancePolygon.size() - std::next(intersectionIt)->path2SegmentIndex +
+                      intersectionIt->path2SegmentIndex)) {
         // Shortest path is reverse order from first index to second index with wrap around 0
-        size_t i = intersectionIt->first;
-        while (i != std::next(intersectionIt)->first) {
+        size_t i = intersectionIt->path2SegmentIndex;
+        while (i != std::next(intersectionIt)->path2SegmentIndex) {
           safePath.push_back(polygonSegments.at(i).start);
 
           i == 0 ? i = polygonSegments.size() - 1 : --i;
         }
       } else {
         // Shortest path is forward order from first index to second index with wrap around 0
-        size_t i = intersectionIt->first;
-        while (i != std::next(intersectionIt)->first) {
+        size_t i = intersectionIt->path2SegmentIndex;
+        while (i != std::next(intersectionIt)->path2SegmentIndex) {
           safePath.push_back(polygonSegments.at(i).end);
 
           ++i;
@@ -173,9 +194,8 @@ ArmPath path_planning::KeepOut(LineSegment candidatePath, const Polygon& avoidan
         }
       }
     }
+    safePath.insert(safePath.end(), std::next(initialPath.begin(), initialPathIndexCheckpoint + 1), initialPath.end());
+    return safePath;
   }
-
-  safePath.push_back(candidatePath.end);
-
-  return safePath;
+  return initialPath;
 }

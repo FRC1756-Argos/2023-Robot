@@ -4,6 +4,10 @@
 
 #include "commands/score_cone_command.h"
 
+#include <frc2/command/ParallelCommandGroup.h>
+#include <frc2/command/SequentialCommandGroup.h>
+#include <frc2/command/WaitCommand.h>
+
 #include <Constants.h>
 
 #include "commands/set_arm_pose_command.h"
@@ -12,42 +16,40 @@ ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& 
     : m_lifter{lifter}
     , m_intake{intake}
     , m_bash{bash}
-    , m_retractIntake{frc2::InstantCommand{[this]() { m_intake.EjectCone(); }, {&m_intake}}} {}
+    , m_retractIntake{frc2::InstantCommand{[this]() { m_intake.EjectCone(); }, {&m_intake}}}
+    , m_allCommands{frc2::InstantCommand{[]() {}, {}}} {}
 
 // Called when the command is initially scheduled.
 void ScoreConeCommand::Initialize() {
-  auto gpDown = SetArmPoseCommand{m_lifter,
-                                  m_bash,
-                                  GetRelativePose(m_lifter.GetArmPose(), 0_in, -10_in),
-                                  BashGuardPosition::Retracted,
-                                  speeds::armKinematicSpeeds::effectorVelocity,
-                                  speeds::armKinematicSpeeds::effectorAcceleration};
-  auto gpBack = SetArmPoseCommand{m_lifter,
-                                  m_bash,
-                                  GetRelativePose(m_lifter.GetArmPose(), -10_in, -10_in),
-                                  BashGuardPosition::Retracted,
-                                  speeds::armKinematicSpeeds::effectorVelocity,
-                                  speeds::armKinematicSpeeds::effectorAcceleration};
+  auto gpScore = SetArmPoseCommand{m_lifter,
+                                   m_bash,
+                                   GetRelativePose(m_lifter.GetArmPose(WristPosition::Unknown), -10_in, -10_in),
+                                   BashGuardPosition::Retracted,
+                                   WristPosition::Unknown,
+                                   PathType::concaveUp,
+                                   speeds::armKinematicSpeeds::effectorVelocity,
+                                   speeds::armKinematicSpeeds::effectorAcceleration};
 
   m_allCommands =
-      std::make_unique<frc2::SequentialCommandGroup>(frc2::SequentialCommandGroup(gpDown, m_retractIntake, gpBack));
+      frc2::ParallelCommandGroup(gpScore, frc2::SequentialCommandGroup(frc2::WaitCommand(500_ms), m_retractIntake))
+          .ToPtr();
   // Initialize all commands
-  m_allCommands->Initialize();
+  m_allCommands.get()->Initialize();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void ScoreConeCommand::Execute() {
-  m_allCommands->Execute();
+  m_allCommands.get()->Execute();
 }
 
 // Called once the command ends or is interrupted.
 void ScoreConeCommand::End(bool interrupted) {
   // When command is done, stop the intake reverseing
-  m_allCommands->End(interrupted);
+  m_allCommands.get()->End(interrupted);
   m_intake.IntakeStop();
 }
 
 // Returns true when the command should end.
 bool ScoreConeCommand::IsFinished() {
-  return m_allCommands->IsFinished();
+  return m_allCommands.get()->IsFinished();
 }
