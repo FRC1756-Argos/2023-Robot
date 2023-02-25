@@ -5,6 +5,7 @@
 #include "subsystems/intake_subsystem.h"
 
 #include "argos_lib/config/talonsrx_config.h"
+#include <frc/smartdashboard/SmartDashboard.h>
 #include "constants/addresses.h"
 #include "constants/field_points.h"
 #include "constants/measure_up.h"
@@ -32,7 +33,8 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
 
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {
-  std::printf("Sensor Distance, %f\n", GetIntakeDistance().to<double>());
+  frc::SmartDashboard::PutNumber("SensorDistance", GetIntakeDistance().to<double>());
+  frc::SmartDashboard::PutBoolean("ConeFaceDown", IsConeFaceDown());
 }
 
 void IntakeSubsystem::IntakeCone() {
@@ -72,12 +74,12 @@ void IntakeSubsystem::Disable() {
 
 units::inch_t IntakeSubsystem::GetIntakeDistance() {
   units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor.GetRange());
-  return (measure_up::lifter::wrist::wristWidth / 2) - (GetIntakeDistance + cone::coneWidth / 2);
+  return (measure_up::lifter::wrist::wristWidth / 2) - (GetIntakeDistance + cone::coneWidth / 2) + 1.5_in;
 }
 
 bool IntakeSubsystem::IsConeFaceDown() {
   units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor2.GetRange());
-  if (GetIntakeDistance > 1_in || GetIntakeDistance < 18_in) {
+  if (GetIntakeDistance < 17_in) {
     return true;
   }
   return false;
