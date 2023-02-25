@@ -99,6 +99,13 @@ class VisionSubsystem : public frc2::SubsystemBase {
   LimelightTarget::tValues GetCameraTargetValues();
 
   /**
+   * @brief Get the old robot poses and latencies
+   *
+   * @return LimelightTarget::tValues
+   */
+  LimelightTarget::tValues m_oldTargetValues;
+
+  /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
   void Periodic() override;

@@ -39,6 +39,7 @@ RobotContainer::RobotContainer()
     , m_intake(m_instance)
     , m_bash(m_instance)
     , m_ledSubSystem(m_instance)
+    , m_visionSubSystem(m_instance, &m_swerveDrive)
     , m_homeArmExtensionCommand(m_lifter)
     , m_bashGuardHomingCommand(m_bash)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
