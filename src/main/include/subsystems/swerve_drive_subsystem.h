@@ -23,7 +23,6 @@
 #include "frc/StateSpaceUtil.h"
 #include "frc/estimator/SwerveDrivePoseEstimator.h"
 #include "utils/swerve_trapezoidal_profile.h"
-#include "vision_subsystem.h"
 
 class SwerveModule {
  public:
@@ -137,7 +136,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    *
    * @return Latest pose
    */
-  frc::Pose2d GetPoseEstimate(const LimelightTarget::tValues& visionMeasurement);
+  frc::Pose2d GetPoseEstimate(const frc::Pose2d& robotPose, const units::millisecond_t& latency);
 
   void SetControlMode(SwerveDriveSubsystem::DriveControlMode controlMode);
 

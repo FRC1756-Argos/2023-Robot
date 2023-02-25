@@ -504,7 +504,7 @@ frc::Pose2d SwerveDriveSubsystem::UpdateEstimatedPose() {
   frc::SmartDashboard::PutNumber("(Odometry) X", units::inch_t{newEstPose.X()}.to<double>());
   frc::SmartDashboard::PutNumber("(Odometry) Y", units::inch_t{newEstPose.Y()}.to<double>());
   frc::SmartDashboard::PutNumber("(Odometry) Angle", newEstPose.Rotation().Degrees().to<double>());
-  frc::SmartDashboard::PutNumber("(Odometry) Continuous Angle", continuousEstPoseAngle().Degrees().to<double>());
+  frc::SmartDashboard::PutNumber("(Odometry) Continuous Angle", GetContinuousPoseEstAngle().Degrees().to<double>());
   return frc::Pose2d{newEstPose.Translation(), continuousEstPoseAngle};
 }
 
@@ -512,14 +512,14 @@ units::degree_t SwerveDriveSubsystem::GetFieldCentricAngle() const {
   return -GetIMUYaw() - m_fieldHomeOffset;
 }
 
-frc::Pose2d SwerveDriveSubsystem::GetPoseEstimate(const LimelightTarget::tValues& visionMeasurement) {
+frc::Pose2d SwerveDriveSubsystem::GetPoseEstimate(const frc::Pose2d& robotPose, const units::millisecond_t& latency) {
   const auto newEstPose = m_poseEstimator.Update(frc::Rotation2d{-GetIMUYaw()}, GetCurrentModulePositions());
   const auto continuousEstPoseAngle = GetContinuousPoseEstAngle();
 
   // Account for Vision Measurement here
   frc::Timer timer;
-  const auto timeStamp = timer.GetFPGATimestamp() - visionMeasurement.totalLatency;
-  m_poseEstimator.AddVisionMeasurement(frc::Pose2d(visionMeasurement.robotPoseWPI.ToPose2d()), timeStamp);
+  const auto timeStamp = timer.GetFPGATimestamp() - latency;
+  m_poseEstimator.AddVisionMeasurement(robotPose, timeStamp);
 
   frc::SmartDashboard::PutNumber("(Est Pose) X", units::inch_t{newEstPose.X()}.to<double>());
   frc::SmartDashboard::PutNumber("(Est Pose) Y", units::inch_t{newEstPose.Y()}.to<double>());
