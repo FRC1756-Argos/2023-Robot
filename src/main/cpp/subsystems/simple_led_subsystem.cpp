@@ -5,8 +5,8 @@
 #include "subsystems/simple_led_subsystem.h"
 
 #include <ctre/phoenix/led/FireAnimation.h>
-#include <frc/DriverStation.h>
 #include <ctre/phoenix/led/StrobeAnimation.h>
+#include <frc/DriverStation.h>
 
 #include "argos_lib/config/config_types.h"
 #include "constants/addresses.h"
