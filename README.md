@@ -149,6 +149,21 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 
 ## Software Checkout
 
+### Pits
+- Soft limit tests on extension, bash, shoulder
+- Pick up & Place cone, go to High, Medium, Low
+- Repeat with cube
+- Bash guard deploys
+- Field Centric Home
+- Robot drives forward / left / back / right
+- Robot turns as well
+
+### Pits - Extended
+- Camera is sending data
+- All fuses are in and secure
+- No obvious errors in log or events list
+- Check CAN devices should have: (23)
+
 ## Software Versions
 
 We're using the following dependencies:
