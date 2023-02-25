@@ -6,6 +6,7 @@
 
 #include <argos_lib/commands/swap_controllers_command.h>
 #include <argos_lib/controller/trigger_composition.h>
+#include <argos_lib/general/color.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
 #include <frc/RobotState.h>
@@ -164,7 +165,7 @@ void RobotContainer::ConfigureBindings() {
                argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
   }});
 
-  auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::RobotState::IsEnabled(); }});
+  auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
 
@@ -200,7 +201,6 @@ void RobotContainer::ConfigureBindings() {
                                                                       argos_lib::XboxController::Button::kB});
 
   auto controlMode = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
-  auto ledTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kDown);
   auto fieldHome = m_controllers.DriverController().TriggerDebounced(argos_lib::XboxController::Button::kY);
   auto intakeForwardTrigger =
       m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger);
@@ -241,11 +241,6 @@ void RobotContainer::ConfigureBindings() {
       frc2::InstantCommand([this]() { m_bash.SetBashGuardManualOverride(true); }, {}).ToPtr());
 
   // DRIVE TRIGGER ACTIVATION
-  ledTrigger.OnFalse(frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
-  ledTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_ledSubSystem.SetBackLeftSolidColor(frc::Color::kCyan); }, {&m_ledSubSystem})
-          .ToPtr());
-
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
   (intakeForwardTrigger && exclusiveIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
@@ -321,9 +316,22 @@ void RobotContainer::ConfigureBindings() {
 }
 
 void RobotContainer::Disable() {
+  m_ledSubSystem.SetAllGroupsAllianceColor();
+
   m_lifter.Disable();
   m_intake.Disable();
   m_bash.Disable();
+}
+
+void RobotContainer::Enable() {
+  m_ledSubSystem.SetAllGroupsColor(argos_lib::colors::kReallyGreen);
+}
+
+void RobotContainer::AllianceChanged() {
+  // If disabled, set alliance colors
+  if (frc::DriverStation::IsDisabled()) {
+    m_ledSubSystem.SetAllGroupsAllianceColor();
+  }
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {

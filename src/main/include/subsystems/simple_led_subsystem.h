@@ -4,16 +4,35 @@
 
 #pragma once
 
+#include <argos_lib/general/log.h>
 #include <ctre/Phoenix.h>
 #include <frc/util/Color.h>
 #include <frc2/command/SubsystemBase.h>
 
 #include "argos_lib/config/config_types.h"
+#include "argos_lib/general/color.h"
+
+enum LedGroup { SIDES, BACK, FRONT };
 
 class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:
   explicit SimpleLedSubsystem(argos_lib::RobotInstance instance);
-  void SetBackLeftSolidColor(frc::Color color);
+
+  /// @brief Sets group of leds to given color
+  /// @param group The group of leds to set
+  /// @param color an ArgosColor to set the LEDs too
+  void SetLedGroupColor(LedGroup group, argos_lib::ArgosColor color);
+
+  /// @brief Sets all led groups to a given color
+  /// @param color an ArgosColor to set the LEDs too
+  void SetAllGroupsColor(argos_lib::ArgosColor color);
+
+  /// @brief Set all groups of LEDs to the alliance color
+  void SetAllGroupsAllianceColor();
+
+  /// @brief Turn off all LEDs
+  void SetAllGropusOff();
+
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
@@ -25,6 +44,7 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
   CANdle m_CANdle;
+  argos_lib::ArgosLogger m_log;
   constexpr static int startIndex_frontLeft = 8;     ///< Address of first LED in strip
   constexpr static int length_frontLeft = 30;        ///< Number of LEDs in strip
   constexpr static bool inverted_frontLeft = false;  ///< true indicates first index is at top of tower
@@ -34,12 +54,14 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   constexpr static int startIndex_sideFront = 68;
   constexpr static int length_sideFront = 61;
   constexpr static bool inverted_sideFront = false;
+
   constexpr static int startIndex_sideBack = 129;
   constexpr static int length_sideBack = 61;
   constexpr static bool inverted_sideBack = true;
   constexpr static int startIndex_backRight = 190;
   constexpr static int length_backRight = 58;
   constexpr static bool inverted_backRight = false;
+
   constexpr static int startIndex_backLeft = 248;
   constexpr static int length_backLeft = 57;
   constexpr static bool inverted_backLeft = true;
