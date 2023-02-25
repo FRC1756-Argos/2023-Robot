@@ -273,7 +273,8 @@ void RobotContainer::ConfigureBindings() {
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                      []() { return false; },
                                      PathType::concaveDown,
-                                     30_ips))
+                                     10_ips,
+                                     30_ips2))
           .ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
   // SWAP CONTROLLERS TRIGGER ACTIVATION

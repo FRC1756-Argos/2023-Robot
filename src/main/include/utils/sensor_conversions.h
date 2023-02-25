@@ -110,7 +110,7 @@ namespace sensor_conversions {
   }    // namespace lifter
   namespace bashguard {
     constexpr double sensorToMotorRevolution = 1.0 / 2048;
-    constexpr double gearboxReduction = 1.0 / 20;
+    constexpr double gearboxReduction = 1.0 / 12;
     constexpr double driveSprocketTeeth = 15.0;
     constexpr double extensionInchesPerTooth = 0.375 / 1;
     constexpr units::inch_t ToExtension(const double sensorUnit) {

@@ -256,7 +256,7 @@ void SetArmPoseCommand::Initialize() {
     shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
         sensor_conversions::lifter::shoulder::ToSensorUnit(pointIt->position),
         sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity),
-        pointIt->velocity < 0_rpm ? 0.01 * sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity) :
+        pointIt->velocity < 0_rpm ? 0.001 * sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity) :
                                     0.0,
         0,
         0,
