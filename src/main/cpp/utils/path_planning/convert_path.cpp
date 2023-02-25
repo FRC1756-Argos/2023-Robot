@@ -53,7 +53,8 @@ VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPo
 CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
                                                        const BashGuardMPPath& bashGuardPath,
                                                        const ArmPathPoint& shoulderFulcrum,
-                                                       const LifterSubsystem& lifter) {
+                                                       const LifterSubsystem& lifter,
+                                                       const WristPosition wristPosition) {
   CompositeMPPath compositePath{.startTime = std::chrono::steady_clock::now(),
                                 .shoulderPath = {},
                                 .extensionPath = {},
@@ -92,7 +93,7 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
   for (const auto& point : generalPath) {
     const ArmPathPoint armPositionVector(point.position.x - shoulderFulcrum.x, point.position.z - shoulderFulcrum.z);
     VelocityComponents velocities = DecomposeVelocity(point, armPositionVector);
-    auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), false);
+    auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), wristPosition);
     compositePath.extensionPath.emplace_back(point.time, joints.armLen, velocities.v_radial);
     compositePath.shoulderPath.emplace_back(point.time, joints.shoulderAngle, velocities.v_tangential);
   }
@@ -100,20 +101,20 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
 }
 
 BashGuardPoint lerp(const BashGuardPoint& startPoint, const BashGuardPoint& endPoint, double pct) {
-  if (pct <= 0) {
+  if (pct <= 0.0) {
     return startPoint;
   }
-  if (pct >= 1) {
+  if (pct >= 1.0) {
     return endPoint;
   }
   return BashGuardPoint(startPoint + pct * (endPoint - startPoint));
 }
 
 ArmPathPoint lerp(const ArmPathPoint& startPoint, const ArmPathPoint& endPoint, double pct) {
-  if (pct <= 0) {
+  if (pct <= 0.0) {
     return startPoint;
   }
-  if (pct >= 1) {
+  if (pct >= 1.0) {
     return endPoint;
   }
   return ArmPathPoint(startPoint.x + pct * (endPoint.x - startPoint.x),
@@ -233,7 +234,7 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
       ++segmentsCompleted;
     }
 
-    auto state = segmentProfiles.at(segmentsCompleted).Calculate(sampleTime);
+    auto state = segmentProfiles.at(segmentsCompleted).Calculate(sampleTime - completedSegmentsTime);
 
     newPoint.position = lerp(avoidancePath.at(segmentsCompleted),
                              avoidancePath.at(segmentsCompleted + 1),

@@ -254,6 +254,7 @@ void RobotContainer::ConfigureBindings() {
                                              m_bash,
                                              ScoringPosition{.column = ScoringColumn::intake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                             []() { return false; },
                                              PathType::concaveDown))
                   .ToPtr());
   (intakeReverseTrigger && exclusiveIntakeTrigger)
@@ -265,6 +266,7 @@ void RobotContainer::ConfigureBindings() {
                                              m_bash,
                                              ScoringPosition{.column = ScoringColumn::intake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                             []() { return false; },
                                              PathType::concaveDown))
                   .ToPtr());
   exclusiveIntakeTrigger.OnFalse(
@@ -274,7 +276,9 @@ void RobotContainer::ConfigureBindings() {
                                      m_bash,
                                      ScoringPosition{.column = ScoringColumn::stow},
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                                     PathType::concaveDown))
+                                     []() { return false; },
+                                     PathType::concaveDown,
+                                     30_ips))
           .ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
   // SWAP CONTROLLERS TRIGGER ACTIVATION
@@ -294,18 +298,21 @@ void RobotContainer::ConfigureBindings() {
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
 
-  newTargetTrigger.OnTrue(SetArmPoseCommand(
-                              m_lifter,
-                              m_bash,
-                              [this]() { return m_buttonBox.GetScoringPosition(); },
-                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                              PathType::concaveDown)
-                              .ToPtr());
+  newTargetTrigger.OnTrue(
+      SetArmPoseCommand(
+          m_lifter,
+          m_bash,
+          [this]() { return m_buttonBox.GetScoringPosition(); },
+          [this]() { return m_buttonBox.GetBashGuardStatus(); },
+          [this]() { return m_buttonBox.GetSpareSwitchStatus(); },  /// @todo Replace with intake feedback (#53)
+          PathType::concaveDown)
+          .ToPtr());
   stowPositionTrigger.OnTrue(SetArmPoseCommand(
                                  m_lifter,
                                  m_bash,
                                  ScoringPosition{.column = ScoringColumn::stow},
                                  [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                 []() { return false; },
                                  PathType::concaveDown,
                                  30_ips)
                                  .ToPtr());

@@ -18,7 +18,8 @@ namespace path_planning {
   [[nodiscard]] CompositeMPPath GenerateCompositeMPPath(ArmMPPath generalPath,
                                                         const BashGuardMPPath& bashGuardPath,
                                                         const ArmPathPoint& shoulderFulcrum,
-                                                        const LifterSubsystem& lifter);
+                                                        const LifterSubsystem& lifter,
+                                                        const WristPosition wristPosition);
   [[nodiscard]] BashGuardMPPath GenerateProfiledBashGuard(const BashGuardPoint& startPoint,
                                                           const BashGuardPoint& endPoint,
                                                           const PathDynamicsConstraints& constraints,
