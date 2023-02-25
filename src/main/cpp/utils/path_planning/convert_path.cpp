@@ -18,6 +18,19 @@
 
 using namespace path_planning;
 
+units::degree_t path_planning::CalculateCuspAngle(const ArmPath& path, const size_t segmentIndex) {
+  if (path.size() <= segmentIndex + 2) {
+    // End of path (or past end)
+    return 0_deg;
+  }
+
+  const ArmPathPoint& p1 = path.at(segmentIndex);
+  const ArmPathPoint& p2 = path.at(segmentIndex + 1);
+  const ArmPathPoint& p3 = path.at(segmentIndex + 2);
+
+  return units::math::atan2(p3.z - p2.z, p3.x - p2.x) - units::math::atan2(p1.z - p2.z, p1.x - p2.x);
+}
+
 VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPoint, const ArmPathPoint& armVector) {
   if (pathPoint.velocity.v == 0_ips) {
     return VelocityComponents{.v_radial = 0_ips, .v_tangential = 0_deg_per_s};
@@ -40,7 +53,8 @@ VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPo
 CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
                                                        const BashGuardMPPath& bashGuardPath,
                                                        const ArmPathPoint& shoulderFulcrum,
-                                                       const LifterSubsystem& lifter) {
+                                                       const LifterSubsystem& lifter,
+                                                       const WristPosition wristPosition) {
   CompositeMPPath compositePath{.startTime = std::chrono::steady_clock::now(),
                                 .shoulderPath = {},
                                 .extensionPath = {},
@@ -79,7 +93,7 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
   for (const auto& point : generalPath) {
     const ArmPathPoint armPositionVector(point.position.x - shoulderFulcrum.x, point.position.z - shoulderFulcrum.z);
     VelocityComponents velocities = DecomposeVelocity(point, armPositionVector);
-    auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), false);
+    auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), wristPosition);
     compositePath.extensionPath.emplace_back(point.time, joints.armLen, velocities.v_radial);
     compositePath.shoulderPath.emplace_back(point.time, joints.shoulderAngle, velocities.v_tangential);
   }
@@ -87,20 +101,20 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
 }
 
 BashGuardPoint lerp(const BashGuardPoint& startPoint, const BashGuardPoint& endPoint, double pct) {
-  if (pct <= 0) {
+  if (pct <= 0.0) {
     return startPoint;
   }
-  if (pct >= 1) {
+  if (pct >= 1.0) {
     return endPoint;
   }
   return BashGuardPoint(startPoint + pct * (endPoint - startPoint));
 }
 
 ArmPathPoint lerp(const ArmPathPoint& startPoint, const ArmPathPoint& endPoint, double pct) {
-  if (pct <= 0) {
+  if (pct <= 0.0) {
     return startPoint;
   }
-  if (pct >= 1) {
+  if (pct >= 1.0) {
     return endPoint;
   }
   return ArmPathPoint(startPoint.x + pct * (endPoint.x - startPoint.x),
@@ -145,12 +159,11 @@ BashGuardMPPath path_planning::GenerateProfiledBashGuard(const BashGuardPoint& s
   return path;
 }
 
-ArmMPPath path_planning::GenerateProfiledPath(const ArmPathPoint& startPoint,
-                                              const ArmPathPoint& endPoint,
+ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
                                               const PathDynamicsConstraints& constraints,
                                               const Polygon& avoidancePolygon,
                                               units::millisecond_t resolution) {
-  auto avoidancePath = KeepOut(LineSegment{.start = startPoint, .end = endPoint}, avoidancePolygon);
+  auto avoidancePath = KeepOut(initialPath, avoidancePolygon);
 
   std::vector<units::inch_t> segmentLengths;
   std::vector<units::radian_t> segmentAngles;
@@ -168,13 +181,22 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPathPoint& startPoint,
   cosSegmentAngles.reserve(segmentLengths.size());
   sinSegmentAngles.reserve(segmentLengths.size());
 
-  auto pathLength = std::accumulate(
-      segmentLengths.begin(), segmentLengths.end(), 0_in, [](units::inch_t sum, units::inch_t segmentLength) {
-        return sum + segmentLength;
-      });
-  frc::TrapezoidProfile<units::inch> profile({constraints.maxVelocity, constraints.maxAcceleration},
-                                             {pathLength, 0_ips});
-  const auto totalProfiledTime = profile.TotalTime();
+  std::vector<frc::TrapezoidProfile<units::inch>> segmentProfiles;
+  auto lastVelocity = 0_ips;
+  for (size_t segmentIndex = 0; segmentIndex < segmentLengths.size(); ++segmentIndex) {
+    auto cuspAngle = CalculateCuspAngle(avoidancePath, segmentIndex);
+    auto transitionSpeed = constraints.maxVelocity * (-units::math::cos(cuspAngle) + 1) / 2;
+    segmentProfiles.emplace_back(
+        frc::TrapezoidProfile<units::inch>::Constraints{constraints.maxVelocity, constraints.maxAcceleration},
+        frc::TrapezoidProfile<units::inch>::State{segmentLengths.at(segmentIndex), transitionSpeed},
+        frc::TrapezoidProfile<units::inch>::State{0_in, lastVelocity});
+    lastVelocity = transitionSpeed;
+  }
+  const auto totalProfiledTime = std::accumulate(
+      segmentProfiles.begin(),
+      segmentProfiles.end(),
+      0_s,
+      [](units::second_t sum, const frc::TrapezoidProfile<units::inch>& profile) { return sum + profile.TotalTime(); });
 
   ArmMPPath path;
   path.reserve(std::ceil((totalProfiledTime / resolution).to<double>()) + 1);
@@ -198,23 +220,25 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPathPoint& startPoint,
 
   size_t segmentsCompleted = 0;
   units::inch_t completedSegmentsLength = 0_in;
+  units::second_t completedSegmentsTime = 0_s;
 
   while (sampleTime < totalProfiledTime) {
     ArmMPPathPoint newPoint;
 
     newPoint.time = resolution;
 
-    auto state = profile.Calculate(sampleTime);
-
-    while (state.position - completedSegmentsLength > segmentLengths[segmentsCompleted] &&
-           segmentsCompleted < segmentLengths.size() - 1) {
-      completedSegmentsLength += segmentLengths[segmentsCompleted];
+    while (segmentsCompleted < (segmentLengths.size() - 1) &&
+           sampleTime - completedSegmentsTime > segmentProfiles.at(segmentsCompleted).TotalTime()) {
+      completedSegmentsLength += segmentLengths.at(segmentsCompleted);
+      completedSegmentsTime += segmentProfiles.at(segmentsCompleted).TotalTime();
       ++segmentsCompleted;
     }
 
+    auto state = segmentProfiles.at(segmentsCompleted).Calculate(sampleTime - completedSegmentsTime);
+
     newPoint.position = lerp(avoidancePath.at(segmentsCompleted),
                              avoidancePath.at(segmentsCompleted + 1),
-                             (state.position - completedSegmentsLength) / segmentLengths.at(segmentsCompleted));
+                             (state.position) / segmentLengths.at(segmentsCompleted));
     newPoint.velocity = {.v = state.velocity,
                          .v_x = state.velocity * cosSegmentAngles.at(segmentsCompleted),
                          .v_z = state.velocity * sinSegmentAngles.at(segmentsCompleted)};
@@ -224,7 +248,7 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPathPoint& startPoint,
     sampleTime += resolution;
   }
 
-  path.push_back({resolution, endPoint, {0_ips, 0_ips, 0_ips}});
+  path.push_back({resolution, initialPath.back(), {0_ips, 0_ips, 0_ips}});
 
   return path;
 }
