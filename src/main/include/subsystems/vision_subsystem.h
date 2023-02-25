@@ -13,11 +13,13 @@
 #include "networktables/NetworkTableEntry.h"
 #include "networktables/NetworkTableInstance.h"
 #include "networktables/NetworkTableValue.h"
+#include "swerve_drive_subsystem.h"
 
 class LimelightTarget {
  private:
   frc::Pose3d m_robotPose;              ///< 3d pose of robot relative to field center
   frc::Pose3d m_robotPoseWPI;           ///< 3d pose of robot relative to WPI reference for active alliance
+  frc::Pose3d m_robotPoseTagSpace;      ///< 3d pose of robot relative to primary april tag (biggest?)
   bool m_hasTargets;                    ///< True if the camera has a target it can read
   units::millisecond_t m_totalLatency;  ///< Total latency
 
@@ -31,6 +33,7 @@ class LimelightTarget {
   struct tValues {
     frc::Pose3d robotPose;              ///< @copydoc LimelightTarget::m_robotPose
     frc::Pose3d robotPoseWPI;           ///< @copydoc LimelightTarget::m_robotPoseWPI
+    frc::Pose3d robotPoseTagSpace;      ///< @copydoc LimelightTarget::m_robotPoseTagSpace
     bool hasTargets;                    ///< @copydoc LimelightTarget::m_hasTargets
     units::millisecond_t totalLatency;  ///< @copydoc LimelightTarget::m_totalLatency
   };
@@ -78,7 +81,7 @@ class CameraInterface {
 
 class VisionSubsystem : public frc2::SubsystemBase {
  public:
-  VisionSubsystem();
+  VisionSubsystem(const argos_lib::RobotInstance instance, SwerveDriveSubsystem* pDriveSubsystem);
 
   /**
    * @brief Get the offset to the center of the target
@@ -89,7 +92,7 @@ class VisionSubsystem : public frc2::SubsystemBase {
   std::optional<units::degree_t> GetOffsetToTarget(LimelightTarget::tValues target);
 
   /**
-   * @brief Get the pitch and yaw of target
+   * @brief Get the robot poses and latencies
    *
    * @return LimelightTarget::tValues
    */
@@ -107,4 +110,5 @@ class VisionSubsystem : public frc2::SubsystemBase {
 
   argos_lib::RobotInstance
       m_instance;  ///< Contains either the competition bot or practice bot. Differentiates between the two
+  SwerveDriveSubsystem* m_pDriveSubsystem;  ///< Pointer to drivetrain for reading some odometry
 };
