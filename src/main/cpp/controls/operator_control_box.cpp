@@ -41,6 +41,14 @@ bool OperatorControlBox::GetLEDStatus() {
   return GetRawButton(boxIndex_led);
 }
 
+frc2::Trigger OperatorControlBox::TriggerSpareSwitch() {
+  return Button(boxIndex_spare_switch, m_pEvent).CastTo<frc2::Trigger>();
+}
+
+bool OperatorControlBox::GetSpareSwitchStatus() {
+  return GetRawButton(boxIndex_spare_switch);
+}
+
 frc2::Trigger OperatorControlBox::TriggerGamePiece() {
   return Button(boxIndex_game_piece, m_pEvent).CastTo<frc2::Trigger>();
 }

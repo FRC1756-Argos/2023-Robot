@@ -35,6 +35,9 @@ class RobotContainer {
 
   frc2::Command* GetAutonomousCommand();
 
+  /// @brief Called once when robot is disabled
+  void Disable();
+
  private:
   // Interpolation of controller inputs. Used for making the inputs non-linear, allowing finer control of how the robot responds to the joystick.
   argos_lib::InterpolationMap<decltype(controllerMap::driveSpeed.front().inVal), controllerMap::driveSpeed.size()>
@@ -71,9 +74,6 @@ class RobotContainer {
   AutoSelector m_autoSelector;
 
   void ConfigureBindings();
-
-  /// @brief Called once when robot is disabled
-  void Disable();
 
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 

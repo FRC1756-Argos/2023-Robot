@@ -29,6 +29,12 @@ namespace path_planning {
     ArmPathPoint end;
   };
 
+  struct PathIntersection {
+    size_t path1SegmentIndex;
+    size_t path2SegmentIndex;
+    units::inch_t path1Distance;
+  };
+
   struct ArmPathVelocity {
     units::velocity::inches_per_second_t v;
     units::velocity::inches_per_second_t v_x;

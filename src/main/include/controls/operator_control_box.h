@@ -46,6 +46,10 @@ class OperatorControlBox : public frc::GenericHID {
 
   [[nodiscard]] bool GetLEDStatus();
 
+  [[nodiscard]] frc2::Trigger TriggerSpareSwitch();
+
+  [[nodiscard]] bool GetSpareSwitchStatus();
+
   [[nodiscard]] frc2::Trigger TriggerGamePiece();
 
   [[nodiscard]] bool GetGamePieceStatus();
