@@ -20,6 +20,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     BashGuardSubsystem& bashGuard,
                     std::function<ScoringPosition()> scoringPositionCb,
                     std::function<bool()> bashGuardModeCb,
+                    std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
                     units::velocity::inches_per_second_t maxVelocity = 90_ips,
                     units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2);
@@ -28,6 +29,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     BashGuardSubsystem& bashGuard,
                     ScoringPosition scoringPosition,
                     std::function<bool()> bashGuardModeCb,
+                    std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
                     units::velocity::inches_per_second_t maxVelocity = 90_ips,
                     units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2);
@@ -36,6 +38,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     BashGuardSubsystem& bashGuard,
                     frc::Translation2d targetPose,
                     BashGuardPosition desiredBashGuardPosition,
+                    WristPosition desiredWristPosition = WristPosition::Unknown,
                     PathType pathType = PathType::unmodified,
                     units::velocity::inches_per_second_t maxVelocity = 90_ips,
                     units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2,
@@ -56,6 +59,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   BashGuardSubsystem& m_bashGuard;
   std::optional<std::function<ScoringPosition()>> m_scoringPositionCb;
   std::optional<std::function<bool()>> m_bashGuardModeCb;
+  std::optional<std::function<bool()>> m_placeGamePieceInvertedCb;
   frc::Translation2d m_targetPose;
   BashGuardPosition m_bashGuardTarget;
   units::velocity::inches_per_second_t m_maxVelocity;
@@ -64,6 +68,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
 
   ScoringPosition m_latestScoringPosition;
   PathType m_pathType;
+  WristPosition m_endingWristPosition;
 
   bool m_hasShoulderMotion;
   bool m_hasExtensionMotion;

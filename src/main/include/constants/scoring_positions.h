@@ -55,7 +55,7 @@ namespace scoring_positions {
                                                                   field_points::grids::highCubeNodeHeight) +
                                                    cubePlacingOffset,
                                                BashGuardPosition::Retracted);
-    constexpr static SetpointPosition intake(frc::Translation2d(6_in + robotPlacingOffsetX, 8_in),
+    constexpr static SetpointPosition intake(frc::Translation2d(10_in + robotPlacingOffsetX, 10_in),
                                              BashGuardPosition::Deployed);
     constexpr static SetpointPosition stow(frc::Translation2d(12_in, 15_in), BashGuardPosition::Retracted);
   }  // namespace end_effector

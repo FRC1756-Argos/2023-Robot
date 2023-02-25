@@ -16,6 +16,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
                                      std::function<ScoringPosition()> scoringPositionCb,
                                      std::function<bool()> bashGuardModeCb,
+                                     std::function<bool()> placeGamePieceInvertedCb,
                                      PathType pathType,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration)
@@ -23,6 +24,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_bashGuard(bashGuard)
     , m_scoringPositionCb(scoringPositionCb)
     , m_bashGuardModeCb(bashGuardModeCb)
+    , m_placeGamePieceInvertedCb(placeGamePieceInvertedCb)
     , m_targetPose()
     , m_bashGuardTarget()
     , m_maxVelocity(maxVelocity)
@@ -30,6 +32,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_isTunable{false}
     , m_latestScoringPosition{}
     , m_pathType{pathType}
+    , m_endingWristPosition{WristPosition::Unknown}
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
@@ -44,6 +47,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
                                      ScoringPosition scoringPosition,
                                      std::function<bool()> bashGuardModeCb,
+                                     std::function<bool()> placeGamePieceInvertedCb,
                                      PathType pathType,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration)
@@ -51,13 +55,15 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_bashGuard(bashGuard)
     , m_scoringPositionCb(std::nullopt)
     , m_bashGuardModeCb(bashGuardModeCb)
+    , m_placeGamePieceInvertedCb(placeGamePieceInvertedCb)
     , m_targetPose()
     , m_bashGuardTarget()
     , m_maxVelocity(maxVelocity)
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
-    , m_latestScoringPosition{}
+    , m_latestScoringPosition{scoringPosition}
     , m_pathType{pathType}
+    , m_endingWristPosition{WristPosition::Unknown}
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
@@ -73,7 +79,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     m_targetPose = targetEffectorPosition.value().endEffectorPosition;
     m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
   } else {
-    m_targetPose = m_lifter.GetArmPose();
+    m_targetPose = m_lifter.GetArmPose(WristPosition::RollersUp);
   }
 }
 
@@ -81,6 +87,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
                                      BashGuardSubsystem& bashGuard,
                                      frc::Translation2d targetPose,
                                      BashGuardPosition desiredBashGuardPosition,
+                                     WristPosition desiredWristPosition,
                                      PathType pathType,
                                      units::inches_per_second_t maxVelocity,
                                      units::inches_per_second_squared_t maxAcceleration,
@@ -89,6 +96,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_bashGuard(bashGuard)
     , m_scoringPositionCb(std::nullopt)
     , m_bashGuardModeCb(std::nullopt)
+    , m_placeGamePieceInvertedCb(std::nullopt)
     , m_targetPose(targetPose)
     , m_bashGuardTarget(desiredBashGuardPosition)
     , m_maxVelocity(maxVelocity)
@@ -96,6 +104,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
     , m_isTunable{isTuneable}
     , m_latestScoringPosition{}
     , m_pathType{pathType}
+    , m_endingWristPosition{desiredWristPosition}
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
@@ -119,8 +128,6 @@ void SetArmPoseCommand::Initialize() {
 
   bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
 
-  auto initialPosition = m_lifter.GetArmPose();
-
   if (m_scoringPositionCb) {
     m_latestScoringPosition = m_scoringPositionCb.value()();
     auto targetEffectorPosition = GetTargetPosition(m_latestScoringPosition, bashGuardEnable);
@@ -132,6 +139,24 @@ void SetArmPoseCommand::Initialize() {
       Cancel();
       return;
     }
+  }
+
+  switch (m_latestScoringPosition.column) {
+    case ScoringColumn::intake:
+      m_endingWristPosition = WristPosition::RollersUp;
+      break;
+    case ScoringColumn::stow:
+    case ScoringColumn::invalid:
+      m_endingWristPosition = WristPosition::Unknown;
+      break;
+    default:
+      if (m_placeGamePieceInvertedCb) {
+        m_endingWristPosition =
+            m_placeGamePieceInvertedCb.value()() ? WristPosition::RollersDown : WristPosition::RollersUp;
+      } else {
+        m_endingWristPosition = WristPosition::Unknown;
+      }
+      break;
   }
 
   units::inch_t targetBashGuardPosition =
@@ -149,6 +174,8 @@ void SetArmPoseCommand::Initialize() {
     m_maxAcceleration = units::make_unit<units::inches_per_second_squared_t>(
         frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
   }
+
+  auto initialPosition = m_lifter.GetArmPose(m_endingWristPosition);
 
   path_planning::ArmPath desiredPath;
   desiredPath.reserve(3);
@@ -198,8 +225,12 @@ void SetArmPoseCommand::Initialize() {
       path_planning::Polygon(measure_up::PathPlanningKeepOutZone.begin(), measure_up::PathPlanningKeepOutZone.end()),
       50_ms);
 
-  auto compositePath = path_planning::GenerateCompositeMPPath(
-      generalArmPath, bashGuardPath, path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition), m_lifter);
+  auto compositePath =
+      path_planning::GenerateCompositeMPPath(generalArmPath,
+                                             bashGuardPath,
+                                             path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition),
+                                             m_lifter,
+                                             m_endingWristPosition);
 
   BufferedTrajectoryPointStream& bashGuardStream = m_bashGuard.GetMPStream();
   bashGuardStream.Clear();
@@ -225,7 +256,8 @@ void SetArmPoseCommand::Initialize() {
     shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
         sensor_conversions::lifter::shoulder::ToSensorUnit(pointIt->position),
         sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity),
-        0,
+        pointIt->velocity < 0_rpm ? 0.01 * sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity) :
+                                    0.0,
         0,
         0,
         0,
@@ -285,6 +317,18 @@ void SetArmPoseCommand::End(bool interrupted) {
   if (interrupted) {
     m_lifter.StopMotionProfile();
     m_bashGuard.StopMotionProfile();
+  } else {
+    switch (m_endingWristPosition) {
+      case WristPosition::RollersUp:
+        m_lifter.SetWristAngle(measure_up::lifter::wrist::nominalAngle);
+        break;
+      case WristPosition::RollersDown:
+        m_lifter.SetWristAngle(measure_up::lifter::wrist::invertedAngle);
+        break;
+      default:
+        // Just leave wrist alone
+        break;
+    }
   }
 }
 

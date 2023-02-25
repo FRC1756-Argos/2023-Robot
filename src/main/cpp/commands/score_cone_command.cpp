@@ -23,14 +23,15 @@ ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& 
 void ScoreConeCommand::Initialize() {
   auto gpScore = SetArmPoseCommand{m_lifter,
                                    m_bash,
-                                   GetRelativePose(m_lifter.GetArmPose(), -10_in, -10_in),
+                                   GetRelativePose(m_lifter.GetArmPose(WristPosition::Unknown), -10_in, -10_in),
                                    BashGuardPosition::Retracted,
+                                   WristPosition::Unknown,
                                    PathType::concaveUp,
                                    speeds::armKinematicSpeeds::effectorVelocity,
                                    speeds::armKinematicSpeeds::effectorAcceleration};
 
   m_allCommands =
-      frc2::ParallelCommandGroup(gpScore, frc2::SequentialCommandGroup(frc2::WaitCommand(250_ms), m_retractIntake))
+      frc2::ParallelCommandGroup(gpScore, frc2::SequentialCommandGroup(frc2::WaitCommand(500_ms), m_retractIntake))
           .ToPtr();
   // Initialize all commands
   m_allCommands.get()->Initialize();

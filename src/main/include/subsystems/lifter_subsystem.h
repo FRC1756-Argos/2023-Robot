@@ -19,6 +19,8 @@
 
 /* —————————————————————————— SUBSYSTEM CLASS —————————————————————————— */
 
+enum class WristPosition { RollersDown, RollersUp, Unknown };
+
 class LifterSubsystem : public frc2::SubsystemBase {
  public:
   struct LifterPosition {
@@ -110,13 +112,13 @@ class LifterSubsystem : public frc2::SubsystemBase {
 
   /// @brief Uses the kinematics object to calculate robot pose
   /// @return The arm's current pose in robot space as a Translation2d
-  frc::Translation2d GetArmPose();
+  frc::Translation2d GetArmPose(const WristPosition wristPosition);
 
   /// @brief Uses the kinematics object to calculate joint positions for a given pose, then sets the system to that pose
   /// @param desPose The point in robot space to go to (y is actually z)
-  /// @param effectorInverted Wether or not the effector is inverted
+  /// @param effectorPosition Wether or not the effector is inverted
   /// @return A LifterPosition representing the state of the different joints
-  LifterPosition SetLifterPose(frc::Translation2d desPose, bool effectorInverted);
+  LifterPosition SetLifterPose(frc::Translation2d desPose, WristPosition effectorPosition);
 
   /// @brief Is the arm extension homed?
   /// @return True -> Arm extension is homed False -> Arm extension did not home
@@ -125,6 +127,8 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Gets the wrist angle (right handle rule with axis towards front of robot)
   /// @return Angle in units::degree_t representing angle of effector
   units::degree_t GetWristAngle();
+
+  WristPosition GetWristPosition();
 
   /// @brief Gets the arm extension (positive is extend out)
   /// @return Extension of arm from shoulder rotation center as an units::inch_t
@@ -140,9 +144,9 @@ class LifterSubsystem : public frc2::SubsystemBase {
 
   /// @brief Converts from a point in 2d space to an arm state
   /// @param pose Point in robot x/z plane where the end effector should be (y is actually z) in Translation2d
-  /// @param effectorInverted True -> Effector is inverted False -> Effector is NOT inverted
+  /// @param effectorPosition True -> Effector is inverted False -> Effector is NOT inverted
   /// @return ArmState holding joint properties to get to "pose" point in 2d space
-  ArmState ConvertPose(frc::Translation2d pose, bool effectorInverted) const;
+  ArmState ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const;
 
   bool IsShoulderMPComplete();
   bool IsExtensionMPComplete();
