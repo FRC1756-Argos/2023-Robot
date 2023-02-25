@@ -327,7 +327,10 @@ void RobotContainer::Enable() {
 }
 
 void RobotContainer::AllianceChanged() {
-  m_ledSubSystem.SetAllGroupsAllianceColor();
+  // If disabled, set alliance colors
+  if (frc::DriverStation::IsDisabled()) {
+    m_ledSubSystem.SetAllGroupsAllianceColor();
+  }
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {
