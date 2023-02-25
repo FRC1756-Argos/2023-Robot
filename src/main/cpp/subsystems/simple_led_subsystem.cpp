@@ -5,6 +5,7 @@
 #include "subsystems/simple_led_subsystem.h"
 
 #include <ctre/phoenix/led/FireAnimation.h>
+#include <frc/DriverStation.h>
 
 #include "argos_lib/config/config_types.h"
 #include "constants/addresses.h"
@@ -45,7 +46,7 @@ void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, argos_lib::ArgosColor 
   }
 
   ctre::phoenix::ErrorCode rslt;
-  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 255, startIndx, len);
+  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 0, startIndx, len);
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
   }
@@ -55,9 +56,21 @@ void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color) {
   int len =
       length_backLeft + length_backRight + length_sideBack + length_sideFront + length_frontLeft + length_frontRight;
   ctre::phoenix::ErrorCode rslt;
-  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 255, startIndex_frontLeft, len);
+  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 0, startIndex_frontLeft, len);
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
+  }
+}
+
+void SimpleLedSubsystem::SetAllGroupsAllianceColor() {
+  frc::DriverStation::Alliance allianceColor = frc::DriverStation::GetAlliance();
+  // If invalid, set all groups just off
+  if (allianceColor == frc::DriverStation::Alliance::kInvalid) {
+    SetAllGropusOff();
+  } else if (allianceColor == frc::DriverStation::Alliance::kBlue) {
+    SetAllGroupsColor(argos_lib::colors::kReallyBlue);
+  } else if (allianceColor == frc::DriverStation::Alliance::kRed) {
+    SetAllGroupsColor(argos_lib::colors::kReallyRed);
   }
 }
 
@@ -75,11 +88,6 @@ void SimpleLedSubsystem::SetAllGropusOff() {
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
   }
-}
-
-void SimpleLedSubsystem::SetBackLeftSolidColor(argos_lib::ArgosColor color) {
-  m_CANdle.ClearAnimation(0);  // Stop any animations so we can do solid color
-  m_CANdle.SetLEDs(color.r, color.g, color.b, 0, startIndex_backLeft, length_backLeft);
 }
 
 void SimpleLedSubsystem::FireEverywhere() {

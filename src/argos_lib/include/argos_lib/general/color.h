@@ -12,8 +12,9 @@ namespace argos_lib {
   };
 
   namespace colors {
-    constexpr ArgosColor kReallyRed = ArgosColor{255, 0, 0};
-    constexpr ArgosColor kReallyGreen = ArgosColor{0, 255, 0};
+    constexpr static ArgosColor kReallyRed = ArgosColor{255, 0, 0};
+    constexpr static ArgosColor kReallyGreen = ArgosColor{0, 255, 0};
+    constexpr static ArgosColor kReallyBlue = ArgosColor{0, 0, 255};
   }  // namespace colors
 
 }  // namespace argos_lib

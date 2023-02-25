@@ -17,10 +17,22 @@ enum LedGroup { SIDES, BACK, FRONT };
 class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:
   explicit SimpleLedSubsystem(argos_lib::RobotInstance instance);
+
+  /// @brief Sets group of leds to given color
+  /// @param group The group of leds to set
+  /// @param color an ArgosColor to set the LEDs too
   void SetLedGroupColor(LedGroup group, argos_lib::ArgosColor color);
+
+  /// @brief Sets all led groups to a given color
+  /// @param color an ArgosColor to set the LEDs too
   void SetAllGroupsColor(argos_lib::ArgosColor color);
+
+  /// @brief Set all groups of LEDs to the alliance color
+  void SetAllGroupsAllianceColor();
+
+  /// @brief Turn off all LEDs
   void SetAllGropusOff();
-  void SetBackLeftSolidColor(argos_lib::ArgosColor color);
+
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */

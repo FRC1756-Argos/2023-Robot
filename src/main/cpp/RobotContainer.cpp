@@ -177,14 +177,6 @@ void RobotContainer::ConfigureBindings() {
 
   auto startupBashGuardHomeTrigger = robotEnableTrigger && bashGuardHomeRequiredTrigger;
 
-  // ROBOT STATE TRIGGERS
-  robotEnableTrigger.OnTrue(frc2::InstantCommand(
-                                [this]() {
-                                  Enable();  // Call robot container enable
-                                },
-                                {})
-                                .ToPtr());
-
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {
     return m_controllers.OperatorController().GetDebouncedButton(
@@ -323,8 +315,7 @@ void RobotContainer::ConfigureBindings() {
 }
 
 void RobotContainer::Disable() {
-  frc::SmartDashboard::PutBoolean("RC-DisableCalled", true);
-  m_ledSubSystem.SetAllGroupsColor(argos_lib::colors::kReallyRed);
+  m_ledSubSystem.SetAllGroupsAllianceColor();
 
   m_lifter.Disable();
   m_intake.Disable();
@@ -332,8 +323,11 @@ void RobotContainer::Disable() {
 }
 
 void RobotContainer::Enable() {
-  frc::SmartDashboard::PutBoolean("RC-EnableCalled", true);
   m_ledSubSystem.SetAllGroupsColor(argos_lib::colors::kReallyGreen);
+}
+
+void RobotContainer::AllianceChanged() {
+  m_ledSubSystem.SetAllGroupsAllianceColor();
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {
