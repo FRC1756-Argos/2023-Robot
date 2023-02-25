@@ -22,7 +22,7 @@ namespace scoring_positions {
   namespace end_effector {
     constexpr static units::inch_t robotPlacingOffsetX = measure_up::chassis::length / 2 + measure_up::bumperExtension;
 
-    constexpr static frc::Translation2d conePlacingOffset(-3_in, 5_in);
+    constexpr static frc::Translation2d conePlacingOffset(-2_in, 7_in);
     constexpr static frc::Translation2d cubePlacingOffset(-2_in, 4_in);
 
     constexpr static SetpointPosition coneLow(frc::Translation2d(field_points::grids::lowConeNodeDepth +
@@ -57,7 +57,7 @@ namespace scoring_positions {
                                                BashGuardPosition::Retracted);
     constexpr static SetpointPosition intake(frc::Translation2d(10_in + robotPlacingOffsetX, 7.5_in),
                                              BashGuardPosition::Deployed);
-    constexpr static SetpointPosition stow(frc::Translation2d(12_in, 15_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition stow(frc::Translation2d(14_in, 18_in), BashGuardPosition::Retracted);
   }  // namespace end_effector
 
 }  // namespace scoring_positions

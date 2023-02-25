@@ -7,6 +7,7 @@
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
 
+#include "Constants.h"
 #include "constants/field_points.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
@@ -22,8 +23,9 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     std::function<bool()> bashGuardModeCb,
                     std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
-                    units::velocity::inches_per_second_t maxVelocity = 90_ips,
-                    units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2);
+                    units::velocity::inches_per_second_t maxVelocity = speeds::armKinematicSpeeds::effectorVelocity,
+                    units::acceleration::inches_per_second_squared_t maxAcceleration =
+                        speeds::armKinematicSpeeds::effectorAcceleration);
 
   SetArmPoseCommand(LifterSubsystem& lifter,
                     BashGuardSubsystem& bashGuard,
@@ -31,8 +33,9 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     std::function<bool()> bashGuardModeCb,
                     std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
-                    units::velocity::inches_per_second_t maxVelocity = 90_ips,
-                    units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2);
+                    units::velocity::inches_per_second_t maxVelocity = speeds::armKinematicSpeeds::effectorVelocity,
+                    units::acceleration::inches_per_second_squared_t maxAcceleration =
+                        speeds::armKinematicSpeeds::effectorAcceleration);
 
   SetArmPoseCommand(LifterSubsystem& lifter,
                     BashGuardSubsystem& bashGuard,
@@ -40,8 +43,9 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
                     BashGuardPosition desiredBashGuardPosition,
                     WristPosition desiredWristPosition = WristPosition::Unknown,
                     PathType pathType = PathType::unmodified,
-                    units::velocity::inches_per_second_t maxVelocity = 90_ips,
-                    units::acceleration::inches_per_second_squared_t maxAcceleration = 80_ips2,
+                    units::velocity::inches_per_second_t maxVelocity = speeds::armKinematicSpeeds::effectorVelocity,
+                    units::acceleration::inches_per_second_squared_t maxAcceleration =
+                        speeds::armKinematicSpeeds::effectorAcceleration,
                     bool isTunable = false);
 
   void Initialize() override;
