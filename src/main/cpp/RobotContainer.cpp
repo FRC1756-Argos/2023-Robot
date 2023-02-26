@@ -107,6 +107,10 @@ RobotContainer::RobotContainer()
         } else {
           m_lifter.SetWristSpeed(wristSpeed);
         }
+
+        auto pose = m_lifter.GetArmPose(m_lifter.GetWristPosition());
+        frc::SmartDashboard::PutNumber("lifter/CurrentX", units::inch_t(pose.X()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentY", units::inch_t(pose.Y()).to<double>());
       },
       {&m_lifter}));
 

@@ -214,6 +214,9 @@ void SetArmPoseCommand::Initialize() {
 
   desiredPath.emplace_back(m_targetPose);
 
+  frc::SmartDashboard::PutNumber("lifter/DesiredX", units::inch_t(m_targetPose.X()).to<double>());
+  frc::SmartDashboard::PutNumber("lifter/DesiredY", units::inch_t(m_targetPose.Y()).to<double>());
+
   auto bashGuardPath =
       path_planning::GenerateProfiledBashGuard(m_bashGuard.GetBashGuardExtension(),
                                                targetBashGuardPosition,

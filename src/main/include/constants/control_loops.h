@@ -53,8 +53,8 @@ namespace controlLoop {
         constexpr static double kI = 0.1;
         constexpr static double kD = 0;
         constexpr static double kF = 15.0;
-        constexpr static double iZone = 30;
-        constexpr static double allowableError = 5;
+        constexpr static double iZone = 50;
+        constexpr static double allowableError = 0;
       };
       struct wrist {
         constexpr static double kP = 3.0;
