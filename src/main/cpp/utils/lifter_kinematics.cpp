@@ -39,7 +39,8 @@ ArmState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorInver
 frc::Translation2d LifterKinematics::GetPose(ArmState state, bool effectorInverted) const {
   units::radian_t rotation = state.shoulderAngle;
 
-  frc::Translation2d initPosition{state.armLen + m_effectorOffset.X(), m_effectorOffset.Y() + m_armRotationOffset};
+  frc::Translation2d initPosition{state.armLen + m_effectorOffset.X(),
+                                  (m_effectorOffset.Y() * (effectorInverted ? -1 : 1)) + m_armRotationOffset};
 
   frc::Translation2d solvedPosition = frc::Translation2d(initPosition.RotateBy(rotation));
 

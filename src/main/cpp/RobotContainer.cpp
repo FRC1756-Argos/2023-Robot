@@ -285,9 +285,9 @@ void RobotContainer::ConfigureBindings() {
                                      ScoringPosition{.column = ScoringColumn::stow},
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                      []() { return false; },
-                                     PathType::concaveDown,
-                                     10_ips,
-                                     30_ips2))
+                                     PathType::concaveDown))  //,
+                                                              //  10_ips,
+                                                              //  30_ips2))
           .ToPtr());
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);

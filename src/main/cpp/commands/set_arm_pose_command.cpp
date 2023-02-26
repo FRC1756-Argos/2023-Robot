@@ -175,6 +175,18 @@ void SetArmPoseCommand::Initialize() {
         frc::SmartDashboard::GetNumber("MPTesting/TravelAccel (in/s^2)", 80.0));
   }
 
+  switch (m_endingWristPosition) {
+    case WristPosition::RollersDown:
+      frc::SmartDashboard::PutString("lifter/DesiredWrist", "Rollers Down");
+      break;
+    case WristPosition::RollersUp:
+      frc::SmartDashboard::PutString("lifter/DesiredWrist", "Rollers Up");
+      break;
+    case WristPosition::Unknown:
+      frc::SmartDashboard::PutString("lifter/DesiredWrist", "Unknown");
+      break;
+  }
+
   auto initialPosition = m_lifter.GetArmPose(m_endingWristPosition);
 
   path_planning::ArmPath desiredPath;
@@ -214,6 +226,8 @@ void SetArmPoseCommand::Initialize() {
 
   desiredPath.emplace_back(m_targetPose);
 
+  frc::SmartDashboard::PutNumber("lifter/InitialX", units::inch_t(initialPosition.X()).to<double>());
+  frc::SmartDashboard::PutNumber("lifter/InitialY", units::inch_t(initialPosition.Y()).to<double>());
   frc::SmartDashboard::PutNumber("lifter/DesiredX", units::inch_t(m_targetPose.X()).to<double>());
   frc::SmartDashboard::PutNumber("lifter/DesiredY", units::inch_t(m_targetPose.Y()).to<double>());
 
@@ -259,8 +273,8 @@ void SetArmPoseCommand::Initialize() {
     shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
         sensor_conversions::lifter::shoulder::ToSensorUnit(pointIt->position),
         sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity),
-        pointIt->velocity < 0_rpm ? 0.001 * sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity) :
-                                    0.0,
+        0,  // pointIt->velocity < 0_rpm ? 0.001 * sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity) :
+        //                             0.0,
         0,
         0,
         0,
@@ -332,6 +346,7 @@ void SetArmPoseCommand::End(bool interrupted) {
         // Just leave wrist alone
         break;
     }
+    // m_lifter.SetLifterPose(m_targetPose, m_endingWristPosition);
   }
 }
 

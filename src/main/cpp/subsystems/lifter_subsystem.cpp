@@ -12,6 +12,7 @@
 #include <constants/encoders.h>
 #include <constants/measure_up.h>
 #include <constants/motors.h>
+#include <units/angular_velocity.h>
 #include <units/time.h>
 
 #include <algorithm>
@@ -141,7 +142,9 @@ void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   extension = std::clamp<units::inch_t>(
       extension, measure_up::lifter::arm_extension::minExtension, measure_up::lifter::arm_extension::maxExtension);
 
-  m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::Position,
+  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::arm_extension::ToSensorVelocity(20_ips));
+  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::arm_extension::ToSensorVelocity(20_ips));
+  m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::MotionMagic,
                           sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
 }
 
@@ -311,7 +314,10 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
                  measure_up::lifter::shoulder::minAngle.to<double>());
   }
 
-  m_shoulderDrive.Set(motorcontrol::ControlMode::Position, sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
+  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::shoulder::ToSensorVelocity(20_deg_per_s));
+  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::shoulder::ToSensorVelocity(20_deg_per_s));
+  m_shoulderDrive.Set(motorcontrol::ControlMode::MotionMagic,
+                      sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
 }
 
 frc::Translation2d LifterSubsystem::GetArmPose(const WristPosition wristPosition) {
@@ -329,6 +335,13 @@ LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(frc::Translation2
   lfPos.wristAngle = effectorPosition != WristPosition::RollersUp ? measure_up::lifter::wrist::invertedAngle :
                                                                     measure_up::lifter::wrist::nominalAngle;
   lfPos.state = m_kinematics.GetJoints(desPose);
+
+  std::printf("Desired (%0.2f, %0.2f), ext=%0.2f, ang=%0.2f, wrist=%0.2f\n",
+              units::inch_t(desPose.X()).to<double>(),
+              units::inch_t(desPose.Y()).to<double>(),
+              units::inch_t(lfPos.state.armLen).to<double>(),
+              units::degree_t(lfPos.state.shoulderAngle).to<double>(),
+              units::degree_t(lfPos.wristAngle).to<double>());
 
   SetWristAngle(lfPos.wristAngle);
   SetArmExtension(lfPos.state.armLen);
@@ -350,7 +363,8 @@ WristPosition LifterSubsystem::GetWristPosition() {
     return WristPosition::Unknown;
   }
   auto angle = GetWristAngle();
-  if (units::math::abs(argos_lib::angle::ConstrainAngle(angle, -180_deg, 180_deg)) < 90_deg) {
+  if (units::math::abs(argos_lib::angle::ConstrainAngle(
+          angle - measure_up::lifter::wrist::invertedAngle, -180_deg, 180_deg)) < 90_deg) {
     return WristPosition::RollersDown;
   }
   return WristPosition::RollersUp;
@@ -394,7 +408,7 @@ void LifterSubsystem::StopMotionProfile() {
   m_shoulderStream.Clear();
   m_wristStream.Clear();
   m_extensionStream.Clear();
-  StopArmExtension();
+  StopShoulder();
   StopWrist();
   StopArmExtension();
   m_shoulderDrive.ClearMotionProfileTrajectories();
