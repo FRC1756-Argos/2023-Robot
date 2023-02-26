@@ -193,22 +193,24 @@ void RobotContainer::ConfigureBindings() {
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
 
-  auto scoreConeTrigger = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
-
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
                                                                       argos_lib::XboxController::Button::kA,
                                                                       argos_lib::XboxController::Button::kB});
 
-  auto controlMode = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
   auto fieldHome = m_controllers.DriverController().TriggerDebounced(argos_lib::XboxController::Button::kY);
   auto intakeForwardTrigger =
-      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger);
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
   auto intakeReverseTrigger =
-      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
-  auto intakeFastReverse = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
-  auto exclusiveIntakeTrigger =
-      argos_lib::triggers::OneOf({intakeForwardTrigger, intakeReverseTrigger, intakeFastReverse});
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
+  auto exclusiveManualIntakeTrigger = argos_lib::triggers::OneOf({intakeForwardTrigger, intakeReverseTrigger});
+
+  auto intakeConeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
+  auto intakeCubeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
+  auto scoreConeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger);
+  auto scoreCubeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
+
+  auto exclusiveAutoIntakeTrigger = argos_lib::triggers::OneOf({intakeConeTrigger, intakeCubeTrigger});
 
   // Swap controllers config
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBack, {1500_ms, 0_ms});
@@ -242,7 +244,16 @@ void RobotContainer::ConfigureBindings() {
 
   // DRIVE TRIGGER ACTIVATION
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
-  (intakeForwardTrigger && exclusiveIntakeTrigger)
+  homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
+
+  // Intake trigger activation
+  (intakeForwardTrigger && exclusiveManualIntakeTrigger)
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}).ToPtr());
+  (intakeReverseTrigger && exclusiveManualIntakeTrigger)
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}).ToPtr());
+  exclusiveManualIntakeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
+
+  (intakeConeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
                                          SetArmPoseCommand(
                                              m_lifter,
@@ -252,9 +263,7 @@ void RobotContainer::ConfigureBindings() {
                                              []() { return false; },
                                              PathType::concaveDown))
                   .ToPtr());
-  (intakeReverseTrigger && exclusiveIntakeTrigger)
-      .OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCone(); }, {&m_intake}).ToPtr());
-  (intakeFastReverse && exclusiveIntakeTrigger)
+  (intakeCubeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
                                          SetArmPoseCommand(
                                              m_lifter,
@@ -264,7 +273,7 @@ void RobotContainer::ConfigureBindings() {
                                              []() { return false; },
                                              PathType::concaveDown))
                   .ToPtr());
-  exclusiveIntakeTrigger.OnFalse(
+  exclusiveAutoIntakeTrigger.OnFalse(
       frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}),
                                  SetArmPoseCommand(
                                      m_lifter,
@@ -276,12 +285,15 @@ void RobotContainer::ConfigureBindings() {
                                      10_ips,
                                      30_ips2))
           .ToPtr());
-  homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
+
+  scoreConeTrigger.OnTrue(&m_scoreConeCommand);
+  scoreCubeTrigger.OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCube(); }, {&m_intake}).ToPtr());
+  scoreCubeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
+
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
 
-  //   manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
   startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
@@ -291,8 +303,6 @@ void RobotContainer::ConfigureBindings() {
   frc::SmartDashboard::PutNumber("MPTesting/TargetX (in)", 50.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetZ (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
-
-  scoreConeTrigger.OnTrue(&m_scoreConeCommand);
 
   newTargetTrigger.OnTrue(
       SetArmPoseCommand(

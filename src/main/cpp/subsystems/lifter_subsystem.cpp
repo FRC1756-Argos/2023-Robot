@@ -63,14 +63,14 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                            1.0,
                            argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::arm_extension::ToExtension),
                        }}
-    , m_wristTuner{"argos/wristTune",
+    , m_wristTuner{"argos/lifter/wrist",
                    {&m_wrist},
                    0,
                    argos_lib::ClosedLoopSensorConversions{
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle),
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToVelocity),
                        argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::wrist::ToAngle)}}
-    , m_shoulderTuner{"argos/shoulderTune",
+    , m_shoulderTuner{"argos/lifter/shoulder",
                       {&m_shoulderDrive},
                       0,
                       argos_lib::ClosedLoopSensorConversions{
