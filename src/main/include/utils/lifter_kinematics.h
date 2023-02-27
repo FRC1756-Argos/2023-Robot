@@ -5,7 +5,11 @@
 #pragma once
 #include <frc/geometry/Transform2d.h>
 #include <frc/geometry/Translation2d.h>
+#include <units/angle.h>
+#include <units/angular_velocity.h>
 #include <units/length.h>
+
+#include "utils/custom_units.h"
 
 struct ArmState {
   units::meter_t armLen;
@@ -22,7 +26,9 @@ class LifterKinematics {
   ///                       y is actually z.  Measured when arm is at 0 deg
   LifterKinematics(const frc::Translation2d& fulcrumPosition,
                    const units::meter_t armRotationOffset,
-                   const frc::Translation2d& effectorOffset);
+                   const frc::Translation2d& effectorOffset,
+                   const frc::Translation2d& fixedBoomActuatorPosition,
+                   const frc::Translation2d& actuatedBoomActuatorPosition);
 
   LifterKinematics() = delete;
 
@@ -38,10 +44,22 @@ class LifterKinematics {
   /// @return Translation2d object describing position of effector in robot coordinate space
   frc::Translation2d GetPose(ArmState state, bool effectorInverted = false) const;
 
+  units::inch_t ShoulderAngleToBoomExtension(units::degree_t shoulderAngle) const;
+  units::degree_t BoomExtensionToShoulderAngle(units::inch_t boomExtension) const;
+  units::velocity::inches_per_second_t ShoulderVelocityToBoomVelocity(units::radians_per_second_t shoulderVelocity,
+                                                                      units::degree_t shoulderAngle) const;
+  units::radians_per_second_t BoomVelocityToShoulderVelocity(units::velocity::inches_per_second_t boomVelocity,
+                                                             units::inch_t boomPosition) const;
+
  private:
   const frc::Translation2d m_fulcrumPosition;  ///< Fulcrum position in robot coordinate space (y is actually z)
   const units::meter_t
       m_armRotationOffset;  ///< Offset from center of lifter rotation axis to measure up point at end of arm in radial direction
   const frc::Translation2d
       m_effectorOffset;  ///< End effector offset from measure up point at end of arm.  y is actually z.  Measured when arm is at 0 deg
+
+  const units::inch_t m_fixedBoomAnchorToFulcrumDist;
+  const units::degree_t m_fixedBoomAnchorToFulcrumAngle;
+  const units::inch_t m_articulatedBoomAnchorToFulcrumDist;
+  const units::degree_t m_articulatedBoomAnchorToFulcrumAngle;
 };

@@ -271,10 +271,10 @@ void SetArmPoseCommand::Initialize() {
   shoulderStream.Clear();
   for (auto pointIt = compositePath.shoulderPath.begin(); pointIt != compositePath.shoulderPath.end(); ++pointIt) {
     shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
-        sensor_conversions::lifter::shoulder::ToSensorUnit(pointIt->position),
-        sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity),
-        0,  // pointIt->velocity < 0_rpm ? 0.001 * sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity) :
-        //                             0.0,
+        sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_lifter.ConvertShoulderAngle(pointIt->position)),
+        sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(
+            -m_lifter.ConvertShoulderVelocity(pointIt->position, pointIt->velocity)),
+        0,
         0,
         0,
         0,

@@ -6,6 +6,8 @@
 
 #include <frc/geometry/Translation2d.h>
 #include <units/angle.h>
+#include <units/base.h>
+#include <units/dimensionless.h>
 #include <units/math.h>
 
 #include <cmath>
@@ -18,8 +20,20 @@ namespace {
 
 LifterKinematics::LifterKinematics(const frc::Translation2d& fulcrumPosition,
                                    const units::meter_t armRotationOffset,
-                                   const frc::Translation2d& effectorOffset)
-    : m_fulcrumPosition(fulcrumPosition), m_armRotationOffset(armRotationOffset), m_effectorOffset(effectorOffset) {}
+                                   const frc::Translation2d& effectorOffset,
+                                   const frc::Translation2d& fixedBoomActuatorPosition,
+                                   const frc::Translation2d& actuatedBoomActuatorPosition)
+    : m_fulcrumPosition(fulcrumPosition)
+    , m_armRotationOffset(armRotationOffset)
+    , m_effectorOffset(effectorOffset)
+    , m_fixedBoomAnchorToFulcrumDist(units::math::hypot(fulcrumPosition.X() - fixedBoomActuatorPosition.X(),
+                                                        fulcrumPosition.Y() - fixedBoomActuatorPosition.Y()))
+    , m_fixedBoomAnchorToFulcrumAngle(units::math::atan2(fulcrumPosition.X() - fixedBoomActuatorPosition.X(),
+                                                         fulcrumPosition.Y() - fixedBoomActuatorPosition.Y()))
+    , m_articulatedBoomAnchorToFulcrumDist(
+          units::math::hypot(actuatedBoomActuatorPosition.X(), actuatedBoomActuatorPosition.Y()))
+    , m_articulatedBoomAnchorToFulcrumAngle(
+          units::math::atan2(actuatedBoomActuatorPosition.Y(), actuatedBoomActuatorPosition.X())) {}
 
 // effectorYOffset is the effector pose offset from rotation center
 ArmState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorInverted) const {
@@ -47,4 +61,47 @@ frc::Translation2d LifterKinematics::GetPose(ArmState state, bool effectorInvert
   solvedPosition = solvedPosition + m_fulcrumPosition;
 
   return solvedPosition;
+}
+
+units::inch_t LifterKinematics::ShoulderAngleToBoomExtension(units::degree_t shoulderAngle) const {
+  return units::math::sqrt(Squared(m_fixedBoomAnchorToFulcrumDist) + Squared(m_articulatedBoomAnchorToFulcrumDist) -
+                           2 * m_fixedBoomAnchorToFulcrumDist * m_articulatedBoomAnchorToFulcrumDist *
+                               units::math::cos(90_deg + m_articulatedBoomAnchorToFulcrumAngle +
+                                                m_fixedBoomAnchorToFulcrumAngle + shoulderAngle));
+}
+
+units::degree_t LifterKinematics::BoomExtensionToShoulderAngle(units::inch_t boomExtension) const {
+  return units::math::acos((Squared(m_fixedBoomAnchorToFulcrumDist) + Squared(m_articulatedBoomAnchorToFulcrumDist) -
+                            Squared(boomExtension)) /
+                           (2 * m_fixedBoomAnchorToFulcrumDist * m_articulatedBoomAnchorToFulcrumDist)) -
+         90_deg - m_articulatedBoomAnchorToFulcrumAngle - m_fixedBoomAnchorToFulcrumAngle;
+}
+
+units::velocity::inches_per_second_t LifterKinematics::ShoulderVelocityToBoomVelocity(
+    units::radians_per_second_t shoulderVelocity, units::degree_t shoulderAngle) const {
+  // This mess is the derivative wrt time of ShoulderAngleToBoomExtension.
+  // Shoulder angle is the only parameter that changes with time
+  // Math cheat: https://www.wolframalpha.com/input?i=d%2Fdt+%73qrt(a^2%2Bb^2-2*a*b*co%73(d%2Bx(t)))
+  // Note units library doesn't like erasing unitless radian, so that's why we divide velocity by 1 radian
+  return (m_fixedBoomAnchorToFulcrumDist * m_articulatedBoomAnchorToFulcrumDist * shoulderVelocity / 1_rad *
+          units::math::sin(90_deg + m_articulatedBoomAnchorToFulcrumAngle + m_fixedBoomAnchorToFulcrumAngle +
+                           shoulderAngle)) /
+         units::math::sqrt(Squared(m_fixedBoomAnchorToFulcrumDist) + Squared(m_articulatedBoomAnchorToFulcrumDist) -
+                           2 * m_fixedBoomAnchorToFulcrumDist * m_articulatedBoomAnchorToFulcrumDist *
+                               units::math::cos(90_deg + m_articulatedBoomAnchorToFulcrumAngle +
+                                                m_fixedBoomAnchorToFulcrumAngle + shoulderAngle));
+}
+
+units::radians_per_second_t LifterKinematics::BoomVelocityToShoulderVelocity(
+    units::velocity::inches_per_second_t boomVelocity, units::inch_t boomPosition) const {
+  // This mess is the derivative wrt time of BoomExtensionToShoulderAngle.
+  // boom position is the only parameter that changes with time
+  // Math cheat: https://www.wolframalpha.com/input?i=d%2Fdt+aco%73((a^2%2Bb^2-y(t)^2)%2F(2ab))-d
+  // Note units library doesn't like adding unitless radian, so that's why we multiply by 1 radian
+  return 1_rad * (boomPosition * boomVelocity) /
+         (m_fixedBoomAnchorToFulcrumDist * m_articulatedBoomAnchorToFulcrumDist *
+          units::math::sqrt(
+              1 - Squared(Squared(m_fixedBoomAnchorToFulcrumDist) + Squared(m_articulatedBoomAnchorToFulcrumDist) -
+                          Squared(boomPosition)) /
+                      (4 * Squared(m_fixedBoomAnchorToFulcrumDist) * Squared(m_articulatedBoomAnchorToFulcrumDist))));
 }

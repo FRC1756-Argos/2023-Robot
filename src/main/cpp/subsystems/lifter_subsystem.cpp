@@ -52,7 +52,9 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                                            instance))}
     , m_kinematics{measure_up::lifter::fulcrumPosition,
                    measure_up::lifter::armBar::centerOfRotDis,
-                   measure_up::lifter::effector::effectorFromArm}
+                   measure_up::lifter::effector::effectorFromArm,
+                   measure_up::lifter::shoulder::fixedBoomActuatorPosition,
+                   measure_up::lifter::shoulder::actuatedBoomActuatorPosition}
     , m_logger{"LIFTER_SUBSYSTEM"}
     , m_shoulderHomeStorage{"homes/shoulderHome"}
     , m_wristHomingStorage{paths::wristHomesPath}
@@ -75,9 +77,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                       {&m_shoulderDrive},
                       0,
                       argos_lib::ClosedLoopSensorConversions{
-                          argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::shoulder::ToAngle),
-                          1.0,
-                          argos_lib::GetSensorConversionFactor(sensor_conversions::lifter::shoulder::ToAngle)}}
+                          argos_lib::GetSensorConversionFactor(
+                              sensor_conversions::lifter::shoulder_actuator::ToExtension),
+                          argos_lib::GetSensorConversionFactor(
+                              sensor_conversions::lifter::shoulder_actuator::ToVelocity),
+                          argos_lib::GetSensorConversionFactor(
+                              sensor_conversions::lifter::shoulder_actuator::ToExtension)}}
     , m_shoulderHomed{false}
     , m_extensionHomed{false}
     , m_wristHomed{false}
@@ -264,6 +269,8 @@ void LifterSubsystem::InitializeShoulderHome() {
       m_logger.Log(argos_lib::LogLevel::ERR, "Error code %d returned by shoulderEncoder on home set attempt\n", rslt);
       m_shoulderHomed = false;
     } else {
+      m_shoulderDrive.SetSelectedSensorPosition(sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(
+          m_kinematics.ShoulderAngleToBoomExtension(newPosition)));
       m_shoulderHomed = true;
     }
 
@@ -314,10 +321,11 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
                  measure_up::lifter::shoulder::minAngle.to<double>());
   }
 
-  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::shoulder::ToSensorVelocity(20_deg_per_s));
-  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::shoulder::ToSensorVelocity(20_deg_per_s));
-  m_shoulderDrive.Set(motorcontrol::ControlMode::MotionMagic,
-                      sensor_conversions::lifter::shoulder::ToSensorUnit(angle));
+  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(10_ips));
+  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(10_ips));
+  m_shoulderDrive.Set(
+      motorcontrol::ControlMode::MotionMagic,
+      sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_kinematics.ShoulderAngleToBoomExtension(angle)));
 }
 
 frc::Translation2d LifterSubsystem::GetArmPose(const WristPosition wristPosition) {
@@ -374,7 +382,7 @@ units::inch_t LifterSubsystem::GetArmExtension() {
   return sensor_conversions::lifter::arm_extension::ToExtension(m_armExtensionMotor.GetSelectedSensorPosition());
 }
 units::degree_t LifterSubsystem::GetShoulderAngle() {
-  return sensor_conversions::lifter::shoulder::ToAngle(m_shoulderDrive.GetSelectedSensorPosition());
+  return units::degree_t(m_shoulderEncoder.GetAbsolutePosition());
 }
 LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
   return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderAngle()}};
@@ -382,6 +390,15 @@ LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
 
 ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const {
   return m_kinematics.GetJoints(pose, effectorPosition != WristPosition::RollersUp);
+}
+
+units::inch_t LifterSubsystem::ConvertShoulderAngle(units::degree_t angle) const {
+  return m_kinematics.ShoulderAngleToBoomExtension(angle);
+}
+
+units::inches_per_second_t LifterSubsystem::ConvertShoulderVelocity(units::degree_t angle,
+                                                                    units::degrees_per_second_t angularVelocity) const {
+  return m_kinematics.ShoulderVelocityToBoomVelocity(angularVelocity, angle);
 }
 
 bool LifterSubsystem::IsShoulderMPComplete() {
@@ -469,10 +486,10 @@ void LifterSubsystem::EnableShoulderSoftLimits() {
     m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable shoulder soft limits without homes\n");
     return;
   }
-  m_shoulderDrive.ConfigForwardSoftLimitThreshold(
-      sensor_conversions::lifter::shoulder::ToSensorUnit(measure_up::lifter::shoulder::maxAngle));
-  m_shoulderDrive.ConfigReverseSoftLimitThreshold(
-      sensor_conversions::lifter::shoulder::ToSensorUnit(measure_up::lifter::shoulder::minAngle));
+  m_shoulderDrive.ConfigForwardSoftLimitThreshold(sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(
+      m_kinematics.ShoulderAngleToBoomExtension(measure_up::lifter::shoulder::maxAngle)));
+  m_shoulderDrive.ConfigReverseSoftLimitThreshold(sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(
+      m_kinematics.ShoulderAngleToBoomExtension(measure_up::lifter::shoulder::minAngle)));
   m_shoulderDrive.ConfigForwardSoftLimitEnable(true);
   m_shoulderDrive.ConfigReverseSoftLimitEnable(true);
 }

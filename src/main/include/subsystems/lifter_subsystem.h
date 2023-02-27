@@ -148,6 +148,10 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @return ArmState holding joint properties to get to "pose" point in 2d space
   ArmState ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const;
 
+  units::inch_t ConvertShoulderAngle(units::degree_t angle) const;
+  units::inches_per_second_t ConvertShoulderVelocity(units::degree_t angle,
+                                                     units::degrees_per_second_t angularVelocity) const;
+
   bool IsShoulderMPComplete();
   bool IsExtensionMPComplete();
   bool IsWristMPComplete();
