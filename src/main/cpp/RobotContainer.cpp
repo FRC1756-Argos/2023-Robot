@@ -175,7 +175,7 @@ void RobotContainer::ConfigureBindings() {
 
   auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
 
-  // Bashguard homeing trigger
+  // Bashguard homing trigger
 
   auto bashGuardHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_bash.IsBashGuardHomed(); }});
 
@@ -196,6 +196,8 @@ void RobotContainer::ConfigureBindings() {
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
+
+  auto ledMissileSwitchTrigger = m_buttonBox.TriggerLED();
 
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
@@ -327,10 +329,14 @@ void RobotContainer::ConfigureBindings() {
                                  30_ips)
                                  .ToPtr());
   stowPositionTrigger.OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
+
+  ledMissileSwitchTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
+  ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
 }
 
 void RobotContainer::Disable() {
-  m_ledSubSystem.SetAllGroupsAllianceColor();
+  m_ledSubSystem.SetAllGroupsAllianceColor(false);
 
   m_lifter.Disable();
   m_intake.Disable();
@@ -338,13 +344,15 @@ void RobotContainer::Disable() {
 }
 
 void RobotContainer::Enable() {
-  m_ledSubSystem.SetAllGroupsColor(argos_lib::colors::kReallyGreen);
+  m_ledSubSystem.SetAllGroupsAllianceColor(true);
 }
 
 void RobotContainer::AllianceChanged() {
   // If disabled, set alliance colors
   if (frc::DriverStation::IsDisabled()) {
-    m_ledSubSystem.SetAllGroupsAllianceColor();
+    m_ledSubSystem.SetAllGroupsAllianceColor(false);
+  } else {
+    m_ledSubSystem.SetAllGroupsAllianceColor(true);
   }
 }
 
