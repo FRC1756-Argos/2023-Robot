@@ -19,7 +19,9 @@
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
 
+#include <cmath>
 #include <memory>
+#include <optional>
 
 #include "Constants.h"
 #include "argos_lib/subsystems/led_subsystem.h"
@@ -72,21 +74,13 @@ RobotContainer::RobotContainer()
         // If aim bot is engaged and there is a degree error
         if (isAimBotEngaged && degreeError) {
           frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
-          // Is the bias negative or positive? Positive -> Towards right of screen, Negative is oppsoite
-          // Left of screen is also robot positive
-          double sign;
-          if (degreeError.value() >= 0_deg) {
-            sign = 1;
-          } else {
-            sign = -1;
-          }
 
           // Calculate the lateral bias
           double lateralBias =
               speeds::drive::aimBotMaxBias *
               (units::math::abs<units::degree_t>(degreeError.value()).to<double>() / vision::absMaxAngle.to<double>());
           // Apply the original sign
-          lateralBias *= sign;
+          lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias", lateralBias);
 
           // Actually apply the lateral bias
