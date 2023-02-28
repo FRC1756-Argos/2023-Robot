@@ -75,6 +75,14 @@ void SimpleLedSubsystem::SetAllGroupsAllianceColor() {
   }
 }
 
+void SimpleLedSubsystem::SetAllGroupsGamePieceColor(GamePiece gp) {
+  if (gp == GamePiece::CONE) {
+    SetAllGroupsColor(argos_lib::colors::kConeYellow);
+  } else {
+    SetAllGroupsColor(argos_lib::colors::kCubePurple);
+  }
+}
+
 void SimpleLedSubsystem::SetAllGropusOff() {
   m_CANdle.ClearAnimation(0);
   m_CANdle.ClearAnimation(1);

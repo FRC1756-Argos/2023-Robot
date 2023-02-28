@@ -17,6 +17,7 @@
   "C_Cpp.default.configurationProvider": "vscode-wpilib",
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
+  "editor.fontLigatures": true,
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,

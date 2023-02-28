@@ -19,6 +19,9 @@
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
 
+// Include GamePiece enum
+#include <constants/field_points.h>
+
 #include <memory>
 
 #include "argos_lib/subsystems/led_subsystem.h"
@@ -192,6 +195,7 @@ void RobotContainer::ConfigureBindings() {
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
+  auto gamePiece = m_buttonBox.TriggerGamePiece();
 
   auto scoreConeTrigger = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
 
@@ -313,6 +317,14 @@ void RobotContainer::ConfigureBindings() {
                                  30_ips)
                                  .ToPtr());
   stowPositionTrigger.OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
+
+  gamePiece.OnTrue(frc2::InstantCommand(
+                       [this]() {
+                         auto gamePiece = m_buttonBox.GetGamePiece();
+                         m_ledSubSystem.SetAllGroupsGamePieceColor(gamePiece);
+                       },
+                       {&m_ledSubSystem})
+                       .ToPtr());
 }
 
 void RobotContainer::Disable() {
