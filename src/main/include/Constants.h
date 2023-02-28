@@ -6,6 +6,7 @@
 
 #include <frc/PneumaticsModuleType.h>
 #include <units/length.h>
+#include <units/time.h>
 #include <units/velocity.h>
 
 #include <string>
@@ -64,5 +65,5 @@ namespace networkTables {
 
 namespace leds {
   // Length of request animation in seconds
-  constexpr int requestLen = 5;
+  constexpr units::time::second_t requestLen = 5_s;
 }  // namespace leds
