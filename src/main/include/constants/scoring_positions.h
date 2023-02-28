@@ -55,17 +55,21 @@ namespace scoring_positions {
                                                                   field_points::grids::highCubeNodeHeight) +
                                                    cubePlacingOffset,
                                                BashGuardPosition::Retracted);
-    constexpr static SetpointPosition intake(frc::Translation2d(10_in + robotPlacingOffsetX, 7.5_in),
-                                             BashGuardPosition::Deployed);
-    constexpr static SetpointPosition stow(frc::Translation2d(14_in, 18_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneIntake(frc::Translation2d(15_in + robotPlacingOffsetX, 7.5_in),
+                                                 BashGuardPosition::Deployed);
+    constexpr static SetpointPosition cubeIntake(frc::Translation2d(15_in + robotPlacingOffsetX, 8.5_in),
+                                                 BashGuardPosition::Deployed);
+    constexpr static SetpointPosition stow(frc::Translation2d(13.5_in, 17_in), BashGuardPosition::Retracted);
   }  // namespace end_effector
 
 }  // namespace scoring_positions
 
 constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition gridPosition, bool enableBashGuard) {
   SetpointPosition targetPosition;
-  if (gridPosition.column == ScoringColumn::intake) {
-    targetPosition = scoring_positions::end_effector::intake;
+  if (gridPosition.column == ScoringColumn::coneIntake) {
+    targetPosition = scoring_positions::end_effector::coneIntake;
+  } else if (gridPosition.column == ScoringColumn::cubeIntake) {
+    targetPosition = scoring_positions::end_effector::cubeIntake;
   } else if (gridPosition.column == ScoringColumn::stow) {
     targetPosition = scoring_positions::end_effector::stow;
   } else if (gridPosition.column == ScoringColumn::leftGrid_leftCone ||

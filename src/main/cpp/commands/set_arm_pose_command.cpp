@@ -142,7 +142,8 @@ void SetArmPoseCommand::Initialize() {
   }
 
   switch (m_latestScoringPosition.column) {
-    case ScoringColumn::intake:
+    case ScoringColumn::coneIntake:
+    case ScoringColumn::cubeIntake:
       m_endingWristPosition = WristPosition::RollersUp;
       break;
     case ScoringColumn::stow:

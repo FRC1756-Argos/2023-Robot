@@ -60,7 +60,7 @@ namespace measure_up {
     }  // namespace armBar
     namespace effector {
       // Y is actually Z
-      constexpr auto effectorFromArm = frc::Translation2d{3.5_in, -1.5_in};
+      constexpr auto effectorFromArm = frc::Translation2d{3.5_in, 1.5_in};
     }  // namespace effector
   }    // namespace lifter
   namespace bash {
@@ -77,10 +77,10 @@ namespace measure_up {
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 78_in},
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 0_in},
       path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 0_in},
-      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 12_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 8_in},
       // path_planning::ArmPathPoint{chassis::length / 2, 18_in},
       // path_planning::ArmPathPoint{chassis::length / 2, 12_in},
-      path_planning::ArmPathPoint{0_in, 12_in},
+      path_planning::ArmPathPoint{0_in, 8_in},
       path_planning::ArmPathPoint{lifter::fulcrumPosition.X(), lifter::fulcrumPosition.Y()},
       path_planning::ArmPathPoint{-chassis::length / 2, 8_in},
       path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 8_in}};

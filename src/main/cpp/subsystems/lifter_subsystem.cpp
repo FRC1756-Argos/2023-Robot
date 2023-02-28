@@ -21,6 +21,19 @@
 
 #include "utils/sensor_conversions.h"
 
+std::string ToString(WristPosition position) {
+  switch (position) {
+    case WristPosition::RollersUp:
+      return "RollersUp";
+    case WristPosition::RollersDown:
+      return "RollersDown";
+    case WristPosition::Unknown:
+      return "Unknown";
+    default:
+      return "Invalid";
+  }
+}
+
 /* ——————————————————— ARM SUBSYSTEM MEMBER FUNCTIONS —————————————————— */
 
 LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
@@ -382,7 +395,11 @@ units::inch_t LifterSubsystem::GetArmExtension() {
   return sensor_conversions::lifter::arm_extension::ToExtension(m_armExtensionMotor.GetSelectedSensorPosition());
 }
 units::degree_t LifterSubsystem::GetShoulderAngle() {
-  return units::degree_t(m_shoulderEncoder.GetAbsolutePosition());
+  return units::degree_t(m_shoulderEncoder.GetPosition());
+}
+units::degree_t LifterSubsystem::GetShoulderBoomAngle() {
+  return m_kinematics.BoomExtensionToShoulderAngle(
+      sensor_conversions::lifter::shoulder_actuator::ToExtension(m_shoulderDrive.GetSelectedSensorPosition()));
 }
 LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
   return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderAngle()}};
@@ -390,6 +407,10 @@ LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
 
 ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const {
   return m_kinematics.GetJoints(pose, effectorPosition != WristPosition::RollersUp);
+}
+
+frc::Translation2d LifterSubsystem::ConvertState(ArmState state, WristPosition effectorPosition) const {
+  return m_kinematics.GetPose(state, effectorPosition != WristPosition::RollersUp);
 }
 
 units::inch_t LifterSubsystem::ConvertShoulderAngle(units::degree_t angle) const {

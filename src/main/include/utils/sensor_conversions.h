@@ -110,13 +110,15 @@ namespace sensor_conversions {
     namespace shoulder_actuator {
       constexpr double sensorToMotorRev = 1.0 / 2048;
       constexpr double extensionMillimetersPerRevolution = 4.0;
+      constexpr double fudgeFactor = 0.992;
 
       constexpr double ToSensorUnit(const units::inch_t extension) {
-        return (units::millimeter_t(extension) / extensionMillimetersPerRevolution / sensorToMotorRev).to<double>();
+        return (units::millimeter_t(extension) / extensionMillimetersPerRevolution / sensorToMotorRev / fudgeFactor)
+            .to<double>();
       }
 
       constexpr units::inch_t ToExtension(const double sensorUnits) {
-        return units::millimeter_t(sensorUnits * sensorToMotorRev * extensionMillimetersPerRevolution);
+        return units::millimeter_t(sensorUnits * sensorToMotorRev * extensionMillimetersPerRevolution * fudgeFactor);
       }
 
       constexpr units::inches_per_second_t ToVelocity(const double sensorVelocity) {

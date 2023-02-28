@@ -109,8 +109,12 @@ RobotContainer::RobotContainer()
         }
 
         auto pose = m_lifter.GetArmPose(m_lifter.GetWristPosition());
+
+        frc::SmartDashboard::PutString("lifter/CurrentWrist", ToString(m_lifter.GetWristPosition()));
         frc::SmartDashboard::PutNumber("lifter/CurrentX", units::inch_t(pose.X()).to<double>());
         frc::SmartDashboard::PutNumber("lifter/CurrentY", units::inch_t(pose.Y()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentAngle (shoulder)", m_lifter.GetShoulderAngle().to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentAngle (boom)", m_lifter.GetShoulderBoomAngle().to<double>());
       },
       {&m_lifter}));
 
@@ -264,7 +268,7 @@ void RobotContainer::ConfigureBindings() {
                                          SetArmPoseCommand(
                                              m_lifter,
                                              m_bash,
-                                             ScoringPosition{.column = ScoringColumn::intake},
+                                             ScoringPosition{.column = ScoringColumn::coneIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
                                              PathType::concaveDown))
@@ -274,7 +278,7 @@ void RobotContainer::ConfigureBindings() {
                                          SetArmPoseCommand(
                                              m_lifter,
                                              m_bash,
-                                             ScoringPosition{.column = ScoringColumn::intake},
+                                             ScoringPosition{.column = ScoringColumn::cubeIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
                                              PathType::concaveDown))

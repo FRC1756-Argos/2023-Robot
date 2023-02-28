@@ -21,6 +21,8 @@
 
 enum class WristPosition { RollersDown, RollersUp, Unknown };
 
+std::string ToString(WristPosition position);
+
 class LifterSubsystem : public frc2::SubsystemBase {
  public:
   struct LifterPosition {
@@ -138,6 +140,8 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @return The shoulder's current angle as an units::degree_t
   units::degree_t GetShoulderAngle();
 
+  units::degree_t GetShoulderBoomAngle();
+
   /// @brief Gets the lifter's current shoulder position represented as a collection of joint states
   /// @return A LifterPosition containing the state of the shoulder system's joints
   LifterPosition GetLifterPosition();
@@ -147,6 +151,8 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param effectorPosition True -> Effector is inverted False -> Effector is NOT inverted
   /// @return ArmState holding joint properties to get to "pose" point in 2d space
   ArmState ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const;
+
+  frc::Translation2d ConvertState(ArmState state, WristPosition effectorPosition) const;
 
   units::inch_t ConvertShoulderAngle(units::degree_t angle) const;
   units::inches_per_second_t ConvertShoulderVelocity(units::degree_t angle,
