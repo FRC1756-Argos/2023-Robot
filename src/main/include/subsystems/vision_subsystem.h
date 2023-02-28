@@ -114,7 +114,7 @@ class VisionSubsystem : public frc2::SubsystemBase {
    *
    * @return units::degree_t
    */
-  units::degree_t GetHorizontalOffsetToTarget(bool& validTarget);
+  std::optional<units::degree_t> GetHorizontalOffsetToTarget();
 
   void SetReflectiveVisionMode(bool mode);
 

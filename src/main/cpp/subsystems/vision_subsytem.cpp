@@ -22,19 +22,17 @@ void VisionSubsystem::Periodic() {
   }
 }
 
-units::degree_t VisionSubsystem::GetHorizontalOffsetToTarget(bool& validTarget) {
+std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
   LimelightTarget::tValues targetValues = GetCameraTargetValues();
 
   // add more target validation after testing e.g. area, margin, skew etc
   // for now has target is enough as we will be fairly close to target
   // and will tune the pipeline not to combine detctions and choose the highest area
   if (targetValues.hasTargets) {
-    validTarget = true;
     return targetValues.m_yaw;
   }
 
-  validTarget = false;
-  return 0_deg;
+  return std::nullopt;
 }
 
 void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
