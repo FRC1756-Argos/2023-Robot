@@ -3,7 +3,9 @@
 ///            the license file in the root directory of this project.
 
 #include <frc/DriverStation.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 
+#include "Constants.h"
 #include "subsystems/vision_subsystem.h"
 
 CameraInterface::CameraInterface() = default;
@@ -18,6 +20,43 @@ void VisionSubsystem::Periodic() {
   if (targetValues.hasTargets && (targetValues.robotPose.ToPose2d() != m_oldTargetValues.robotPose.ToPose2d())) {
     m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
   }
+}
+
+std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
+  LimelightTarget::tValues targetValues = GetCameraTargetValues();
+
+  // add more target validation after testing e.g. area, margin, skew etc
+  // for now has target is enough as we will be fairly close to target
+  // and will tune the pipeline not to combine detctions and choose the highest area
+  if (targetValues.hasTargets) {
+    return targetValues.m_yaw;
+  }
+
+  return std::nullopt;
+}
+
+void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
+  std::shared_ptr<nt::NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+
+  int requestedPipeline = mode ? camera::reflectivePipeline : camera::aprilTagPipeline;
+
+  table->PutNumber("pipeline", requestedPipeline);
+}
+
+bool VisionSubsystem::AimToPlaceCone() {
+  LimelightTarget::tValues targetValues = GetCameraTargetValues();
+
+  SetReflectiveVisionMode(true);
+
+  if (targetValues.hasTargets) {
+    return false;
+  }
+
+  frc::SmartDashboard::PutBoolean("(AimToPlaceCone) Is Target Present?", targetValues.hasTargets);
+  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Pitch", targetValues.m_pitch.to<double>());
+  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Yaw", targetValues.m_yaw.to<double>());
+
+  return true;
 }
 
 LimelightTarget::tValues VisionSubsystem::GetCameraTargetValues() {
@@ -54,9 +93,11 @@ LimelightTarget::tValues LimelightTarget::GetTarget() {
                                                     units::make_unit<units::radian_t>(rawRobotTagSpace.at(4)),
                                                     units::make_unit<units::radian_t>(rawRobotTagSpace.at(5))));
   m_hasTargets = (table->GetNumber("tv", 0) == 1);
+  m_yaw = units::make_unit<units::degree_t>(table->GetNumber("tx", 0.0));
+  m_pitch = units::make_unit<units::degree_t>(table->GetNumber("ty", 0.0));
   m_totalLatency = units::make_unit<units::millisecond_t>(rawRobotPose.at(6));
 
-  return tValues{m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_totalLatency};
+  return tValues{m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_pitch, m_yaw, m_totalLatency};
 }
 
 bool LimelightTarget::HasTarget() {
