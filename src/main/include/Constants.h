@@ -61,3 +61,12 @@ namespace networkTables {
     }  // namespace keys
   }    // namespace swerveHomes
 }  // namespace networkTables
+
+namespace camera {
+  constexpr char reflectivePipeline = 0;
+  constexpr char aprilTagPipeline = 1;
+  constexpr int horizontalPixelResolution = 320;
+  constexpr int verticalPixelResolution = 240;
+  constexpr auto horizontalAngleResolution = 63.3_deg;
+  constexpr auto verticalAngleResolution = 49.7_deg;
+}  // namespace camera

@@ -231,6 +231,16 @@ void RobotContainer::ConfigureBindings() {
   frc2::Trigger operatorTriggerSwapCombo = m_controllers.OperatorController().TriggerDebounced(
       {argos_lib::XboxController::Button::kBack, argos_lib::XboxController::Button::kStart});
 
+  // VISION TRIGGERS
+  auto reflectiveTargetTrigger =
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
+  reflectiveTargetTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
+          .ToPtr());
+  reflectiveTargetTrigger.OnFalse(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
+          .ToPtr());
+
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
   // WRIST HOME TRIGGER ACTIVATION
