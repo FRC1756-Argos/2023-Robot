@@ -199,7 +199,7 @@ void RobotContainer::ConfigureBindings() {
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
-  auto gamePiece = m_buttonBox.TriggerGamePiece();
+  auto gamePiece = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kUp);
 
   auto ledMissileSwitchTrigger = m_buttonBox.TriggerLED();
 
@@ -338,13 +338,14 @@ void RobotContainer::ConfigureBindings() {
       frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
   ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
 
-  gamePiece.OnTrue(frc2::InstantCommand(
-                       [this]() {
-                         auto gamePiece = m_buttonBox.GetGamePiece();
-                         m_ledSubSystem.SetAllGroupsGamePieceColor(gamePiece);
-                       },
-                       {&m_ledSubSystem})
-                       .ToPtr());
+  // TODO re-implement this
+  // gamePiece.OnTrue(frc2::InstantCommand(
+  //                      [this]() {
+  //                        auto gamePiece = m_buttonBox.GetGamePiece();
+  //                        m_ledSubSystem.SetAllGroupsGamePieceColor(gamePiece);
+  //                      },
+  //                      {&m_ledSubSystem})
+  //                      .ToPtr());
 }
 
 void RobotContainer::Disable() {

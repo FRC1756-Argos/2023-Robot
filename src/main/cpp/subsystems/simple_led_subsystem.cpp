@@ -10,6 +10,8 @@
 #include <ctre/phoenix/led/StrobeAnimation.h>
 #include <frc/DriverStation.h>
 
+#include <chrono>
+
 #include "argos_lib/config/config_types.h"
 #include "constants/addresses.h"
 
