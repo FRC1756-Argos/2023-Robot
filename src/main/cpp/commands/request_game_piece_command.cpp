@@ -37,7 +37,7 @@ void RequestGamePieceCommand::Initialize() {
       break;
   }
 
-  m_leds.SetAllGroupsFade(clr);
+  m_leds.SetAllGroupsFlash(clr);
 }
 
 // Called repeatedly when this Command is scheduled to run
