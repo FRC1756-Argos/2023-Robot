@@ -32,10 +32,6 @@ namespace speeds {
   }  // namespace armKinematicSpeeds
 }  // namespace speeds
 
-namespace vision {
-  constexpr units::degree_t absMaxAngle = 31.65_deg;
-}  // namespace vision
-
 namespace indexes {
   namespace swerveModules {
     constexpr char frontLeftIndex = 0;
@@ -74,5 +70,6 @@ namespace camera {
   constexpr int horizontalPixelResolution = 320;
   constexpr int verticalPixelResolution = 240;
   constexpr auto horizontalAngleResolution = 63.3_deg;
+  constexpr auto halfhorizontalAngleResolution = horizontalAngleResolution / 2;
   constexpr auto verticalAngleResolution = 49.7_deg;
 }  // namespace camera

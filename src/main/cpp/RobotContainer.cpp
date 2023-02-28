@@ -77,8 +77,8 @@ RobotContainer::RobotContainer()
 
           // Calculate the lateral bias
           double lateralBias =
-              speeds::drive::aimBotMaxBias *
-              (units::math::abs<units::degree_t>(degreeError.value()).to<double>() / vision::absMaxAngle.to<double>());
+              speeds::drive::aimBotMaxBias * (units::math::abs<units::degree_t>(degreeError.value()).to<double>() /
+                                              camera::halfhorizontalAngleResolution.to<double>());
           // Apply the original sign
           lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias", lateralBias);
