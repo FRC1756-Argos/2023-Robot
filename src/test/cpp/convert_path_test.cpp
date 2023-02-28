@@ -258,3 +258,36 @@ TEST(DecomposeVelocityTest, OffsetFulcrum) {
     EXPECT_TRUE(UnitEqual(components.v_tangential, -1_rad * 10_ips / 2_ft));
   }
 }
+
+TEST(SegmentProfileTest, LongPathsContinuity) {
+  {
+    auto path =
+        path_planning::ArmPath{{0_in, 0_in}, {0_in, 100_in}, {100_in, 100_in}, {200_in, 100_in}, {100_in, 100_in}};
+    auto segmentLengths = path_planning::GenerateSegmentLengths(path);
+    auto constraints = path_planning::PathDynamicsConstraints{60_ips, 60_ips2};
+
+    auto segmentProfiles = path_planning::GenerateContinuousSegmentProfiles(segmentLengths, path, constraints);
+
+    for (size_t index = 0; index < segmentProfiles.size() - 1; ++index) {
+      auto endPointState = segmentProfiles.at(index).Calculate(segmentProfiles.at(index).TotalTime());
+      auto startPointState = segmentProfiles.at(index + 1).Calculate(0_s);
+      EXPECT_TRUE(UnitEqual(endPointState.velocity, startPointState.velocity));
+    }
+  }
+}
+
+TEST(SegmentProfileTest, ShortPathsContinuity) {
+  {
+    auto path = path_planning::ArmPath{{29.5_in, 7.5_in}, {19.5_in, 18_in}, {16.5_in, 18_in}, {14_in, 18_in}};
+    auto segmentLengths = path_planning::GenerateSegmentLengths(path);
+    auto constraints = path_planning::PathDynamicsConstraints{60_ips, 60_ips2};
+
+    auto segmentProfiles = path_planning::GenerateContinuousSegmentProfiles(segmentLengths, path, constraints);
+
+    for (size_t index = 0; index < segmentProfiles.size() - 1; ++index) {
+      auto endPointState = segmentProfiles.at(index).Calculate(segmentProfiles.at(index).TotalTime());
+      auto startPointState = segmentProfiles.at(index + 1).Calculate(0_s);
+      EXPECT_TRUE(UnitEqual(endPointState.velocity, startPointState.velocity, 1_ips));
+    }
+  }
+}

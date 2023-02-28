@@ -26,7 +26,7 @@ namespace speeds {
   }  // namespace drive
   namespace armKinematicSpeeds {
     constexpr auto effectorVelocity = 60_ips;
-    constexpr auto effectorAcceleration = 60_ips2;
+    constexpr auto effectorAcceleration = 45_ips2;
   }  // namespace armKinematicSpeeds
 }  // namespace speeds
 

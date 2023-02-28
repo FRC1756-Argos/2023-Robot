@@ -5,7 +5,6 @@
 #include "utils/path_planning/convert_path.h"
 
 #include <fmt/format.h>
-#include <frc/trajectory/TrapezoidProfile.h>
 #include <units/angle.h>
 #include <units/constants.h>
 #include <units/math.h>
@@ -165,33 +164,17 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
                                               units::millisecond_t resolution) {
   auto avoidancePath = KeepOut(initialPath, avoidancePolygon);
 
-  std::vector<units::inch_t> segmentLengths;
+  std::vector<units::inch_t> segmentLengths = GenerateSegmentLengths(avoidancePath);
   std::vector<units::radian_t> segmentAngles;
   std::vector<double> cosSegmentAngles;
   std::vector<double> sinSegmentAngles;
-
-  std::transform(
-      std::next(avoidancePath.begin()),
-      avoidancePath.end(),
-      avoidancePath.begin(),
-      std::back_inserter(segmentLengths),
-      [](const ArmPathPoint& p1, const ArmPathPoint& p2) { return units::math::hypot(p2.x - p1.x, p2.z - p1.z); });
 
   segmentAngles.reserve(segmentLengths.size());
   cosSegmentAngles.reserve(segmentLengths.size());
   sinSegmentAngles.reserve(segmentLengths.size());
 
-  std::vector<frc::TrapezoidProfile<units::inch>> segmentProfiles;
-  auto lastVelocity = 0_ips;
-  for (size_t segmentIndex = 0; segmentIndex < segmentLengths.size(); ++segmentIndex) {
-    auto cuspAngle = CalculateCuspAngle(avoidancePath, segmentIndex);
-    auto transitionSpeed = constraints.maxVelocity * (-units::math::cos(cuspAngle) + 1) / 2;
-    segmentProfiles.emplace_back(
-        frc::TrapezoidProfile<units::inch>::Constraints{constraints.maxVelocity, constraints.maxAcceleration},
-        frc::TrapezoidProfile<units::inch>::State{segmentLengths.at(segmentIndex), transitionSpeed},
-        frc::TrapezoidProfile<units::inch>::State{0_in, lastVelocity});
-    lastVelocity = transitionSpeed;
-  }
+  auto segmentProfiles = GenerateContinuousSegmentProfiles(segmentLengths, avoidancePath, constraints);
+
   const auto totalProfiledTime = std::accumulate(
       segmentProfiles.begin(),
       segmentProfiles.end(),
@@ -251,4 +234,52 @@ ArmMPPath path_planning::GenerateProfiledPath(const ArmPath& initialPath,
   path.push_back({resolution, initialPath.back(), {0_ips, 0_ips, 0_ips}});
 
   return path;
+}
+
+std::vector<units::inch_t> path_planning::GenerateSegmentLengths(const path_planning::ArmPath& path) {
+  std::vector<units::inch_t> lengths;
+  lengths.reserve(path.size() - 1);
+  std::transform(
+      std::next(path.begin()),
+      path.end(),
+      path.begin(),
+      std::back_inserter(lengths),
+      [](const ArmPathPoint& p1, const ArmPathPoint& p2) { return units::math::hypot(p2.x - p1.x, p2.z - p1.z); });
+
+  return lengths;
+}
+
+std::vector<frc::TrapezoidProfile<units::inch>> path_planning::GenerateContinuousSegmentProfiles(
+    const std::vector<units::inch_t>& segmentLengths,
+    const path_planning::ArmPath& path,
+    const PathDynamicsConstraints& constraints) {
+  auto forwardSegmentProfiles =
+      GenerateSegmentProfiles(segmentLengths.begin(), segmentLengths.end(), path.begin(), path.end(), constraints);
+  auto reverseSegmentProfiles =
+      GenerateSegmentProfiles(segmentLengths.rbegin(), segmentLengths.rend(), path.rbegin(), path.rend(), constraints);
+
+  std::vector<frc::TrapezoidProfile<units::inch>> continuousSegmentProfiles;
+  continuousSegmentProfiles.reserve(forwardSegmentProfiles.size());
+
+  auto forwardPathIt = forwardSegmentProfiles.begin();
+  auto reversePathIt = reverseSegmentProfiles.rbegin();
+
+  auto lastVelocity = 0_ips;
+  while (forwardPathIt != forwardSegmentProfiles.end()) {
+    auto endVelocity = units::math::min(forwardPathIt->Calculate(forwardPathIt->TotalTime()).velocity,
+                                        reversePathIt->Calculate(0_s).velocity);
+
+    continuousSegmentProfiles.emplace_back(
+        frc::TrapezoidProfile<units::inch>::Constraints{constraints.maxVelocity, constraints.maxAcceleration},
+        frc::TrapezoidProfile<units::inch>::State{forwardPathIt->Calculate(forwardPathIt->TotalTime()).position,
+                                                  endVelocity},
+        frc::TrapezoidProfile<units::inch>::State{0_in, lastVelocity});
+
+    lastVelocity = continuousSegmentProfiles.back().Calculate(continuousSegmentProfiles.back().TotalTime()).velocity;
+
+    ++forwardPathIt;
+    ++reversePathIt;
+  }
+
+  return continuousSegmentProfiles;
 }

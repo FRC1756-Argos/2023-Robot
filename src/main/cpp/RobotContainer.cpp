@@ -110,6 +110,10 @@ RobotContainer::RobotContainer()
         } else {
           m_lifter.SetWristSpeed(wristSpeed);
         }
+
+        auto pose = m_lifter.GetArmPose(m_lifter.GetWristPosition());
+        frc::SmartDashboard::PutNumber("lifter/CurrentX", units::inch_t(pose.X()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentY", units::inch_t(pose.Y()).to<double>());
       },
       {&m_lifter}));
 
@@ -174,7 +178,7 @@ void RobotContainer::ConfigureBindings() {
 
   auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
 
-  // Bashguard homeing trigger
+  // Bashguard homing trigger
 
   auto bashGuardHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_bash.IsBashGuardHomed(); }});
 
@@ -197,22 +201,26 @@ void RobotContainer::ConfigureBindings() {
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
   auto gamePiece = m_buttonBox.TriggerGamePiece();
 
-  auto scoreConeTrigger = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
+  auto ledMissileSwitchTrigger = m_buttonBox.TriggerLED();
 
   // DRIVE TRIGGERS
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
                                                                       argos_lib::XboxController::Button::kA,
                                                                       argos_lib::XboxController::Button::kB});
 
-  auto controlMode = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
   auto fieldHome = m_controllers.DriverController().TriggerDebounced(argos_lib::XboxController::Button::kY);
   auto intakeForwardTrigger =
-      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger);
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
   auto intakeReverseTrigger =
-      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
-  auto intakeFastReverse = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
-  auto exclusiveIntakeTrigger =
-      argos_lib::triggers::OneOf({intakeForwardTrigger, intakeReverseTrigger, intakeFastReverse});
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
+  auto exclusiveManualIntakeTrigger = argos_lib::triggers::OneOf({intakeForwardTrigger, intakeReverseTrigger});
+
+  auto intakeConeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
+  auto intakeCubeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
+  auto scoreConeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger);
+  auto scoreCubeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
+
+  auto exclusiveAutoIntakeTrigger = argos_lib::triggers::OneOf({intakeConeTrigger, intakeCubeTrigger});
 
   // Swap controllers config
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBack, {1500_ms, 0_ms});
@@ -246,7 +254,16 @@ void RobotContainer::ConfigureBindings() {
 
   // DRIVE TRIGGER ACTIVATION
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
-  (intakeForwardTrigger && exclusiveIntakeTrigger)
+  homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
+
+  // Intake trigger activation
+  (intakeForwardTrigger && exclusiveManualIntakeTrigger)
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}).ToPtr());
+  (intakeReverseTrigger && exclusiveManualIntakeTrigger)
+      .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}).ToPtr());
+  exclusiveManualIntakeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
+
+  (intakeConeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
                                          SetArmPoseCommand(
                                              m_lifter,
@@ -256,9 +273,7 @@ void RobotContainer::ConfigureBindings() {
                                              []() { return false; },
                                              PathType::concaveDown))
                   .ToPtr());
-  (intakeReverseTrigger && exclusiveIntakeTrigger)
-      .OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCone(); }, {&m_intake}).ToPtr());
-  (intakeFastReverse && exclusiveIntakeTrigger)
+  (intakeCubeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
                                          SetArmPoseCommand(
                                              m_lifter,
@@ -268,7 +283,7 @@ void RobotContainer::ConfigureBindings() {
                                              []() { return false; },
                                              PathType::concaveDown))
                   .ToPtr());
-  exclusiveIntakeTrigger.OnFalse(
+  exclusiveAutoIntakeTrigger.OnFalse(
       frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}),
                                  SetArmPoseCommand(
                                      m_lifter,
@@ -276,16 +291,19 @@ void RobotContainer::ConfigureBindings() {
                                      ScoringPosition{.column = ScoringColumn::stow},
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                      []() { return false; },
-                                     PathType::concaveDown,
-                                     10_ips,
-                                     30_ips2))
+                                     PathType::concaveDown))  //,
+                                                              //  10_ips,
+                                                              //  30_ips2))
           .ToPtr());
-  homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
+
+  scoreConeTrigger.OnTrue(&m_scoreConeCommand);
+  scoreCubeTrigger.OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCube(); }, {&m_intake}).ToPtr());
+  scoreCubeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
+
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
 
-  //   manualArmExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
   startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
@@ -295,8 +313,6 @@ void RobotContainer::ConfigureBindings() {
   frc::SmartDashboard::PutNumber("MPTesting/TargetX (in)", 50.0);
   frc::SmartDashboard::PutNumber("MPTesting/TargetZ (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
-
-  scoreConeTrigger.OnTrue(&m_scoreConeCommand);
 
   newTargetTrigger.OnTrue(
       SetArmPoseCommand(
@@ -318,6 +334,10 @@ void RobotContainer::ConfigureBindings() {
                                  .ToPtr());
   stowPositionTrigger.OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
 
+  ledMissileSwitchTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
+  ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
+
   gamePiece.OnTrue(frc2::InstantCommand(
                        [this]() {
                          auto gamePiece = m_buttonBox.GetGamePiece();
@@ -328,7 +348,7 @@ void RobotContainer::ConfigureBindings() {
 }
 
 void RobotContainer::Disable() {
-  m_ledSubSystem.SetAllGroupsAllianceColor();
+  m_ledSubSystem.SetAllGroupsAllianceColor(false);
 
   m_lifter.Disable();
   m_intake.Disable();
@@ -336,13 +356,15 @@ void RobotContainer::Disable() {
 }
 
 void RobotContainer::Enable() {
-  m_ledSubSystem.SetAllGroupsColor(argos_lib::colors::kReallyGreen);
+  m_ledSubSystem.SetAllGroupsAllianceColor(true);
 }
 
 void RobotContainer::AllianceChanged() {
   // If disabled, set alliance colors
   if (frc::DriverStation::IsDisabled()) {
-    m_ledSubSystem.SetAllGroupsAllianceColor();
+    m_ledSubSystem.SetAllGroupsAllianceColor(false);
+  } else {
+    m_ledSubSystem.SetAllGroupsAllianceColor(true);
   }
 }
 

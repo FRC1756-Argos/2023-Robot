@@ -30,14 +30,22 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   /// @param color an ArgosColor to set the LEDs too
   void SetAllGroupsColor(argos_lib::ArgosColor color);
 
+  void SetAllGroupsFade(argos_lib::ArgosColor color);
+
+  void SetAllGroupsFlash(argos_lib::ArgosColor color);
+
+  void SetAllGroupsLarson(argos_lib::ArgosColor color);
+
   /// @brief Set all groups of LEDs to the alliance color
-  void SetAllGroupsAllianceColor();
+  void SetAllGroupsAllianceColor(bool fade);
+
+  void StopAllAnimations();
 
   /// @brief Set all groups to color of given game piece
   void SetAllGroupsGamePieceColor(GamePiece gp);
 
   /// @brief Turn off all LEDs
-  void SetAllGropusOff();
+  void SetAllGroupsOff();
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
@@ -57,17 +65,17 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   constexpr static int startIndex_frontRight = 38;
   constexpr static int length_frontRight = 30;
   constexpr static bool inverted_frontRight = true;
+
   constexpr static int startIndex_sideFront = 68;
   constexpr static int length_sideFront = 61;
   constexpr static bool inverted_sideFront = false;
-
   constexpr static int startIndex_sideBack = 129;
   constexpr static int length_sideBack = 61;
   constexpr static bool inverted_sideBack = true;
+
   constexpr static int startIndex_backRight = 190;
   constexpr static int length_backRight = 58;
   constexpr static bool inverted_backRight = false;
-
   constexpr static int startIndex_backLeft = 248;
   constexpr static int length_backLeft = 57;
   constexpr static bool inverted_backLeft = true;

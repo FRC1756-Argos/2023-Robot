@@ -101,7 +101,7 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
                                   controlLoop::practice_bot::drive::rotational_follower::angularAcceleration)})
     , m_followerController{m_linearPID, m_linearPID, m_rotationalPID}
     , m_driveMotorPIDTuner(
-          "argos/drive/motors",
+          "argos/drive/driveMotors",
           {&m_frontLeft.m_drive, &m_frontRight.m_drive, &m_backRight.m_drive, &m_backLeft.m_drive},
           0,
           argos_lib::ClosedLoopSensorConversions{
