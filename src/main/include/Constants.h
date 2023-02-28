@@ -61,3 +61,8 @@ namespace networkTables {
     }  // namespace keys
   }    // namespace swerveHomes
 }  // namespace networkTables
+
+namespace leds {
+  // Length of request animation in seconds
+  constexpr int requestLen = 5;
+}  // namespace leds
