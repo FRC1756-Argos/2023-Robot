@@ -22,6 +22,8 @@ namespace thresholds {}  // namespace thresholds
 
 namespace speeds {
   namespace drive {
+    constexpr double aimBotMaxBias = 0.1;
+    constexpr double aimBotThresh = 0.1;
     constexpr units::velocity::feet_per_second_t maxAngular = 12_fps;
   }  // namespace drive
   namespace armKinematicSpeeds {
@@ -29,6 +31,10 @@ namespace speeds {
     constexpr auto effectorAcceleration = 45_ips2;
   }  // namespace armKinematicSpeeds
 }  // namespace speeds
+
+namespace vision {
+  constexpr units::degree_t absMaxAngle = 31.65_deg;
+}  // namespace vision
 
 namespace indexes {
   namespace swerveModules {

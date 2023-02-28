@@ -21,6 +21,7 @@
 
 #include <memory>
 
+#include "Constants.h"
 #include "argos_lib/subsystems/led_subsystem.h"
 #include "commands/set_arm_pose_command.h"
 #include "utils/custom_units.h"
@@ -51,7 +52,7 @@ RobotContainer::RobotContainer()
   // ================== DEFAULT COMMANDS ===============================
   m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
       [this] {
-        const auto deadbandTranslationSpeeds = argos_lib::swerve::CircularInterpolate(
+        auto deadbandTranslationSpeeds = argos_lib::swerve::CircularInterpolate(
             argos_lib::swerve::TranslationSpeeds{
                 -m_controllers.DriverController().GetY(
                     argos_lib::XboxController::JoystickHand::kLeftHand),  // Y axis is negative forward
@@ -59,6 +60,41 @@ RobotContainer::RobotContainer()
                     argos_lib::XboxController::JoystickHand::
                         kLeftHand)},  // X axis is positive right, but swerve coordinates are positive left
             m_driveSpeedMap);
+
+        // Get if operator is engaging assist & supply other lateral or forward command
+        bool isAimBot = m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
+        bool isAimBotEngaged = isAimBot && (deadbandTranslationSpeeds.forwardSpeedPct > speeds::drive::aimBotThresh ||
+                                            deadbandTranslationSpeeds.leftSpeedPct > speeds::drive::aimBotThresh);
+
+        // Read offset from vision subsystem
+        std::optional<units::degree_t> degreeError = m_visionSubSystem.GetHorizontalOffsetToTarget();
+
+        // If aim bot is engaged and there is a degree error
+        if (isAimBotEngaged && degreeError) {
+          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
+          // Is the bias negative or positive? Positive -> Towards right of screen, Negative is oppsoite
+          // Left of screen is also robot positive
+          double sign;
+          if (degreeError.value() >= 0_deg) {
+            sign = 1;
+          } else {
+            sign = -1;
+          }
+
+          // Calculate the lateral bias
+          double lateralBias =
+              speeds::drive::aimBotMaxBias *
+              (units::math::abs<units::degree_t>(degreeError.value()).to<double>() / vision::absMaxAngle.to<double>());
+          // Apply the original sign
+          lateralBias *= sign;
+          frc::SmartDashboard::PutNumber("(AimBot) LateralBias", lateralBias);
+
+          // Actually apply the lateral bias
+          deadbandTranslationSpeeds.leftSpeedPct += lateralBias;
+
+          frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
+        }
+
         m_swerveDrive.SwerveDrive(
             deadbandTranslationSpeeds.forwardSpeedPct,
             deadbandTranslationSpeeds.leftSpeedPct,
@@ -234,9 +270,12 @@ void RobotContainer::ConfigureBindings() {
   // VISION TRIGGERS
   auto reflectiveTargetTrigger = (frc2::Trigger{
       [this]() { return m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown); }});
-  reflectiveTargetTrigger.WhileActiveContinous([this]() { m_visionSubSystem.AimToPlaceCone(); }, {&m_visionSubSystem});
-  reflectiveTargetTrigger.WhenInactive([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); },
-                                       {&m_visionSubSystem});
+  reflectiveTargetTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
+          .ToPtr());
+  reflectiveTargetTrigger.OnFalse(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
+          .ToPtr());
 
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 

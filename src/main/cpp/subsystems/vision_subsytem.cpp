@@ -15,7 +15,7 @@ VisionSubsystem::VisionSubsystem(const argos_lib::RobotInstance instance, Swerve
 
 // This method will be called once per scheduler run
 void VisionSubsystem::Periodic() {
-  LimelightTarget::tValues targetValues = GetCameraTargetValues();
+  LimelightTarget::tValues targetValues = GetCameraTargetValues();  // Note that this will update the targets object
 
   if (targetValues.hasTargets && (targetValues.robotPose.ToPose2d() != m_oldTargetValues.robotPose.ToPose2d())) {
     m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
@@ -23,7 +23,13 @@ void VisionSubsystem::Periodic() {
 }
 
 std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
+  // Updates and retrieves new target values
   LimelightTarget::tValues targetValues = GetCameraTargetValues();
+
+  // vision debugs
+  frc::SmartDashboard::PutBoolean("(AimToPlaceCone) Is Target Present?", targetValues.hasTargets);
+  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Pitch", targetValues.m_pitch.to<double>());
+  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Yaw", targetValues.m_yaw.to<double>());
 
   // add more target validation after testing e.g. area, margin, skew etc
   // for now has target is enough as we will be fairly close to target
@@ -43,18 +49,15 @@ void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
   table->PutNumber("pipeline", requestedPipeline);
 }
 
+// TODO deprecate?
 bool VisionSubsystem::AimToPlaceCone() {
-  LimelightTarget::tValues targetValues = GetCameraTargetValues();
-
   SetReflectiveVisionMode(true);
 
-  if (targetValues.hasTargets) {
+  LimelightTarget::tValues targetValues = GetCameraTargetValues();
+
+  if (!targetValues.hasTargets) {
     return false;
   }
-
-  frc::SmartDashboard::PutBoolean("(AimToPlaceCone) Is Target Present?", targetValues.hasTargets);
-  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Pitch", targetValues.m_pitch.to<double>());
-  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Yaw", targetValues.m_yaw.to<double>());
 
   return true;
 }
