@@ -17,24 +17,29 @@ VisionSubsystem::VisionSubsystem(const argos_lib::RobotInstance instance, Swerve
 void VisionSubsystem::Periodic() {
   LimelightTarget::tValues targetValues = GetCameraTargetValues();
 
-  if (targetValues.hasTargets && (targetValues.robotPose.ToPose2d() != m_oldTargetValues.robotPose.ToPose2d())) {
+  if (targetValues.hasTargets &&
+      (targetValues.robotPose.ToPose2d().X() != 0_in && targetValues.robotPose.ToPose2d().Y() != 0_in)) {
     m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
+  }
+
+  if (targetValues.hasTargets) {
+    frc::SmartDashboard::PutBoolean("(AimToPlaceCone) Is Target Present?", targetValues.hasTargets);
+    frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Pitch", targetValues.m_pitch.to<double>());
+    frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Yaw", targetValues.m_yaw.to<double>());
   }
 }
 
-units::degree_t VisionSubsystem::GetHorizontalOffsetToTarget(bool& validTarget) {
+std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
   LimelightTarget::tValues targetValues = GetCameraTargetValues();
 
   // add more target validation after testing e.g. area, margin, skew etc
   // for now has target is enough as we will be fairly close to target
   // and will tune the pipeline not to combine detctions and choose the highest area
   if (targetValues.hasTargets) {
-    validTarget = true;
     return targetValues.m_yaw;
   }
 
-  validTarget = false;
-  return 0_deg;
+  return std::nullopt;
 }
 
 void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
@@ -46,18 +51,6 @@ void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
 }
 
 bool VisionSubsystem::AimToPlaceCone() {
-  LimelightTarget::tValues targetValues = GetCameraTargetValues();
-
-  SetReflectiveVisionMode(true);
-
-  if (targetValues.hasTargets) {
-    return false;
-  }
-
-  frc::SmartDashboard::PutBoolean("(AimToPlaceCone) Is Target Present?", targetValues.hasTargets);
-  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Pitch", targetValues.m_pitch.to<double>());
-  frc::SmartDashboard::PutNumber("(AimToPlaceCone) Target Yaw", targetValues.m_yaw.to<double>());
-
   return true;
 }
 
