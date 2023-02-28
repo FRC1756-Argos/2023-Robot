@@ -188,7 +188,9 @@ void SetArmPoseCommand::Initialize() {
       break;
   }
 
-  auto initialPosition = m_lifter.GetArmPose(m_endingWristPosition);
+  auto rawInitialPosition = m_lifter.GetArmPose(m_lifter.GetWristPosition());
+  auto initialJoints = m_lifter.ConvertPose(rawInitialPosition, m_lifter.GetWristPosition());
+  auto initialPosition = m_lifter.ConvertState(initialJoints, m_endingWristPosition);
 
   path_planning::ArmPath desiredPath;
   desiredPath.reserve(3);

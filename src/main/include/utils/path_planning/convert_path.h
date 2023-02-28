@@ -58,7 +58,8 @@ namespace path_planning {
     size_t segmentIndex = 0;
     while (segmentLengthsBegin != segmentLengthsEnd) {
       auto cuspAngle = CalculateCuspAngle(path, segmentIndex);
-      auto transitionSpeed = std::min(maxVel, constraints.maxVelocity * (-units::math::cos(cuspAngle) + 1) / 2);
+      auto transitionSpeed = std::min(
+          maxVel, constraints.maxVelocity * std::max(0.25, ((-units::math::cos(cuspAngle) + 1) / 2).to<double>()));
       segmentProfiles.emplace_back(
           frc::TrapezoidProfile<units::inch>::Constraints{constraints.maxVelocity, constraints.maxAcceleration},
           frc::TrapezoidProfile<units::inch>::State{*segmentLengthsBegin, transitionSpeed},

@@ -402,7 +402,7 @@ units::degree_t LifterSubsystem::GetShoulderBoomAngle() {
       sensor_conversions::lifter::shoulder_actuator::ToExtension(m_shoulderDrive.GetSelectedSensorPosition()));
 }
 LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
-  return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderAngle()}};
+  return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderBoomAngle()}};
 }
 
 ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const {
