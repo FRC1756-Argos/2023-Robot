@@ -28,7 +28,7 @@ namespace sensor_conversions {
       }
     }  // namespace turn
     namespace drive {
-      constexpr auto wheelDiameter = 4_in;
+      constexpr auto wheelDiameter = 3.5_in;
       constexpr auto wheelCircumference = wheelDiameter * std::numbers::pi;
       constexpr double sensorUnitsPerMotorRevolution = 2048;
       constexpr double driveGearRatio = 8.16;

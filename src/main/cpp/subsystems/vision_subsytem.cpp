@@ -15,7 +15,9 @@ VisionSubsystem::VisionSubsystem(const argos_lib::RobotInstance instance, Swerve
 void VisionSubsystem::Periodic() {
   LimelightTarget::tValues targetValues = GetCameraTargetValues();
 
-  m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
+  if (targetValues.hasTargets && (targetValues.robotPose.ToPose2d() != m_oldTargetValues.robotPose.ToPose2d())) {
+    m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
+  }
 }
 
 LimelightTarget::tValues VisionSubsystem::GetCameraTargetValues() {
