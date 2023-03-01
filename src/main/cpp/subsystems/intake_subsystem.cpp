@@ -80,7 +80,7 @@ units::inch_t IntakeSubsystem::GetIntakeDistance() {
 
 bool IntakeSubsystem::IsConeFaceDown() {
   units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor2.GetRange());
-  if (GetIntakeDistance < 17_in) {
+  if (GetIntakeDistance < 16_in) {
     return true;
   }
   return false;
