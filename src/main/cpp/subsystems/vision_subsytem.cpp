@@ -17,8 +17,15 @@ VisionSubsystem::VisionSubsystem(const argos_lib::RobotInstance instance, Swerve
 void VisionSubsystem::Periodic() {
   LimelightTarget::tValues targetValues = GetCameraTargetValues();  // Note that this will update the targets object
 
-  if (targetValues.hasTargets && (targetValues.robotPose.ToPose2d() != m_oldTargetValues.robotPose.ToPose2d())) {
+  if (targetValues.hasTargets &&
+      (targetValues.robotPose.ToPose2d().X() != 0_in && targetValues.robotPose.ToPose2d().Y() != 0_in)) {
     m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
+  }
+
+  if (targetValues.hasTargets) {
+    frc::SmartDashboard::PutBoolean("(Vision - Periodic) Is Target Present?", targetValues.hasTargets);
+    frc::SmartDashboard::PutNumber("(Vision - Periodic) Target Pitch", targetValues.m_pitch.to<double>());
+    frc::SmartDashboard::PutNumber("(Vision - Periodic) Target Yaw", targetValues.m_yaw.to<double>());
   }
 }
 
