@@ -51,14 +51,6 @@ void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
 
 // TODO deprecate?
 bool VisionSubsystem::AimToPlaceCone() {
-  SetReflectiveVisionMode(true);
-
-  LimelightTarget::tValues targetValues = GetCameraTargetValues();
-
-  if (!targetValues.hasTargets) {
-    return false;
-  }
-
   return true;
 }
 
