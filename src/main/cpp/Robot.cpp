@@ -4,9 +4,12 @@
 
 #include "Robot.h"
 
+#include <frc/DriverStation.h>
 #include <frc2/command/CommandScheduler.h>
 
-void Robot::RobotInit() {}
+void Robot::RobotInit() {
+  m_lastAlliance = frc::DriverStation::GetAlliance();
+}
 
 /**
  * This function is called every 20 ms, no matter the mode. Use
@@ -18,6 +21,13 @@ void Robot::RobotInit() {}
  */
 void Robot::RobotPeriodic() {
   frc2::CommandScheduler::GetInstance().Run();
+
+  // Check to see if alliance has changed
+  auto curAlliance = frc::DriverStation::GetAlliance();
+  if (m_lastAlliance != curAlliance) {
+    m_container.AllianceChanged();
+    m_lastAlliance = frc::DriverStation::GetAlliance();
+  }
 }
 
 /**
@@ -36,6 +46,9 @@ void Robot::DisabledPeriodic() {}
  * RobotContainer} class.
  */
 void Robot::AutonomousInit() {
+  // Call robotcontainer enable
+  m_container.Enable();
+
   m_pAutonomousCommand = m_container.GetAutonomousCommand();
 
   if (m_pAutonomousCommand) {
@@ -46,6 +59,9 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
+  // Call robotcontainer enable
+  m_container.Enable();
+
   // This makes sure that the autonomous stops running when
   // teleop starts running. If you want the autonomous to
   // continue until interrupted by another command, remove

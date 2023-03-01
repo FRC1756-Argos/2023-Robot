@@ -19,7 +19,7 @@ BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
                   std::string(GetCANBus(address::comp_bot::bash_guard::extension,
                                         address::practice_bot::bash_guard::extension,
                                         instance))}
-    , m_bashTuner{"argos/bashTuner",
+    , m_bashTuner{"argos/bashGuard/extension",
                   {&m_bashGuard},
                   0,
                   argos_lib::ClosedLoopSensorConversions{

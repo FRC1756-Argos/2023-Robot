@@ -21,6 +21,8 @@ class LimelightTarget {
   frc::Pose3d m_robotPoseWPI;           ///< 3d pose of robot relative to WPI reference for active alliance
   frc::Pose3d m_robotPoseTagSpace;      ///< 3d pose of robot relative to primary april tag (biggest?)
   bool m_hasTargets;                    ///< True if the camera has a target it can read
+  units::degree_t m_pitch;              ///< Pitch of target relative to camera -24.85 to 24.85 degrees
+  units::degree_t m_yaw;                ///< Yaw of target relative to camera -31.65 to 31.65 degrees
   units::millisecond_t m_totalLatency;  ///< Total latency
 
  public:
@@ -35,6 +37,8 @@ class LimelightTarget {
     frc::Pose3d robotPoseWPI;           ///< @copydoc LimelightTarget::m_robotPoseWPI
     frc::Pose3d robotPoseTagSpace;      ///< @copydoc LimelightTarget::m_robotPoseTagSpace
     bool hasTargets;                    ///< @copydoc LimelightTarget::m_hasTargets
+    units::degree_t m_pitch;            ///< @copydoc LimelightTarget::m_pitch
+    units::degree_t m_yaw;              ///< @copydoc LimelightTarget::m_yaw
     units::millisecond_t totalLatency;  ///< @copydoc LimelightTarget::m_totalLatency
   };
 
@@ -97,6 +101,24 @@ class VisionSubsystem : public frc2::SubsystemBase {
    * @return LimelightTarget::tValues
    */
   LimelightTarget::tValues GetCameraTargetValues();
+
+  /**
+   * @brief Get the old robot poses and latencies
+   *
+   * @return LimelightTarget::tValues
+   */
+  LimelightTarget::tValues m_oldTargetValues;
+
+  /**
+   * @brief Get the current offset to the retroreflective tape
+   *
+   * @return units::degree_t
+   */
+  std::optional<units::degree_t> GetHorizontalOffsetToTarget();
+
+  void SetReflectiveVisionMode(bool mode);
+
+  bool AimToPlaceCone();
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.

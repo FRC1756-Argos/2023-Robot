@@ -28,7 +28,7 @@ namespace sensor_conversions {
       }
     }  // namespace turn
     namespace drive {
-      constexpr auto wheelDiameter = 4_in;
+      constexpr auto wheelDiameter = 3.5_in;
       constexpr auto wheelCircumference = wheelDiameter * std::numbers::pi;
       constexpr double sensorUnitsPerMotorRevolution = 2048;
       constexpr double driveGearRatio = 8.16;
@@ -107,10 +107,31 @@ namespace sensor_conversions {
         return ToSensorUnit(velocity * units::decisecond_t{1});
       }
     }  // namespace shoulder
+    namespace shoulder_actuator {
+      constexpr double sensorToMotorRev = 1.0 / 2048;
+      constexpr double extensionMillimetersPerRevolution = 4.0;
+      constexpr double fudgeFactor = 0.992;
+
+      constexpr double ToSensorUnit(const units::inch_t extension) {
+        return (units::millimeter_t(extension) / extensionMillimetersPerRevolution / sensorToMotorRev / fudgeFactor)
+            .to<double>();
+      }
+
+      constexpr units::inch_t ToExtension(const double sensorUnits) {
+        return units::millimeter_t(sensorUnits * sensorToMotorRev * extensionMillimetersPerRevolution * fudgeFactor);
+      }
+
+      constexpr units::inches_per_second_t ToVelocity(const double sensorVelocity) {
+        return units::inches_per_second_t{ToExtension(sensorVelocity) / units::decisecond_t{1}};
+      }
+      constexpr double ToSensorVelocity(const units::inches_per_second_t velocity) {
+        return ToSensorUnit(velocity * units::decisecond_t{1});
+      }
+    }  // namespace shoulder_actuator
   }    // namespace lifter
   namespace bashguard {
     constexpr double sensorToMotorRevolution = 1.0 / 2048;
-    constexpr double gearboxReduction = 1.0 / 20;
+    constexpr double gearboxReduction = 1.0 / 12;
     constexpr double driveSprocketTeeth = 15.0;
     constexpr double extensionInchesPerTooth = 0.375 / 1;
     constexpr units::inch_t ToExtension(const double sensorUnit) {

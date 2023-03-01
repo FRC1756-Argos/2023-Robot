@@ -25,8 +25,8 @@ namespace speeds {
     constexpr units::velocity::feet_per_second_t maxAngular = 12_fps;
   }  // namespace drive
   namespace armKinematicSpeeds {
-    constexpr auto effectorVelocity = 90_ips;
-    constexpr auto effectorAcceleration = 80_ips2;
+    constexpr auto effectorVelocity = 60_ips;
+    constexpr auto effectorAcceleration = 45_ips2;
   }  // namespace armKinematicSpeeds
 }  // namespace speeds
 
@@ -61,3 +61,12 @@ namespace networkTables {
     }  // namespace keys
   }    // namespace swerveHomes
 }  // namespace networkTables
+
+namespace camera {
+  constexpr char reflectivePipeline = 0;
+  constexpr char aprilTagPipeline = 1;
+  constexpr int horizontalPixelResolution = 320;
+  constexpr int verticalPixelResolution = 240;
+  constexpr auto horizontalAngleResolution = 63.3_deg;
+  constexpr auto verticalAngleResolution = 49.7_deg;
+}  // namespace camera

@@ -33,29 +33,34 @@ namespace measure_up {
     constexpr auto fulcrumPosition = frc::Translation2d{-12_in, 50_in};
     namespace arm_extension {
       constexpr auto homeExtension = 37.50_in;
-      constexpr auto maxExtension = 73.00_in;
+      constexpr auto maxExtension = 72.00_in;
       constexpr auto minExtension = 38.00_in;
 
     }  // namespace arm_extension
     namespace wrist {
       constexpr auto homeAngle = 0_deg;
-      constexpr auto minAngle = -20_deg;
-      constexpr auto invertedAngle = 180_deg;
+      constexpr auto minAngle = -180_deg;
+      constexpr auto invertedAngle = -180_deg;
       constexpr auto nominalAngle = 0_deg;
-      constexpr auto maxAngle = 180_deg;
-      constexpr auto wristWidth = 18.5_in;
+      constexpr auto maxAngle = 80_deg;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 0_deg;
       constexpr auto minAngle = -59_deg;
       constexpr auto maxAngle = 11_deg;
+      constexpr auto fixedBoomActuatorPosition =
+          frc::Translation2d{-14.75_in, 4.5_in};  ///< Linear actuator mount point relative to robot origin
+      constexpr auto actuatedBoomActuatorPosition =
+          frc::Translation2d{14_in, -2.5_in};  ///< Linear actuator mount point relative to fulcrum.
+      /// x is along length of arm, y is up with zero at same elevation as fulcrum
+      /// (when arm in front of robot parallel to ground)
     }  // namespace shoulder
     namespace armBar {
       constexpr auto centerOfRotDis = 1.35_in;
     }  // namespace armBar
     namespace effector {
       // Y is actually Z
-      constexpr auto effectorFromArm = frc::Translation2d{4_in, 1_in};
+      constexpr auto effectorFromArm = frc::Translation2d{3.5_in, 1.5_in};
     }  // namespace effector
   }    // namespace lifter
   namespace bash {
@@ -74,10 +79,10 @@ namespace measure_up {
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 78_in},
       path_planning::ArmPathPoint{chassis::length / 2 + 48_in, 0_in},
       path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 0_in},
-      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 18_in},
-      path_planning::ArmPathPoint{chassis::length / 2 - bumperExtension, 18_in},
-      path_planning::ArmPathPoint{chassis::length / 2 - bumperExtension, 12_in},
-      path_planning::ArmPathPoint{0_in, 12_in},
+      path_planning::ArmPathPoint{chassis::length / 2 + bumperExtension, 8_in},
+      // path_planning::ArmPathPoint{chassis::length / 2, 18_in},
+      // path_planning::ArmPathPoint{chassis::length / 2, 12_in},
+      path_planning::ArmPathPoint{0_in, 8_in},
       path_planning::ArmPathPoint{lifter::fulcrumPosition.X(), lifter::fulcrumPosition.Y()},
       path_planning::ArmPathPoint{-chassis::length / 2, 8_in},
       path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 8_in}};

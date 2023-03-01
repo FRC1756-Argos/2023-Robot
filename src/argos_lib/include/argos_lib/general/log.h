@@ -43,6 +43,7 @@ namespace argos_lib {
           std::vfprintf(stdout, fmt, lst);
           break;
       }
+      std::fprintf(stdout, "\n");
     }
 
    private:

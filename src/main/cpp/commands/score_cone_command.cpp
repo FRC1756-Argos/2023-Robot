@@ -21,24 +21,37 @@ ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& 
 
 // Called when the command is initially scheduled.
 void ScoreConeCommand::Initialize() {
+  m_lifter.ResetPathFaults();
   auto gpScore = SetArmPoseCommand{m_lifter,
                                    m_bash,
-                                   GetRelativePose(m_lifter.GetArmPose(WristPosition::Unknown), -10_in, -10_in),
+                                   GetRelativePose(m_lifter.GetArmPose(), -10_in, -10_in),
                                    BashGuardPosition::Retracted,
                                    WristPosition::Unknown,
                                    PathType::concaveUp,
-                                   speeds::armKinematicSpeeds::effectorVelocity,
+                                   30_ips,
                                    speeds::armKinematicSpeeds::effectorAcceleration};
+  auto safteyRaise = SetArmPoseCommand{m_lifter,
+                                       m_bash,
+                                       GetRelativePose(m_lifter.GetArmPose(), -10_in, 0_in),
+                                       BashGuardPosition::Retracted,
+                                       WristPosition::Unknown,
+                                       PathType::unmodified,
+                                       30_ips,
+                                       speeds::armKinematicSpeeds::effectorAcceleration};
 
-  m_allCommands =
-      frc2::ParallelCommandGroup(gpScore, frc2::SequentialCommandGroup(frc2::WaitCommand(500_ms), m_retractIntake))
-          .ToPtr();
+  m_allCommands = frc2::ParallelCommandGroup(frc2::SequentialCommandGroup(gpScore, safteyRaise),
+                                             frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms), m_retractIntake))
+                      .ToPtr();
   // Initialize all commands
   m_allCommands.get()->Initialize();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void ScoreConeCommand::Execute() {
+  if (m_lifter.IsFatalPathFault()) {
+    Cancel();
+    return;
+  }
   m_allCommands.get()->Execute();
 }
 
