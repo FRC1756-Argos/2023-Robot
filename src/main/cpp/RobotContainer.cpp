@@ -65,8 +65,9 @@ RobotContainer::RobotContainer()
 
         // Get if operator is engaging assist & supply other lateral or forward command
         bool isAimBot = m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
-        bool isAimBotEngaged = isAimBot && (deadbandTranslationSpeeds.forwardSpeedPct > speeds::drive::aimBotThresh ||
-                                            deadbandTranslationSpeeds.leftSpeedPct > speeds::drive::aimBotThresh);
+        bool isAimBotEngaged =
+            isAimBot && (std::abs(deadbandTranslationSpeeds.forwardSpeedPct) > speeds::drive::aimBotThresh ||
+                         std::abs(deadbandTranslationSpeeds.leftSpeedPct) > speeds::drive::aimBotThresh);
 
         // Read offset from vision subsystem
         std::optional<units::degree_t> degreeError = m_visionSubSystem.GetHorizontalOffsetToTarget();
@@ -81,7 +82,11 @@ RobotContainer::RobotContainer()
                                               camera::halfhorizontalAngleResolution.to<double>());
           // Apply the original sign
           lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBias", lateralBias);
+
+          // control gracefully
+          lateralBias *= std::min(2.5 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
+
+          frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
 
           // Actually apply the lateral bias
           deadbandTranslationSpeeds.leftSpeedPct += lateralBias;

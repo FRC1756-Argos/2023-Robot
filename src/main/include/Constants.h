@@ -22,7 +22,7 @@ namespace thresholds {}  // namespace thresholds
 
 namespace speeds {
   namespace drive {
-    constexpr double aimBotMaxBias = 0.1;
+    constexpr double aimBotMaxBias = 1.0;
     constexpr double aimBotThresh = 0.1;
     constexpr units::velocity::feet_per_second_t maxAngular = 12_fps;
   }  // namespace drive

@@ -53,6 +53,8 @@ void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
 
   int requestedPipeline = mode ? camera::reflectivePipeline : camera::aprilTagPipeline;
 
+  frc::SmartDashboard::PutNumber("(SetReflectiveVisionMode) Pipeline", requestedPipeline);
+
   table->PutNumber("pipeline", requestedPipeline);
 }
 
