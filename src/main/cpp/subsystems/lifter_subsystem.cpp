@@ -341,13 +341,17 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
       sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_kinematics.ShoulderAngleToBoomExtension(angle)));
 }
 
-frc::Translation2d LifterSubsystem::GetArmPose(const WristPosition wristPosition) {
+frc::Translation2d LifterSubsystem::GetEffectorPose(const WristPosition wristPosition) {
   LifterPosition lfPose = GetLifterPosition();
-  return m_kinematics.GetPose(ArmState{lfPose.state}, WristPosition::RollersUp != wristPosition);
+  return m_kinematics.GetEffectorPose(ArmState{lfPose.state}, WristPosition::RollersUp != wristPosition);
 }
 
-LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(frc::Translation2d desPose,
-                                                               WristPosition effectorPosition) {
+frc::Translation2d LifterSubsystem::GetArmPose() {
+  return m_kinematics.GetPose(GetLifterPosition().state);
+}
+
+LifterSubsystem::LifterPosition LifterSubsystem::SetEffectorPose(const frc::Translation2d& desPose,
+                                                                 WristPosition effectorPosition) {
   SetWristManualOverride(false);
   SetShoulderManualOverride(false);
   SetExtensionManualOverride(false);
@@ -355,7 +359,7 @@ LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(frc::Translation2
   LifterPosition lfPos;
   lfPos.wristAngle = effectorPosition != WristPosition::RollersUp ? measure_up::lifter::wrist::invertedAngle :
                                                                     measure_up::lifter::wrist::nominalAngle;
-  lfPos.state = m_kinematics.GetJoints(desPose);
+  lfPos.state = m_kinematics.GetJointsFromEffector(desPose, effectorPosition == WristPosition::RollersDown);
 
   std::printf("Desired (%0.2f, %0.2f), ext=%0.2f, ang=%0.2f, wrist=%0.2f\n",
               units::inch_t(desPose.X()).to<double>(),
@@ -365,6 +369,25 @@ LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(frc::Translation2
               units::degree_t(lfPos.wristAngle).to<double>());
 
   SetWristAngle(lfPos.wristAngle);
+  SetArmExtension(lfPos.state.armLen);
+  SetShoulderAngle(lfPos.state.shoulderAngle);
+
+  return lfPos;  // return the lfPos for use elsewhere
+}
+
+LifterSubsystem::LifterPosition LifterSubsystem::SetLifterPose(const frc::Translation2d& desPose) {
+  SetShoulderManualOverride(false);
+  SetExtensionManualOverride(false);
+
+  LifterPosition lfPos;
+  lfPos.state = m_kinematics.GetJoints(desPose);
+
+  std::printf("Desired (%0.2f, %0.2f), ext=%0.2f, ang=%0.2f\n",
+              units::inch_t(desPose.X()).to<double>(),
+              units::inch_t(desPose.Y()).to<double>(),
+              units::inch_t(lfPos.state.armLen).to<double>(),
+              units::degree_t(lfPos.state.shoulderAngle).to<double>());
+
   SetArmExtension(lfPos.state.armLen);
   SetShoulderAngle(lfPos.state.shoulderAngle);
 
@@ -405,12 +428,20 @@ LifterSubsystem::LifterPosition LifterSubsystem::GetLifterPosition() {
   return {GetWristAngle(), ArmState{GetArmExtension(), GetShoulderBoomAngle()}};
 }
 
-ArmState LifterSubsystem::ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const {
-  return m_kinematics.GetJoints(pose, effectorPosition != WristPosition::RollersUp);
+ArmState LifterSubsystem::ConvertEffectorPose(const frc::Translation2d& pose, WristPosition effectorPosition) const {
+  return m_kinematics.GetJointsFromEffector(pose, effectorPosition != WristPosition::RollersUp);
+}
+ArmState LifterSubsystem::ConvertLifterPose(const frc::Translation2d& pose) const {
+  return m_kinematics.GetJoints(pose);
 }
 
-frc::Translation2d LifterSubsystem::ConvertState(ArmState state, WristPosition effectorPosition) const {
-  return m_kinematics.GetPose(state, effectorPosition != WristPosition::RollersUp);
+frc::Translation2d LifterSubsystem::ConvertStateToEffectorPose(const ArmState& state,
+                                                               WristPosition effectorPosition) const {
+  return m_kinematics.GetEffectorPose(state, effectorPosition != WristPosition::RollersUp);
+}
+
+frc::Translation2d LifterSubsystem::ConvertStateToLifterPose(const ArmState& state) const {
+  return m_kinematics.GetPose(state);
 }
 
 units::inch_t LifterSubsystem::ConvertShoulderAngle(units::degree_t angle) const {
@@ -518,4 +549,56 @@ void LifterSubsystem::EnableShoulderSoftLimits() {
 void LifterSubsystem::DisableShoulderSoftLimits() {
   m_shoulderDrive.ConfigForwardSoftLimitEnable(false);
   m_shoulderDrive.ConfigReverseSoftLimitEnable(false);
+}
+
+void LifterSubsystem::ResetPathFaults() {
+  m_shoulderDrive.ClearStickyFaults();
+  m_armExtensionMotor.ClearStickyFaults();
+}
+
+bool IsFatalFault(ctre::phoenix::motorcontrol::Faults faults) {
+  return faults.APIError || faults.SensorOutOfPhase || faults.HardwareFailure || faults.RemoteLossOfSignal ||
+         faults.ResetDuringEn || faults.UnderVoltage;
+}
+
+bool IsFatalFault(ctre::phoenix::motorcontrol::StickyFaults faults) {
+  return faults.APIError || faults.SensorOutOfPhase || faults.RemoteLossOfSignal || faults.ResetDuringEn ||
+         faults.UnderVoltage;
+}
+
+bool LifterSubsystem::IsFatalPathFault() {
+  auto logger = argos_lib::ArgosLogger("LifterPath");
+
+  ctre::phoenix::motorcontrol::Faults shoulderFaults;
+  ctre::phoenix::motorcontrol::StickyFaults shoulderStickyFaults;
+  ctre::phoenix::motorcontrol::Faults extensionFaults;
+  ctre::phoenix::motorcontrol::StickyFaults extensionStickyFaults;
+  m_shoulderDrive.GetFaults(shoulderFaults);
+  m_armExtensionMotor.GetFaults(extensionFaults);
+  m_shoulderDrive.GetStickyFaults(shoulderStickyFaults);
+  m_armExtensionMotor.GetStickyFaults(extensionStickyFaults);
+
+  bool fatalError = false;
+
+  if (IsFatalFault(shoulderFaults)) {
+    logger.Log(argos_lib::LogLevel::ERR, "Shoulder active fault: %s", shoulderFaults.ToString().c_str());
+    fatalError = true;
+  }
+
+  if (IsFatalFault(shoulderStickyFaults)) {
+    logger.Log(argos_lib::LogLevel::ERR, "Shoulder sticky fault: %s", shoulderStickyFaults.ToString().c_str());
+    fatalError = true;
+  }
+
+  if (IsFatalFault(extensionFaults)) {
+    logger.Log(argos_lib::LogLevel::ERR, "Extension active fault: %s", extensionFaults.ToString().c_str());
+    fatalError = true;
+  }
+
+  if (IsFatalFault(extensionStickyFaults)) {
+    logger.Log(argos_lib::LogLevel::ERR, "Extension sticky fault: %s", extensionStickyFaults.ToString().c_str());
+    fatalError = true;
+  }
+
+  return fatalError;
 }

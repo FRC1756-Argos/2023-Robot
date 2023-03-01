@@ -36,25 +36,43 @@ LifterKinematics::LifterKinematics(const frc::Translation2d& fulcrumPosition,
           units::math::atan2(actuatedBoomActuatorPosition.Y(), actuatedBoomActuatorPosition.X())) {}
 
 // effectorYOffset is the effector pose offset from rotation center
-ArmState LifterKinematics::GetJoints(frc::Translation2d pose, bool effectorInverted) const {
+ArmState LifterKinematics::GetJointsFromEffector(const frc::Translation2d& pose, bool effectorInverted) const {
   const auto endEffectorOffset =
       effectorInverted ? frc::Translation2d{m_effectorOffset.X(), -m_effectorOffset.Y()} : m_effectorOffset;
+  return GetJoints(pose, endEffectorOffset);
+}
+
+ArmState LifterKinematics::GetJoints(const frc::Translation2d& pose, const frc::Translation2d& effectorOffset) const {
   units::meter_t poseMagnitude = pose.Distance(m_fulcrumPosition);
-  units::meter_t sideB = units::math::sqrt(Squared(poseMagnitude - endEffectorOffset.X()) -
-                                           Squared(endEffectorOffset.Y() + m_armRotationOffset));
-  units::meter_t sideA = m_armRotationOffset + endEffectorOffset.Y();
-  units::angle::radian_t alpha = units::math::atan2(sideA, sideB + endEffectorOffset.X());
+  units::meter_t sideB = units::math::sqrt(Squared(poseMagnitude - effectorOffset.X()) -
+                                           Squared(effectorOffset.Y() + m_armRotationOffset));
+  units::meter_t sideA = m_armRotationOffset + effectorOffset.Y();
+  units::angle::radian_t alpha = units::math::atan2(sideA, sideB + effectorOffset.X());
   units::angle::radian_t phi = units::math::atan2(pose.Y() - m_fulcrumPosition.Y(), pose.X() - m_fulcrumPosition.X());
   units::angle::radian_t theta = phi - alpha;
 
   return ArmState{sideB, theta};
 }
 
-frc::Translation2d LifterKinematics::GetPose(ArmState state, bool effectorInverted) const {
+ArmState LifterKinematics::GetJoints(const frc::Translation2d& pose) const {
+  return GetJoints(pose, {0_in, 0_in});
+}
+
+frc::Translation2d LifterKinematics::GetEffectorPose(const ArmState& state, bool effectorInverted) const {
+  const auto endEffectorOffset =
+      effectorInverted ? frc::Translation2d{m_effectorOffset.X(), -m_effectorOffset.Y()} : m_effectorOffset;
+
+  return GetPose(state, endEffectorOffset);
+}
+
+frc::Translation2d LifterKinematics::GetPose(const ArmState& state) const {
+  return GetPose(state, {0_in, 0_in});
+}
+
+frc::Translation2d LifterKinematics::GetPose(const ArmState& state, const frc::Translation2d& effectorOffset) const {
   units::radian_t rotation = state.shoulderAngle;
 
-  frc::Translation2d initPosition{state.armLen + m_effectorOffset.X(),
-                                  (m_effectorOffset.Y() * (effectorInverted ? -1 : 1)) + m_armRotationOffset};
+  frc::Translation2d initPosition{state.armLen + effectorOffset.X(), effectorOffset.Y() + m_armRotationOffset};
 
   frc::Translation2d solvedPosition = frc::Translation2d(initPosition.RotateBy(rotation));
 

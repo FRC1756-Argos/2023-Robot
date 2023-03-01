@@ -73,13 +73,13 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 
-  auto targetEffectorPosition = GetTargetPosition(scoringPosition, true);
+  auto targetLifterPosition = GetTargetPosition(scoringPosition, true, m_endingWristPosition);
 
-  if (targetEffectorPosition) {
-    m_targetPose = targetEffectorPosition.value().endEffectorPosition;
-    m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
+  if (targetLifterPosition) {
+    m_targetPose = targetLifterPosition.value().lifterPosition;
+    m_bashGuardTarget = targetLifterPosition.value().bashGuardPosition;
   } else {
-    m_targetPose = m_lifter.GetArmPose(WristPosition::RollersUp);
+    m_targetPose = m_lifter.GetArmPose();
   }
 }
 
@@ -126,20 +126,9 @@ void SetArmPoseCommand::Initialize() {
     return;
   }
 
+  m_lifter.ResetPathFaults();
+
   bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
-
-  if (m_scoringPositionCb) {
-    m_latestScoringPosition = m_scoringPositionCb.value()();
-    auto targetEffectorPosition = GetTargetPosition(m_latestScoringPosition, bashGuardEnable);
-
-    if (targetEffectorPosition) {
-      m_targetPose = targetEffectorPosition.value().endEffectorPosition;
-      m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
-    } else {
-      Cancel();
-      return;
-    }
-  }
 
   switch (m_latestScoringPosition.column) {
     case ScoringColumn::coneIntake:
@@ -158,6 +147,19 @@ void SetArmPoseCommand::Initialize() {
         m_endingWristPosition = WristPosition::Unknown;
       }
       break;
+  }
+
+  if (m_scoringPositionCb) {
+    m_latestScoringPosition = m_scoringPositionCb.value()();
+    auto targetLifterPosition = GetTargetPosition(m_latestScoringPosition, bashGuardEnable, m_endingWristPosition);
+
+    if (targetLifterPosition) {
+      m_targetPose = targetLifterPosition.value().lifterPosition;
+      m_bashGuardTarget = targetLifterPosition.value().bashGuardPosition;
+    } else {
+      Cancel();
+      return;
+    }
   }
 
   units::inch_t targetBashGuardPosition =
@@ -188,9 +190,7 @@ void SetArmPoseCommand::Initialize() {
       break;
   }
 
-  auto rawInitialPosition = m_lifter.GetArmPose(m_lifter.GetWristPosition());
-  auto initialJoints = m_lifter.ConvertPose(rawInitialPosition, m_lifter.GetWristPosition());
-  auto initialPosition = m_lifter.ConvertState(initialJoints, m_endingWristPosition);
+  auto initialPosition = m_lifter.GetArmPose();
 
   path_planning::ArmPath desiredPath;
   desiredPath.reserve(3);
@@ -245,12 +245,8 @@ void SetArmPoseCommand::Initialize() {
       path_planning::Polygon(measure_up::PathPlanningKeepOutZone.begin(), measure_up::PathPlanningKeepOutZone.end()),
       50_ms);
 
-  auto compositePath =
-      path_planning::GenerateCompositeMPPath(generalArmPath,
-                                             bashGuardPath,
-                                             path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition),
-                                             m_lifter,
-                                             m_endingWristPosition);
+  auto compositePath = path_planning::GenerateCompositeMPPath(
+      generalArmPath, bashGuardPath, path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition), m_lifter);
 
   BufferedTrajectoryPointStream& bashGuardStream = m_bashGuard.GetMPStream();
   bashGuardStream.Clear();
@@ -318,7 +314,7 @@ void SetArmPoseCommand::Initialize() {
 // Called repeatedly when this Command is scheduled to run
 void SetArmPoseCommand::Execute() {
   if (m_bashGuard.IsBashGuardManualOverride() || m_lifter.IsExtensionManualOverride() ||
-      m_lifter.IsShoulderManualOverride()) {
+      m_lifter.IsShoulderManualOverride() || m_lifter.IsFatalPathFault()) {
     Cancel();
     return;
   }

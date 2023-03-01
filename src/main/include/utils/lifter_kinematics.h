@@ -36,13 +36,17 @@ class LifterKinematics {
   /// @param pose Desired effector position in robot coordinate space
   /// @param effectorInverted True indicates the wrist is rotated so end effector offsets are opposite y
   /// @return LifterState object describing the state of the joint to get to desired point
-  ArmState GetJoints(frc::Translation2d pose, bool effectorInverted = false) const;
+  ArmState GetJointsFromEffector(const frc::Translation2d& pose, bool effectorInverted) const;
+
+  ArmState GetJoints(const frc::Translation2d& pose) const;
 
   /// @brief Solves for effector position based off of the lifter state
   /// @param state ArmState struct containing current lifter state
   /// @param effectorInverted True indicates the wrist is rotated so end effector offsets are opposite y
   /// @return Translation2d object describing position of effector in robot coordinate space
-  frc::Translation2d GetPose(ArmState state, bool effectorInverted = false) const;
+  frc::Translation2d GetEffectorPose(const ArmState& state, bool effectorInverted) const;
+
+  frc::Translation2d GetPose(const ArmState& state) const;
 
   units::inch_t ShoulderAngleToBoomExtension(units::degree_t shoulderAngle) const;
   units::degree_t BoomExtensionToShoulderAngle(units::inch_t boomExtension) const;
@@ -62,4 +66,7 @@ class LifterKinematics {
   const units::degree_t m_fixedBoomAnchorToFulcrumAngle;
   const units::inch_t m_articulatedBoomAnchorToFulcrumDist;
   const units::degree_t m_articulatedBoomAnchorToFulcrumAngle;
+
+  ArmState GetJoints(const frc::Translation2d& pose, const frc::Translation2d& effectorOffset) const;
+  frc::Translation2d GetPose(const ArmState& state, const frc::Translation2d& effectorOffset) const;
 };

@@ -11,67 +11,57 @@
 #include "constants/field_points.h"
 #include "constants/measure_up.h"
 #include "subsystems/bash_guard_subsystem.h"
+#include "subsystems/lifter_subsystem.h"
 
 struct SetpointPosition {
-  frc::Translation2d endEffectorPosition = {};
+  frc::Translation2d lifterPosition = {};
   BashGuardPosition bashGuardPosition = BashGuardPosition::Stationary;
 };
 
 namespace scoring_positions {
 
-  namespace end_effector {
+  namespace lifter_extension_end {
     constexpr static units::inch_t robotPlacingOffsetX = measure_up::chassis::length / 2 + measure_up::bumperExtension;
 
     constexpr static frc::Translation2d conePlacingOffset(-2_in, 7_in);
     constexpr static frc::Translation2d cubePlacingOffset(-2_in, 4_in);
 
-    constexpr static SetpointPosition coneLow(frc::Translation2d(field_points::grids::lowConeNodeDepth +
-                                                                     robotPlacingOffsetX,
-                                                                 field_points::grids::lowConeNodeHeight + 12_in) +
-                                                  conePlacingOffset,
-                                              BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneMid(frc::Translation2d(field_points::grids::middleConeNodeDepth +
-                                                                     robotPlacingOffsetX,
-                                                                 field_points::grids::middleConeNodeHeight) +
-                                                  conePlacingOffset,
-                                              BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneHigh(frc::Translation2d(field_points::grids::highConeNodeDepth +
-                                                                      robotPlacingOffsetX,
-                                                                  field_points::grids::highConeNodeHeight) +
-                                                   conePlacingOffset,
-                                               BashGuardPosition::Retracted);
-    constexpr static SetpointPosition cubeLow(frc::Translation2d(field_points::grids::lowCubeNodeDepth +
-                                                                     robotPlacingOffsetX,
-                                                                 field_points::grids::lowCubeNodeHeight + 12_in) +
-                                                  cubePlacingOffset,
-                                              BashGuardPosition::Retracted);
-    constexpr static SetpointPosition cubeMid(frc::Translation2d(field_points::grids::middleCubeNodeDepth +
-                                                                     robotPlacingOffsetX,
-                                                                 field_points::grids::middleCubeNodeHeight) +
-                                                  cubePlacingOffset,
-                                              BashGuardPosition::Retracted);
-    constexpr static SetpointPosition cubeHigh(frc::Translation2d(field_points::grids::highCubeNodeDepth +
-                                                                      robotPlacingOffsetX,
-                                                                  field_points::grids::highCubeNodeHeight) +
-                                                   cubePlacingOffset,
-                                               BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneIntake(frc::Translation2d(15_in + robotPlacingOffsetX, 7.5_in),
-                                                 BashGuardPosition::Deployed);
-    constexpr static SetpointPosition cubeIntake(frc::Translation2d(15_in + robotPlacingOffsetX, 8.5_in),
-                                                 BashGuardPosition::Deployed);
-    constexpr static SetpointPosition stow(frc::Translation2d(13.5_in, 17_in), BashGuardPosition::Retracted);
-  }  // namespace end_effector
+    constexpr static SetpointPosition coneLow(frc::Translation2d(24.5_in, 19_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneLow_wristInverted(frc::Translation2d(24.5_in, 19_in),
+                                                            BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneMid(frc::Translation2d(37.5_in, 42.5_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneMid_wristInverted(frc::Translation2d(34_in, 42.5_in),
+                                                            BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneHigh(frc::Translation2d(53.5_in, 52_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(52.5_in, 52_in),
+                                                             BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeLow(frc::Translation2d(20.5_in, 23_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeLow_wristInverted(frc::Translation2d(20.5_in, 23_in),
+                                                            BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeMid(frc::Translation2d(33_in, 36_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeMid_wristInverted(frc::Translation2d(33_in, 36_in),
+                                                            BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeHigh(frc::Translation2d(48.5_in, 48_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeHigh_wristInverted(frc::Translation2d(48.5_in, 48_in),
+                                                             BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneIntake(frc::Translation2d(29.5_in, 12.25_in), BashGuardPosition::Deployed);
+    constexpr static SetpointPosition cubeIntake(frc::Translation2d(29.5_in, 13.75_in), BashGuardPosition::Deployed);
+    constexpr static SetpointPosition stow(frc::Translation2d(10.5_in, 19.5_in), BashGuardPosition::Retracted);
+  }  // namespace lifter_extension_end
 
 }  // namespace scoring_positions
 
-constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition gridPosition, bool enableBashGuard) {
+constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition gridPosition,
+                                                            bool enableBashGuard,
+                                                            WristPosition wristPosition) {
+  bool wristInverted = wristPosition == WristPosition::RollersDown;
   SetpointPosition targetPosition;
   if (gridPosition.column == ScoringColumn::coneIntake) {
-    targetPosition = scoring_positions::end_effector::coneIntake;
+    targetPosition = scoring_positions::lifter_extension_end::coneIntake;
   } else if (gridPosition.column == ScoringColumn::cubeIntake) {
-    targetPosition = scoring_positions::end_effector::cubeIntake;
+    targetPosition = scoring_positions::lifter_extension_end::cubeIntake;
   } else if (gridPosition.column == ScoringColumn::stow) {
-    targetPosition = scoring_positions::end_effector::stow;
+    targetPosition = scoring_positions::lifter_extension_end::stow;
   } else if (gridPosition.column == ScoringColumn::leftGrid_leftCone ||
              gridPosition.column == ScoringColumn::leftGrid_rightCone ||
              gridPosition.column == ScoringColumn::middleGrid_leftCone ||
@@ -79,11 +69,14 @@ constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition grid
              gridPosition.column == ScoringColumn::rightGrid_leftCone ||
              gridPosition.column == ScoringColumn::rightGrid_rightCone) {
     if (gridPosition.row == ScoringRow::low) {
-      targetPosition = scoring_positions::end_effector::coneLow;
+      targetPosition = wristInverted ? scoring_positions::lifter_extension_end::coneLow_wristInverted :
+                                       scoring_positions::lifter_extension_end::coneLow;
     } else if (gridPosition.row == ScoringRow::middle) {
-      targetPosition = scoring_positions::end_effector::coneMid;
+      targetPosition = wristInverted ? scoring_positions::lifter_extension_end::coneMid_wristInverted :
+                                       scoring_positions::lifter_extension_end::coneMid;
     } else if (gridPosition.row == ScoringRow::high) {
-      targetPosition = scoring_positions::end_effector::coneHigh;
+      targetPosition = wristInverted ? scoring_positions::lifter_extension_end::coneHigh_wristInverted :
+                                       scoring_positions::lifter_extension_end::coneHigh;
     } else {
       return std::nullopt;
     }
@@ -91,11 +84,14 @@ constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition grid
              gridPosition.column == ScoringColumn::middleGrid_middleCube ||
              gridPosition.column == ScoringColumn::rightGrid_middleCube) {
     if (gridPosition.row == ScoringRow::low) {
-      targetPosition = scoring_positions::end_effector::cubeLow;
+      targetPosition = wristInverted ? scoring_positions::lifter_extension_end::cubeLow_wristInverted :
+                                       scoring_positions::lifter_extension_end::cubeLow;
     } else if (gridPosition.row == ScoringRow::middle) {
-      targetPosition = scoring_positions::end_effector::cubeMid;
+      targetPosition = wristInverted ? scoring_positions::lifter_extension_end::cubeMid_wristInverted :
+                                       scoring_positions::lifter_extension_end::cubeMid;
     } else if (gridPosition.row == ScoringRow::high) {
-      targetPosition = scoring_positions::end_effector::cubeHigh;
+      targetPosition = wristInverted ? scoring_positions::lifter_extension_end::cubeHigh_wristInverted :
+                                       scoring_positions::lifter_extension_end::cubeHigh;
     } else {
       return std::nullopt;
     }
@@ -103,6 +99,6 @@ constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition grid
     return std::nullopt;
   }
 
-  return SetpointPosition{targetPosition.endEffectorPosition,
+  return SetpointPosition{targetPosition.lifterPosition,
                           enableBashGuard ? targetPosition.bashGuardPosition : BashGuardPosition::Stationary};
 }

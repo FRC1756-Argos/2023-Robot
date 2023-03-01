@@ -114,13 +114,17 @@ class LifterSubsystem : public frc2::SubsystemBase {
 
   /// @brief Uses the kinematics object to calculate robot pose
   /// @return The arm's current pose in robot space as a Translation2d
-  frc::Translation2d GetArmPose(const WristPosition wristPosition);
+  frc::Translation2d GetEffectorPose(const WristPosition wristPosition);
+
+  frc::Translation2d GetArmPose();
 
   /// @brief Uses the kinematics object to calculate joint positions for a given pose, then sets the system to that pose
   /// @param desPose The point in robot space to go to (y is actually z)
   /// @param effectorPosition Wether or not the effector is inverted
   /// @return A LifterPosition representing the state of the different joints
-  LifterPosition SetLifterPose(frc::Translation2d desPose, WristPosition effectorPosition);
+  LifterPosition SetEffectorPose(const frc::Translation2d& desPose, WristPosition effectorPosition);
+
+  LifterPosition SetLifterPose(const frc::Translation2d& desPose);
 
   /// @brief Is the arm extension homed?
   /// @return True -> Arm extension is homed False -> Arm extension did not home
@@ -150,9 +154,12 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param pose Point in robot x/z plane where the end effector should be (y is actually z) in Translation2d
   /// @param effectorPosition True -> Effector is inverted False -> Effector is NOT inverted
   /// @return ArmState holding joint properties to get to "pose" point in 2d space
-  ArmState ConvertPose(frc::Translation2d pose, WristPosition effectorPosition) const;
+  ArmState ConvertEffectorPose(const frc::Translation2d& pose, WristPosition effectorPosition) const;
 
-  frc::Translation2d ConvertState(ArmState state, WristPosition effectorPosition) const;
+  ArmState ConvertLifterPose(const frc::Translation2d& pose) const;
+
+  frc::Translation2d ConvertStateToEffectorPose(const ArmState& state, WristPosition effectorPosition) const;
+  frc::Translation2d ConvertStateToLifterPose(const ArmState& state) const;
 
   units::inch_t ConvertShoulderAngle(units::degree_t angle) const;
   units::inches_per_second_t ConvertShoulderVelocity(units::degree_t angle,
@@ -168,6 +175,9 @@ class LifterSubsystem : public frc2::SubsystemBase {
 
   void StopMotionProfile();
   void StartMotionProfile(size_t shoulderStreamSize, size_t extensionStreamSize, size_t wristStreamSize);
+
+  void ResetPathFaults();
+  bool IsFatalPathFault();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
