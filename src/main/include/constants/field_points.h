@@ -24,7 +24,8 @@ enum class ScoringColumn {
   rightGrid_leftCone,
   rightGrid_middleCube,
   rightGrid_rightCone,
-  intake,
+  coneIntake,
+  cubeIntake,
   stow,
   invalid
 };
