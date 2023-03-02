@@ -25,10 +25,10 @@ void RequestGamePieceCommand::Initialize() {
   argos_lib::ArgosColor clr;
   switch (m_gamePiece()) {
     case GamePiece::CONE:
-      clr = argos_lib::colors::kConeYellow;
+      clr = argos_lib::gamma_corrected_colors::kConeYellow;
       break;
     case GamePiece::CUBE:
-      clr = argos_lib::colors::kCubePurple;
+      clr = argos_lib::gamma_corrected_colors::kCubePurple;
       break;
 
     default:
