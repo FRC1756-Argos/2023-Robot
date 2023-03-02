@@ -21,9 +21,10 @@ ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& 
 
 // Called when the command is initially scheduled.
 void ScoreConeCommand::Initialize() {
+  m_lifter.ResetPathFaults();
   auto gpScore = SetArmPoseCommand{m_lifter,
                                    m_bash,
-                                   GetRelativePose(m_lifter.GetArmPose(WristPosition::Unknown), -10_in, -10_in),
+                                   GetRelativePose(m_lifter.GetArmPose(), -10_in, -10_in),
                                    BashGuardPosition::Retracted,
                                    WristPosition::Unknown,
                                    PathType::concaveUp,
@@ -31,7 +32,7 @@ void ScoreConeCommand::Initialize() {
                                    speeds::armKinematicSpeeds::effectorAcceleration};
   auto safteyRaise = SetArmPoseCommand{m_lifter,
                                        m_bash,
-                                       GetRelativePose(m_lifter.GetArmPose(WristPosition::Unknown), -10_in, 0_in),
+                                       GetRelativePose(m_lifter.GetArmPose(), -10_in, 0_in),
                                        BashGuardPosition::Retracted,
                                        WristPosition::Unknown,
                                        PathType::unmodified,
@@ -47,6 +48,10 @@ void ScoreConeCommand::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void ScoreConeCommand::Execute() {
+  if (m_lifter.IsFatalPathFault()) {
+    Cancel();
+    return;
+  }
   m_allCommands.get()->Execute();
 }
 

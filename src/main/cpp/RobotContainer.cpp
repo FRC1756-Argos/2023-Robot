@@ -45,6 +45,7 @@ RobotContainer::RobotContainer()
     , m_intake(m_instance)
     , m_bash(m_instance)
     , m_ledSubSystem(m_instance)
+    , m_visionSubSystem(m_instance, &m_swerveDrive)
     , m_homeArmExtensionCommand(m_lifter)
     , m_bashGuardHomingCommand(m_bash)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
@@ -113,9 +114,16 @@ RobotContainer::RobotContainer()
           m_lifter.SetWristSpeed(wristSpeed);
         }
 
-        auto pose = m_lifter.GetArmPose(m_lifter.GetWristPosition());
-        frc::SmartDashboard::PutNumber("lifter/CurrentX", units::inch_t(pose.X()).to<double>());
-        frc::SmartDashboard::PutNumber("lifter/CurrentY", units::inch_t(pose.Y()).to<double>());
+        auto effectorPose = m_lifter.GetEffectorPose(m_lifter.GetWristPosition());
+        auto lifterPose = m_lifter.GetArmPose();
+
+        frc::SmartDashboard::PutString("lifter/CurrentWrist", ToString(m_lifter.GetWristPosition()));
+        frc::SmartDashboard::PutNumber("lifter/CurrentEffectorX", units::inch_t(effectorPose.X()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentEffectorY", units::inch_t(effectorPose.Y()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentLifterX", units::inch_t(lifterPose.X()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentLifterY", units::inch_t(lifterPose.Y()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentAngle (shoulder)", m_lifter.GetShoulderAngle().to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentAngle (boom)", m_lifter.GetShoulderBoomAngle().to<double>());
       },
       {&m_lifter}));
 
@@ -236,6 +244,16 @@ void RobotContainer::ConfigureBindings() {
   frc2::Trigger operatorTriggerSwapCombo = m_controllers.OperatorController().TriggerDebounced(
       {argos_lib::XboxController::Button::kBack, argos_lib::XboxController::Button::kStart});
 
+  // VISION TRIGGERS
+  auto reflectiveTargetTrigger =
+      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
+  reflectiveTargetTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
+          .ToPtr());
+  reflectiveTargetTrigger.OnFalse(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
+          .ToPtr());
+
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
   // WRIST HOME TRIGGER ACTIVATION
@@ -270,7 +288,7 @@ void RobotContainer::ConfigureBindings() {
                                          SetArmPoseCommand(
                                              m_lifter,
                                              m_bash,
-                                             ScoringPosition{.column = ScoringColumn::intake},
+                                             ScoringPosition{.column = ScoringColumn::coneIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
                                              PathType::concaveDown))
@@ -280,7 +298,7 @@ void RobotContainer::ConfigureBindings() {
                                          SetArmPoseCommand(
                                              m_lifter,
                                              m_bash,
-                                             ScoringPosition{.column = ScoringColumn::intake},
+                                             ScoringPosition{.column = ScoringColumn::cubeIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
                                              PathType::concaveDown))
