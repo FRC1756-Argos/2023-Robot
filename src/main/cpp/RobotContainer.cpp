@@ -23,8 +23,11 @@
 #include <constants/field_points.h>
 #include <Constants.h>
 
+#include <cmath>
 #include <memory>
+#include <optional>
 
+#include "Constants.h"
 #include "argos_lib/subsystems/led_subsystem.h"
 #include "commands/set_arm_pose_command.h"
 #include "commands/request_game_piece_command.h"
@@ -56,7 +59,7 @@ RobotContainer::RobotContainer()
   // ================== DEFAULT COMMANDS ===============================
   m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
       [this] {
-        const auto deadbandTranslationSpeeds = argos_lib::swerve::CircularInterpolate(
+        auto deadbandTranslationSpeeds = argos_lib::swerve::CircularInterpolate(
             argos_lib::swerve::TranslationSpeeds{
                 -m_controllers.DriverController().GetY(
                     argos_lib::XboxController::JoystickHand::kLeftHand),  // Y axis is negative forward
@@ -64,6 +67,38 @@ RobotContainer::RobotContainer()
                     argos_lib::XboxController::JoystickHand::
                         kLeftHand)},  // X axis is positive right, but swerve coordinates are positive left
             m_driveSpeedMap);
+
+        // Get if operator is engaging assist & supply other lateral or forward command
+        bool isAimBot = m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
+        bool isAimBotEngaged =
+            isAimBot && (std::abs(deadbandTranslationSpeeds.forwardSpeedPct) > speeds::drive::aimBotThresh ||
+                         std::abs(deadbandTranslationSpeeds.leftSpeedPct) > speeds::drive::aimBotThresh);
+
+        // Read offset from vision subsystem
+        std::optional<units::degree_t> degreeError = m_visionSubSystem.GetHorizontalOffsetToTarget();
+
+        // If aim bot is engaged and there is a degree error
+        if (isAimBotEngaged && degreeError) {
+          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
+
+          // Calculate the lateral bias
+          double lateralBias =
+              speeds::drive::aimBotMaxBias * (units::math::abs<units::degree_t>(degreeError.value()).to<double>() /
+                                              camera::halfhorizontalAngleResolution.to<double>());
+          // Apply the original sign
+          lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
+
+          // control gracefully
+          lateralBias *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
+
+          frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
+
+          // Actually apply the lateral bias
+          deadbandTranslationSpeeds.leftSpeedPct += lateralBias;
+
+          frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
+        }
+
         m_swerveDrive.SwerveDrive(
             deadbandTranslationSpeeds.forwardSpeedPct,
             deadbandTranslationSpeeds.leftSpeedPct,
