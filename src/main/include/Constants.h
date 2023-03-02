@@ -65,8 +65,8 @@ namespace networkTables {
 }  // namespace networkTables
 
 namespace camera {
-  constexpr char reflectivePipeline = 0;
-  constexpr char aprilTagPipeline = 1;
+  constexpr char reflectivePipeline = 1;
+  constexpr char aprilTagPipeline = 0;
   constexpr int horizontalPixelResolution = 320;
   constexpr int verticalPixelResolution = 240;
   constexpr auto horizontalAngleResolution = 63.3_deg;
