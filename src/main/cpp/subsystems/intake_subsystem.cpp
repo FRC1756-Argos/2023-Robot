@@ -35,7 +35,8 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {
   frc::SmartDashboard::PutNumber("SensorDistance", GetIntakeDistance().to<double>());
-  frc::SmartDashboard::PutBoolean("ConeFaceDown", IsConeDetected());
+  frc::SmartDashboard::PutBoolean("ConeDetection", IsConeDetected());
+  frc::SmartDashboard::PutBoolean("CubeDetection", IsCubeDetected());
 }
 
 void IntakeSubsystem::IntakeCone() {
