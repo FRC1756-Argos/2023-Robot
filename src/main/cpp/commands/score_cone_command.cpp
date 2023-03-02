@@ -30,7 +30,7 @@ void ScoreConeCommand::Initialize() {
                                    PathType::concaveUp,
                                    30_ips,
                                    speeds::armKinematicSpeeds::effectorAcceleration};
-  auto safteyRaise = SetArmPoseCommand{m_lifter,
+  auto safetyRaise = SetArmPoseCommand{m_lifter,
                                        m_bash,
                                        GetRelativePose(m_lifter.GetArmPose(), -10_in, 0_in),
                                        BashGuardPosition::Retracted,
@@ -39,11 +39,11 @@ void ScoreConeCommand::Initialize() {
                                        30_ips,
                                        speeds::armKinematicSpeeds::effectorAcceleration};
 
-  m_allCommands = frc2::ParallelCommandGroup(frc2::SequentialCommandGroup(gpScore, safteyRaise),
+  m_allCommands = frc2::ParallelCommandGroup(frc2::SequentialCommandGroup(gpScore, safetyRaise),
                                              frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms), m_retractIntake))
                       .ToPtr();
   // Initialize all commands
-  m_allCommands.get()->Initialize();
+  m_allCommands.Schedule();
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -52,13 +52,17 @@ void ScoreConeCommand::Execute() {
     Cancel();
     return;
   }
-  m_allCommands.get()->Execute();
+  if (!m_allCommands.IsScheduled()) {
+    Cancel();
+    return;
+  }
 }
 
 // Called once the command ends or is interrupted.
 void ScoreConeCommand::End(bool interrupted) {
-  // When command is done, stop the intake reverseing
-  m_allCommands.get()->End(interrupted);
+  if (interrupted) {
+    m_allCommands.Cancel();
+  }
   m_intake.IntakeStop();
 }
 
