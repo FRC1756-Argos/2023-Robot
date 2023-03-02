@@ -24,7 +24,7 @@ void ScoreConeCommand::Initialize() {
   m_lifter.ResetPathFaults();
   auto gpScore = SetArmPoseCommand{m_lifter,
                                    m_bash,
-                                   GetRelativePose(m_lifter.GetArmPose(), -10_in, -10_in),
+                                   GetRelativePose(m_lifter.GetArmPose(), -6_in, -8_in),
                                    BashGuardPosition::Retracted,
                                    WristPosition::Unknown,
                                    PathType::concaveUp,
@@ -32,7 +32,7 @@ void ScoreConeCommand::Initialize() {
                                    speeds::armKinematicSpeeds::effectorAcceleration};
   auto safetyRaise = SetArmPoseCommand{m_lifter,
                                        m_bash,
-                                       GetRelativePose(m_lifter.GetArmPose(), -10_in, 0_in),
+                                       GetRelativePose(m_lifter.GetArmPose(), -6_in, 0_in),
                                        BashGuardPosition::Retracted,
                                        WristPosition::Unknown,
                                        PathType::unmodified,
