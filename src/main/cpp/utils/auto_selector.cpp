@@ -56,6 +56,7 @@ frc2::Command* AutoSelector::GetSelectedCommand() const {
 void AutoSelector::UpdateSelectorEntries() const {
   std::vector<std::string> routines;
   std::transform(m_commands.begin(), m_commands.end(), std::back_inserter(routines), [](AutonomousCommand* command) {
+    //REMOVEME debugging
     return command->GetName();
   });
   nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard")->PutStringArray("Auto List", routines);

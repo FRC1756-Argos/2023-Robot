@@ -6,7 +6,9 @@
 
 #include "utils/swerve_trapezoidal_profile.h"
 
-DriveToPosition::DriveToPosition(std::shared_ptr<SwerveDriveSubsystem> drive,
+#include <frc/smartdashboard/SmartDashboard.h>
+
+DriveToPosition::DriveToPosition(SwerveDriveSubsystem* drive,
                                  const frc::Pose2d initPos,
                                  const units::degree_t initAngle,
                                  const frc::Pose2d dest,
@@ -21,7 +23,7 @@ DriveToPosition::DriveToPosition(std::shared_ptr<SwerveDriveSubsystem> drive,
     , m_linearConstraints{linConstraints}
     , m_rotationalConstraints{rotConstraints} {
   // Use addRequirements() here to declare subsystem dependencies.
-  // TODO ask david if we want to do add requirements
+  AddRequirements(drive);
 }
 
 // Called when the command is initially scheduled.
@@ -33,14 +35,26 @@ void DriveToPosition::Initialize() {
 }
 
 // Called repeatedly when this Command is scheduled to run
-void DriveToPosition::Execute() {}
+void DriveToPosition::Execute() {
+  // TODO REMOVEME
+  frc::SmartDashboard::PutBoolean("IsFollowingProfile", m_drive->IsFollowingProfile());
+}
 
 // Called once the command ends or is interrupted.
 void DriveToPosition::End(bool interrupted) {
+  frc::SmartDashboard::PutBoolean("DriveToPosStopped", true);
   m_drive->StopDrive();
 }
 
 // Returns true when the command should end.
 bool DriveToPosition::IsFinished() {
   return m_drive->ProfileIsComplete();
+}
+
+std::string DriveToPosition::GetName() const {
+  return std::string("Drive To Position");
+}
+
+frc2::Command* DriveToPosition::GetCommand() {
+  return dynamic_cast<frc2::Command*>(this);
 }

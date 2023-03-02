@@ -8,6 +8,7 @@
 #include <argos_lib/subsystems/swappable_controllers_subsystem.h>
 #include <commands/bashguard_homing_command.h>
 #include <commands/home_arm_extension_command.h>
+#include <commands/drive_to_position.h>
 #include <commands/score_cone_command.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
@@ -78,6 +79,7 @@ class RobotContainer {
 
   // Autonomous
   AutonomousNothing m_autoNothing;
+  DriveToPosition m_driveToPosition;
 
   AutoSelector m_autoSelector;
 

@@ -173,6 +173,8 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    */
   void StartDrivingProfile(SwerveTrapezoidalProfileSegment newProfile);
 
+  SwerveTrapezoidalProfileSegment* GetActiveSwerveProfile();
+
   /**
    * @brief Cancel the current driving profile without marking it complete
    */
@@ -184,6 +186,13 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    * @return true when a path is completed and not canceled
    */
   bool ProfileIsComplete() const;
+
+  /**
+   * @brief Check if drivetrain is following a profile
+   *
+   * @return true when robot is following profile
+   */
+  bool IsFollowingProfile() const;
 
   /**
    * @brief Get the robot velocity in chassis frame (x toward intake, y toward left) based on

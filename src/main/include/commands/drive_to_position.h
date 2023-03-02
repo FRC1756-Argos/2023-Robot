@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "subsystems/swerve_drive_subsystem.h"
+#include "commands/autonomous/autonomous_command.h"
 
 /**
  * An example command.
@@ -18,9 +19,11 @@
  * directly; this is crucially important, or else the decorator functions in
  * Command will *not* work!
  */
-class DriveToPosition : public frc2::CommandHelper<frc2::CommandBase, DriveToPosition> {
+class DriveToPosition
+    : public frc2::CommandHelper<frc2::CommandBase, DriveToPosition>
+    , public AutonomousCommand {
  public:
-  DriveToPosition(std::shared_ptr<SwerveDriveSubsystem> drive,
+  DriveToPosition(SwerveDriveSubsystem* drive,
                   const frc::Pose2d initPos,
                   const units::degree_t initAngle,
                   const frc::Pose2d dest,
@@ -36,8 +39,17 @@ class DriveToPosition : public frc2::CommandHelper<frc2::CommandBase, DriveToPos
 
   bool IsFinished() override;
 
+  /**
+   * @copydoc AutonomousCommand::GetName()
+   */
+  std::string GetName() const final;
+  /**
+   * @copydoc AutonomousCommand::GetCommand()
+   */
+  frc2::Command* GetCommand() final;
+
  private:
-  std::shared_ptr<SwerveDriveSubsystem> m_drive;
+  SwerveDriveSubsystem* m_drive;
   const frc::Pose2d m_initPosition;
   const units::degree_t m_initAngle;
   const frc::Pose2d m_destPosition;
