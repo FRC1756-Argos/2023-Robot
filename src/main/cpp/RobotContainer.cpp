@@ -84,7 +84,7 @@ RobotContainer::RobotContainer()
           lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
 
           // control gracefully
-          lateralBias *= std::min(2.5 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
+          lateralBias *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
 
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
 
