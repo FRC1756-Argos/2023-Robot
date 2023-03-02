@@ -4,12 +4,16 @@
 
 #include "commands/request_game_piece_command.h"
 
+#include <units/time.h>
+
 #include <chrono>
 
 #include "argos_lib/general/color.h"
 #include "constants/field_points.h"
 
-RequestGamePieceCommand::RequestGamePieceCommand(SimpleLedSubsystem& leds, int duration, std::function<GamePiece()> gp)
+RequestGamePieceCommand::RequestGamePieceCommand(SimpleLedSubsystem& leds,
+                                                 units::time::second_t duration,
+                                                 std::function<GamePiece()> gp)
     : m_leds{leds}, m_duration{duration}, m_gamePiece{gp} {
   // Use addRequirements() here to declare subsystem dependencies.
   AddRequirements(&m_leds);
@@ -17,14 +21,9 @@ RequestGamePieceCommand::RequestGamePieceCommand(SimpleLedSubsystem& leds, int d
 
 // Called when the command is initially scheduled.
 void RequestGamePieceCommand::Initialize() {
-  // Cancel command if no callback is present
-  if (!m_gamePiece) {
-    Cancel();
-  }
-
   m_startTime = std::chrono::high_resolution_clock::now();
   argos_lib::ArgosColor clr;
-  switch (m_gamePiece.value()()) {
+  switch (m_gamePiece()) {
     case GamePiece::CONE:
       clr = argos_lib::colors::kConeYellow;
       break;
@@ -37,7 +36,7 @@ void RequestGamePieceCommand::Initialize() {
       break;
   }
 
-  m_leds.SetAllGroupsFade(clr);
+  m_leds.SetAllGroupsFlash(clr);
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -52,7 +51,7 @@ void RequestGamePieceCommand::End(bool interrupted) {
 // Returns true when the command should end.
 bool RequestGamePieceCommand::IsFinished() {
   auto dur = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - m_startTime);
-  if (dur >= std::chrono::seconds{m_duration}) {
+  if (dur >= std::chrono::seconds{m_duration.to<int>()}) {
     return true;
   } else {
     return false;

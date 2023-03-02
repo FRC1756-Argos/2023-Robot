@@ -6,6 +6,7 @@
 
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
+#include <units/time.h>
 
 #include "subsystems/simple_led_subsystem.h"
 
@@ -25,7 +26,9 @@
  */
 class RequestGamePieceCommand : public frc2::CommandHelper<frc2::CommandBase, RequestGamePieceCommand> {
  public:
-  explicit RequestGamePieceCommand(SimpleLedSubsystem& leds, int duration, std::function<GamePiece()> gp);
+  explicit RequestGamePieceCommand(SimpleLedSubsystem& leds,
+                                   units::time::second_t duration,
+                                   std::function<GamePiece()> gp);
 
   void Initialize() override;
 
@@ -38,6 +41,6 @@ class RequestGamePieceCommand : public frc2::CommandHelper<frc2::CommandBase, Re
  private:
   SimpleLedSubsystem& m_leds;
   std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime;
-  int m_duration;  // Duration of animation, in seconds
-  std::optional<std::function<GamePiece()>> m_gamePiece;
+  units::time::second_t m_duration;  // Duration of animation, in seconds
+  std::function<GamePiece()> m_gamePiece;
 };
