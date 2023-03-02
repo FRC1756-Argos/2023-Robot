@@ -52,8 +52,7 @@ VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPo
 CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
                                                        const BashGuardMPPath& bashGuardPath,
                                                        const ArmPathPoint& shoulderFulcrum,
-                                                       const LifterSubsystem& lifter,
-                                                       const WristPosition wristPosition) {
+                                                       const LifterSubsystem& lifter) {
   CompositeMPPath compositePath{.startTime = std::chrono::steady_clock::now(),
                                 .shoulderPath = {},
                                 .extensionPath = {},
@@ -64,35 +63,37 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
   bool bashGuardStationary = bashGuardPath.empty() || bashGuardPath.front().position == bashGuardPath.back().position;
   bool bashGuardRetracting = !bashGuardStationary && bashGuardPath.back().position < bashGuardPath.front().position;
 
-  auto bashGuardPathTime =
-      bashGuardStationary ?
-          0_ms :
-          std::accumulate(bashGuardPath.begin(),
-                          bashGuardPath.end(),
-                          0_ms,
-                          [](const units::millisecond_t& runningSum, const BashGuardMPPathPoint& newPoint) {
-                            return runningSum + newPoint.time;
-                          });
-  auto generalPathTime = std::accumulate(generalPath.begin(),
-                                         generalPath.end(),
-                                         0_ms,
-                                         [](const units::millisecond_t& runningSum, const ArmMPPathPoint& newPoint) {
-                                           return runningSum + newPoint.time;
-                                         });
+  // Not necessary when not syncing paths
+  // auto bashGuardPathTime =
+  //     bashGuardStationary ?
+  //         0_ms :
+  //         std::accumulate(bashGuardPath.begin(),
+  //                         bashGuardPath.end(),
+  //                         0_ms,
+  //                         [](const units::millisecond_t& runningSum, const BashGuardMPPathPoint& newPoint) {
+  //                           return runningSum + newPoint.time;
+  //                         });
+  // auto generalPathTime = std::accumulate(generalPath.begin(),
+  //                                        generalPath.end(),
+  //                                        0_ms,
+  //                                        [](const units::millisecond_t& runningSum, const ArmMPPathPoint& newPoint) {
+  //                                          return runningSum + newPoint.time;
+  //                                        });
 
   if (bashGuardRetracting) {
     compositePath.bashGuardPath = PadProfile(compositePath.bashGuardPath, 500_ms, true);
   } else if (!bashGuardStationary) {
-    auto timeDelta = generalPathTime - bashGuardPathTime;
-    if (timeDelta < 500_ms) {
-      generalPath = PadProfile(generalPath, 500_ms - timeDelta, true);
-    }
+    // Disable padding that delays arm since there's no chance of arm hitting bash guard anymore
+    // auto timeDelta = generalPathTime - bashGuardPathTime;
+    // if (timeDelta < 500_ms) {
+    //   generalPath = PadProfile(generalPath, 500_ms - timeDelta, true);
+    // }
   }
 
   for (const auto& point : generalPath) {
     const ArmPathPoint armPositionVector(point.position.x - shoulderFulcrum.x, point.position.z - shoulderFulcrum.z);
     VelocityComponents velocities = DecomposeVelocity(point, armPositionVector);
-    auto joints = lifter.ConvertPose(frc::Translation2d(point.position.x, point.position.z), wristPosition);
+    auto joints = lifter.ConvertLifterPose(frc::Translation2d(point.position.x, point.position.z));
     compositePath.extensionPath.emplace_back(point.time, joints.armLen, velocities.v_radial);
     compositePath.shoulderPath.emplace_back(point.time, joints.shoulderAngle, velocities.v_tangential);
   }

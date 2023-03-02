@@ -144,9 +144,16 @@ RobotContainer::RobotContainer()
           m_lifter.SetWristSpeed(wristSpeed);
         }
 
-        auto pose = m_lifter.GetArmPose(m_lifter.GetWristPosition());
-        frc::SmartDashboard::PutNumber("lifter/CurrentX", units::inch_t(pose.X()).to<double>());
-        frc::SmartDashboard::PutNumber("lifter/CurrentY", units::inch_t(pose.Y()).to<double>());
+        auto effectorPose = m_lifter.GetEffectorPose(m_lifter.GetWristPosition());
+        auto lifterPose = m_lifter.GetArmPose();
+
+        frc::SmartDashboard::PutString("lifter/CurrentWrist", ToString(m_lifter.GetWristPosition()));
+        frc::SmartDashboard::PutNumber("lifter/CurrentEffectorX", units::inch_t(effectorPose.X()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentEffectorY", units::inch_t(effectorPose.Y()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentLifterX", units::inch_t(lifterPose.X()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentLifterY", units::inch_t(lifterPose.Y()).to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentAngle (shoulder)", m_lifter.GetShoulderAngle().to<double>());
+        frc::SmartDashboard::PutNumber("lifter/CurrentAngle (boom)", m_lifter.GetShoulderBoomAngle().to<double>());
       },
       {&m_lifter}));
 
@@ -310,7 +317,7 @@ void RobotContainer::ConfigureBindings() {
                                          SetArmPoseCommand(
                                              m_lifter,
                                              m_bash,
-                                             ScoringPosition{.column = ScoringColumn::intake},
+                                             ScoringPosition{.column = ScoringColumn::coneIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
                                              PathType::concaveDown))
@@ -320,7 +327,7 @@ void RobotContainer::ConfigureBindings() {
                                          SetArmPoseCommand(
                                              m_lifter,
                                              m_bash,
-                                             ScoringPosition{.column = ScoringColumn::intake},
+                                             ScoringPosition{.column = ScoringColumn::cubeIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
                                              PathType::concaveDown))

@@ -73,13 +73,13 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem& lifter,
   AddRequirements(&m_lifter);
   AddRequirements(&m_bashGuard);
 
-  auto targetEffectorPosition = GetTargetPosition(scoringPosition, true);
+  auto targetLifterPosition = GetTargetPosition(scoringPosition, true, m_endingWristPosition);
 
-  if (targetEffectorPosition) {
-    m_targetPose = targetEffectorPosition.value().endEffectorPosition;
-    m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
+  if (targetLifterPosition) {
+    m_targetPose = targetLifterPosition.value().lifterPosition;
+    m_bashGuardTarget = targetLifterPosition.value().bashGuardPosition;
   } else {
-    m_targetPose = m_lifter.GetArmPose(WristPosition::RollersUp);
+    m_targetPose = m_lifter.GetArmPose();
   }
 }
 
@@ -126,23 +126,13 @@ void SetArmPoseCommand::Initialize() {
     return;
   }
 
+  m_lifter.ResetPathFaults();
+
   bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
 
-  if (m_scoringPositionCb) {
-    m_latestScoringPosition = m_scoringPositionCb.value()();
-    auto targetEffectorPosition = GetTargetPosition(m_latestScoringPosition, bashGuardEnable);
-
-    if (targetEffectorPosition) {
-      m_targetPose = targetEffectorPosition.value().endEffectorPosition;
-      m_bashGuardTarget = targetEffectorPosition.value().bashGuardPosition;
-    } else {
-      Cancel();
-      return;
-    }
-  }
-
   switch (m_latestScoringPosition.column) {
-    case ScoringColumn::intake:
+    case ScoringColumn::coneIntake:
+    case ScoringColumn::cubeIntake:
       m_endingWristPosition = WristPosition::RollersUp;
       break;
     case ScoringColumn::stow:
@@ -157,6 +147,19 @@ void SetArmPoseCommand::Initialize() {
         m_endingWristPosition = WristPosition::Unknown;
       }
       break;
+  }
+
+  if (m_scoringPositionCb) {
+    m_latestScoringPosition = m_scoringPositionCb.value()();
+    auto targetLifterPosition = GetTargetPosition(m_latestScoringPosition, bashGuardEnable, m_endingWristPosition);
+
+    if (targetLifterPosition) {
+      m_targetPose = targetLifterPosition.value().lifterPosition;
+      m_bashGuardTarget = targetLifterPosition.value().bashGuardPosition;
+    } else {
+      Cancel();
+      return;
+    }
   }
 
   units::inch_t targetBashGuardPosition =
@@ -187,7 +190,7 @@ void SetArmPoseCommand::Initialize() {
       break;
   }
 
-  auto initialPosition = m_lifter.GetArmPose(m_endingWristPosition);
+  auto initialPosition = m_lifter.GetArmPose();
 
   path_planning::ArmPath desiredPath;
   desiredPath.reserve(3);
@@ -242,12 +245,8 @@ void SetArmPoseCommand::Initialize() {
       path_planning::Polygon(measure_up::PathPlanningKeepOutZone.begin(), measure_up::PathPlanningKeepOutZone.end()),
       50_ms);
 
-  auto compositePath =
-      path_planning::GenerateCompositeMPPath(generalArmPath,
-                                             bashGuardPath,
-                                             path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition),
-                                             m_lifter,
-                                             m_endingWristPosition);
+  auto compositePath = path_planning::GenerateCompositeMPPath(
+      generalArmPath, bashGuardPath, path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition), m_lifter);
 
   BufferedTrajectoryPointStream& bashGuardStream = m_bashGuard.GetMPStream();
   bashGuardStream.Clear();
@@ -271,10 +270,10 @@ void SetArmPoseCommand::Initialize() {
   shoulderStream.Clear();
   for (auto pointIt = compositePath.shoulderPath.begin(); pointIt != compositePath.shoulderPath.end(); ++pointIt) {
     shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
-        sensor_conversions::lifter::shoulder::ToSensorUnit(pointIt->position),
-        sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity),
-        0,  // pointIt->velocity < 0_rpm ? 0.001 * sensor_conversions::lifter::shoulder::ToSensorVelocity(-pointIt->velocity) :
-        //                             0.0,
+        sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_lifter.ConvertShoulderAngle(pointIt->position)),
+        sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(
+            -m_lifter.ConvertShoulderVelocity(pointIt->position, pointIt->velocity)),
+        0,
         0,
         0,
         0,
@@ -315,7 +314,7 @@ void SetArmPoseCommand::Initialize() {
 // Called repeatedly when this Command is scheduled to run
 void SetArmPoseCommand::Execute() {
   if (m_bashGuard.IsBashGuardManualOverride() || m_lifter.IsExtensionManualOverride() ||
-      m_lifter.IsShoulderManualOverride()) {
+      m_lifter.IsShoulderManualOverride() || m_lifter.IsFatalPathFault()) {
     Cancel();
     return;
   }
