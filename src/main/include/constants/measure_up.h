@@ -43,6 +43,7 @@ namespace measure_up {
       constexpr auto invertedAngle = -180_deg;
       constexpr auto nominalAngle = 0_deg;
       constexpr auto maxAngle = 80_deg;
+      constexpr auto wristWidth = 18.5_in;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 0_deg;
@@ -70,6 +71,8 @@ namespace measure_up {
     constexpr auto minExtension = 3_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
+  // namespace wrist {
+  //   constexpr auto
   constexpr std::array<path_planning::ArmPathPoint, 13> PathPlanningKeepOutZone = {
       path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 0_in},
       path_planning::ArmPathPoint{-chassis::length / 2 - 48_in, 0_in},
