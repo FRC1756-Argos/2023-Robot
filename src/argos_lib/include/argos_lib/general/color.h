@@ -38,6 +38,8 @@ namespace argos_lib {
     constexpr static ArgosColor kReallyRed = ArgosColor{255, 0, 0};
     constexpr static ArgosColor kReallyGreen = ArgosColor{0, 255, 0};
     constexpr static ArgosColor kReallyBlue = ArgosColor{0, 0, 255};
+    constexpr static ArgosColor kCubePurple = ArgosColor{130, 18, 222};
+    constexpr static ArgosColor kConeYellow = ArgosColor{222, 178, 18};
     constexpr static ArgosColor kHotPink = ArgosColor{255, 105, 180};
     constexpr static ArgosColor kCatYellow = ArgosColor{255, 195, 0};
     constexpr static ArgosColor kPurple = ArgosColor{75, 0, 130};

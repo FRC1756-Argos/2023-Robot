@@ -6,6 +6,7 @@
 
 #include <frc/PneumaticsModuleType.h>
 #include <units/length.h>
+#include <units/time.h>
 #include <units/velocity.h>
 
 #include <string>
@@ -62,6 +63,10 @@ namespace networkTables {
   }    // namespace swerveHomes
 }  // namespace networkTables
 
+namespace leds {
+  // Length of request animation in seconds
+  constexpr units::time::second_t requestLen = 5_s;
+}  // namespace leds
 namespace camera {
   constexpr char reflectivePipeline = 0;
   constexpr char aprilTagPipeline = 1;

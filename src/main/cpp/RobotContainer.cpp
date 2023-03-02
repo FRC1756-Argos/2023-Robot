@@ -19,10 +19,15 @@
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
 
+// Include GamePiece enum
+#include <constants/field_points.h>
+#include <Constants.h>
+
 #include <memory>
 
 #include "argos_lib/subsystems/led_subsystem.h"
 #include "commands/set_arm_pose_command.h"
+#include "commands/request_game_piece_command.h"
 #include "utils/custom_units.h"
 
 RobotContainer::RobotContainer()
@@ -204,6 +209,7 @@ void RobotContainer::ConfigureBindings() {
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
+  auto requestGamePiece = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kUp);
 
   auto ledMissileSwitchTrigger = m_buttonBox.TriggerLED();
 
@@ -351,6 +357,10 @@ void RobotContainer::ConfigureBindings() {
   ledMissileSwitchTrigger.OnTrue(
       frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
   ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
+
+  requestGamePiece.OnTrue(RequestGamePieceCommand(m_ledSubSystem, leds::requestLen, [this]() {
+                            return m_buttonBox.GetGamePiece();
+                          }).ToPtr());
 }
 
 void RobotContainer::Disable() {

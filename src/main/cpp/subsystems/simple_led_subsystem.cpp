@@ -10,6 +10,8 @@
 #include <ctre/phoenix/led/StrobeAnimation.h>
 #include <frc/DriverStation.h>
 
+#include <chrono>
+
 #include "argos_lib/config/config_types.h"
 #include "constants/addresses.h"
 
@@ -139,6 +141,14 @@ void SimpleLedSubsystem::SetAllGroupsAllianceColor(bool fade) {
     SetAllGroupsFade(color);
   } else {
     SetAllGroupsColor(color);
+  }
+}
+
+void SimpleLedSubsystem::SetAllGroupsGamePieceColor(GamePiece gp) {
+  if (gp == GamePiece::CONE) {
+    SetAllGroupsColor(argos_lib::colors::kConeYellow);
+  } else {
+    SetAllGroupsColor(argos_lib::colors::kCubePurple);
   }
 }
 

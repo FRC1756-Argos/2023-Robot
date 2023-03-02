@@ -5,6 +5,9 @@
 #pragma once
 
 #include <argos_lib/general/log.h>
+
+// Include GamePiece enum
+#include <constants/field_points.h>
 #include <ctre/Phoenix.h>
 #include <frc/util/Color.h>
 #include <frc2/command/SubsystemBase.h>
@@ -37,6 +40,9 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   void SetAllGroupsAllianceColor(bool fade);
 
   void StopAllAnimations();
+
+  /// @brief Set all groups to color of given game piece
+  void SetAllGroupsGamePieceColor(GamePiece gp);
 
   /// @brief Turn off all LEDs
   void SetAllGroupsOff();
