@@ -15,9 +15,9 @@
 IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
     : m_intakeMotor{GetCANAddr(
           address::comp_bot::intake::intakeMotor, address::comp_bot::intake::intakeMotor, instance)}
-    , m_intakeSensor(instance == argos_lib::RobotInstance::Competition ?
-                         address::comp_bot::sensors::tofSensorIntake :
-                         address::practice_bot::sensors::tofSensorIntake)
+    , m_intakeSensor1(instance == argos_lib::RobotInstance::Competition ?
+                          address::comp_bot::sensors::tofSensorIntake :
+                          address::practice_bot::sensors::tofSensorIntake)
     , m_intakeSensor2(instance == argos_lib::RobotInstance::Competition ?
                           address::comp_bot::sensors::tofSensorIntake2 :
                           address::practice_bot::sensors::tofSensorIntake2)
@@ -26,8 +26,8 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
   argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
                                              motorConfig::practice_bot::intake::intake>(
       m_intakeMotor, 100_ms, instance);
-  m_intakeSensor.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
-  m_intakeSensor.SetRangeOfInterest(8, 8, 12, 12);
+  m_intakeSensor1.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
+  m_intakeSensor1.SetRangeOfInterest(8, 8, 12, 12);
   m_intakeSensor2.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
   m_intakeSensor2.SetRangeOfInterest(8, 8, 12, 12);
 }
@@ -35,7 +35,7 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {
   frc::SmartDashboard::PutNumber("SensorDistance", GetIntakeDistance().to<double>());
-  frc::SmartDashboard::PutBoolean("ConeFaceDown", IsConeFaceDown());
+  frc::SmartDashboard::PutBoolean("ConeFaceDown", IsConeDetected());
 }
 
 void IntakeSubsystem::IntakeCone() {
@@ -74,11 +74,19 @@ void IntakeSubsystem::Disable() {
 }
 
 units::inch_t IntakeSubsystem::GetIntakeDistance() {
-  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor.GetRange());
+  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor1.GetRange());
   return (measure_up::lifter::wrist::wristWidth / 2) - (GetIntakeDistance + cone::coneWidth / 2) + 1.5_in;
 }
 
-bool IntakeSubsystem::IsConeFaceDown() {
+bool IntakeSubsystem::IsConeDetected() {
+  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor1.GetRange());
+  if (GetIntakeDistance < 16_in) {
+    return true;
+  }
+  return false;
+}
+
+bool IntakeSubsystem::IsCubeDetected() {
   units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor2.GetRange());
   if (GetIntakeDistance < 16_in) {
     return true;

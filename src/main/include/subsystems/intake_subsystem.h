@@ -35,7 +35,8 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   /// @brief ToF stuff
   /// @return
   units::inch_t GetIntakeDistance();
-  bool IsConeFaceDown();
+  bool IsConeDetected();
+  bool IsCubeDetected();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
@@ -43,7 +44,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   WPI_TalonSRX m_intakeMotor;
 
   /// @brief ToF sensor thingy
-  frc::TimeOfFlight m_intakeSensor;
+  frc::TimeOfFlight m_intakeSensor1;
   frc::TimeOfFlight m_intakeSensor2;
   bool m_haveCone;
   bool m_haveCube;
