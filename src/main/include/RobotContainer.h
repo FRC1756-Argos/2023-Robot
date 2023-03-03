@@ -10,6 +10,7 @@
 #include <commands/drive_to_position.h>
 #include <commands/home_arm_extension_command.h>
 #include <commands/score_cone_command.h>
+#include <frc/filter/SlewRateLimiter.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
 
@@ -89,4 +90,5 @@ class RobotContainer {
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 
   nt::GenericEntry* p_wristSetpoint;
+  frc::SlewRateLimiter<units::scalar> m_nudgeRate;
 };
