@@ -55,7 +55,8 @@ RobotContainer::RobotContainer()
     , m_bashGuardHomingCommand(m_bash)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
-    , m_autoSelector{{&m_autoNothing}, &m_autoNothing} {
+    , m_autoSelector{{&m_autoNothing}, &m_autoNothing}
+    , m_nudgeRate{1 / 1_s} {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
@@ -95,10 +96,14 @@ RobotContainer::RobotContainer()
 
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
 
+          auto nudge = m_nudgeRate.Calculate(units::scalar_t(lateralBias));
+
           // Actually apply the lateral bias
-          deadbandTranslationSpeeds.leftSpeedPct += lateralBias;
+          deadbandTranslationSpeeds.leftSpeedPct += nudge.to<double>();
 
           frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
+        } else {
+          m_nudgeRate.Reset(0);
         }
 
         m_swerveDrive.SwerveDrive(

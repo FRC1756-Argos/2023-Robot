@@ -11,6 +11,7 @@
 #include <commands/score_cone_command.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
+#include <frc/filter/SlewRateLimiter.h>
 
 #include "Constants.h"
 #include "commands/autonomous/autonomous_nothing.h"
@@ -86,4 +87,5 @@ class RobotContainer {
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 
   nt::GenericEntry* p_wristSetpoint;
+  frc::SlewRateLimiter<units::scalar> m_nudgeRate;
 };
