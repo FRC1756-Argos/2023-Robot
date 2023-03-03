@@ -20,6 +20,7 @@
 #include <Constants.h>
 
 #include "utils/sensor_conversions.h"
+#include <frc/smartdashboard/SmartDashboard.h>
 
 std::string ToString(WristPosition position) {
   switch (position) {
@@ -240,11 +241,14 @@ void LifterSubsystem::UpdateArmExtensionHome() {
 
 void LifterSubsystem::InitializeWristHomes() {
   const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
+  frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  //Testing
   if (wristHomes) {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
+    frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  //Testing
 
     units::degree_t calcValue =
         argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
+    frc::SmartDashboard::PutNumber("calcValueValue", calcValue.to<double>());  //Testing
 
     m_wristEncoder.SetPosition(calcValue.to<double>());
 

@@ -75,18 +75,26 @@ RobotContainer::RobotContainer()
                          std::abs(deadbandTranslationSpeeds.leftSpeedPct) > speeds::drive::aimBotThresh);
 
         // Read offset from vision subsystem
-        std::optional<units::degree_t> degreeError = m_visionSubSystem.GetHorizontalOffsetToTarget();
+        std::optional<units::degree_t> VisionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
+
+        if (VisionHorizontalOffset) {
+          auto distance =
+              measure_up::chassis::length / 2 + measure_up::bumperExtension + field_points::grids::middleConeNodeDepth;
+          std::optional<units::degree_t> intakeOffset = units::math::asin(m_intake.GetIntakeDistance() / distance);
+          VisionHorizontalOffset = VisionHorizontalOffset.value() + intakeOffset.value();
+        }
 
         // If aim bot is engaged and there is a degree error
-        if (isAimBotEngaged && degreeError) {
-          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
+        if (isAimBotEngaged && VisionHorizontalOffset) {
+          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", VisionHorizontalOffset.value().to<double>());
 
           // Calculate the lateral bias
-          double lateralBias =
-              speeds::drive::aimBotMaxBias * (units::math::abs<units::degree_t>(degreeError.value()).to<double>() /
-                                              camera::halfhorizontalAngleResolution.to<double>());
+          double lateralBias = speeds::drive::aimBotMaxBias *
+                               (units::math::abs<units::degree_t>(VisionHorizontalOffset.value()).to<double>() /
+                                camera::halfhorizontalAngleResolution.to<double>());
           // Apply the original sign
-          lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
+          lateralBias =
+              std::copysign(lateralBias, VisionHorizontalOffset ? VisionHorizontalOffset.value().to<double>() : 0);
 
           // control gracefully
           lateralBias *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
