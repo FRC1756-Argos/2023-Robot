@@ -126,6 +126,14 @@ void SimpleLedSubsystem::SetAllGroupsLarson(argos_lib::ArgosColor color) {
   }
 }
 
+argos_lib::ArgosColor SimpleLedSubsystem::GetAllianceColor() {
+  if (frc::DriverStation::GetAlliance() == frc::DriverStation::Alliance::kBlue) {
+    return argos_lib::colors::kReallyBlue;
+  } else {
+    return argos_lib::colors::kReallyRed;
+  }
+}
+
 void SimpleLedSubsystem::SetAllGroupsAllianceColor(bool fade) {
   frc::DriverStation::Alliance allianceColor = frc::DriverStation::GetAlliance();
   // If invalid, set all groups just off

@@ -6,55 +6,41 @@
 
 #include "utils/swerve_trapezoidal_profile.h"
 
-#include <frc/smartdashboard/SmartDashboard.h>
-
 DriveToPosition::DriveToPosition(SwerveDriveSubsystem* drive,
-                                 const frc::Pose2d initPos,
-                                 const units::degree_t initAngle,
-                                 const frc::Pose2d dest,
+                                 const frc::Pose2d source,
+                                 const units::degree_t sourceAngle,
+                                 const frc::Pose2d destination,
                                  const units::degree_t destAngle,
-                                 const frc::TrapezoidProfile<units::inches>::Constraints linConstraints,
-                                 frc::TrapezoidProfile<units::degrees>::Constraints rotConstraints)
-    : m_drive{drive}
-    , m_initPosition{initPos}
-    , m_initAngle{initAngle}
-    , m_destPosition{dest}
+                                 const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
+                                 const frc::TrapezoidProfile<units::degrees>::Constraints rotationalConstraints)
+    : m_pDrive(drive)
+    , m_source(source)
+    , m_sourceAngle(sourceAngle)
+    , m_destination(destination)
     , m_destAngle{destAngle}
-    , m_linearConstraints{linConstraints}
-    , m_rotationalConstraints{rotConstraints} {
-  // Use addRequirements() here to declare subsystem dependencies.
+    , m_linearConstraints(linearConstraints)
+    , m_rotationalConstraints(rotationalConstraints) {
   AddRequirements(drive);
 }
 
 // Called when the command is initially scheduled.
 void DriveToPosition::Initialize() {
-  // Update rotational PID to reflect constraints
-  m_drive->UpdateFollowerRotationalPIDConstraints(m_rotationalConstraints);
-  m_drive->StartDrivingProfile(
-      SwerveTrapezoidalProfileSegment(m_initPosition, m_initAngle, m_destPosition, m_destAngle, m_linearConstraints));
+  m_pDrive->UpdateFollowerRotationalPIDConstraints(m_rotationalConstraints);
+  m_pDrive->StartDrivingProfile(
+      SwerveTrapezoidalProfileSegment{m_source, m_sourceAngle, m_destination, m_destAngle, m_linearConstraints});
 }
 
 // Called repeatedly when this Command is scheduled to run
 void DriveToPosition::Execute() {
-  // TODO REMOVEME
-  frc::SmartDashboard::PutBoolean("IsFollowingProfile", m_drive->IsFollowingProfile());
+  // No need to do anything beyond initialize
 }
 
 // Called once the command ends or is interrupted.
 void DriveToPosition::End(bool interrupted) {
-  frc::SmartDashboard::PutBoolean("DriveToPosStopped", true);
-  m_drive->StopDrive();
+  m_pDrive->StopDrive();
 }
 
 // Returns true when the command should end.
 bool DriveToPosition::IsFinished() {
-  return m_drive->ProfileIsComplete();
-}
-
-std::string DriveToPosition::GetName() const {
-  return std::string("Drive To Position");
-}
-
-frc2::Command* DriveToPosition::GetCommand() {
-  return dynamic_cast<frc2::Command*>(this);
+  return m_pDrive->ProfileIsComplete();
 }

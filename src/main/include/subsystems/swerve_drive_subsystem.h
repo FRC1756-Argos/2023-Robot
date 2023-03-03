@@ -173,8 +173,6 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    */
   void StartDrivingProfile(SwerveTrapezoidalProfileSegment newProfile);
 
-  SwerveTrapezoidalProfileSegment* GetActiveSwerveProfile();
-
   /**
    * @brief Cancel the current driving profile without marking it complete
    */

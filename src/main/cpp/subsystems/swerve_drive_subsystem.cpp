@@ -631,11 +631,6 @@ void SwerveDriveSubsystem::StartDrivingProfile(SwerveTrapezoidalProfileSegment n
   m_followingProfile = true;
 }
 
-//TODO REMOVEME
-SwerveTrapezoidalProfileSegment* SwerveDriveSubsystem::GetActiveSwerveProfile() {
-  return m_pActiveSwerveProfile.get();
-}
-
 void SwerveDriveSubsystem::CancelDrivingProfile() {
   m_profileComplete = false;
   m_followingProfile = false;
