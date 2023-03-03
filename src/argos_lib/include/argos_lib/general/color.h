@@ -11,6 +11,10 @@ namespace argos_lib {
     int r;
     int g;
     int b;
+
+    ArgosColor operator*(double scale) {
+      return ArgosColor{static_cast<int>(r * scale), static_cast<int>(g * scale), static_cast<int>(b * scale)};
+    }
   };
 
   // clang-format off

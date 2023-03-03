@@ -15,7 +15,11 @@
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/general/color.h"
 
-enum LedGroup { SIDES, BACK, FRONT };
+#include <chrono>
+#include <functional>
+
+enum class LedGroup { SIDES, BACK, FRONT };
+enum class LedStrip { FrontLeft, FrontRight, SideFront, SideBack, BackLeft, BackRight };
 
 class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:
@@ -24,41 +28,53 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   /// @brief Sets group of leds to given color
   /// @param group The group of leds to set
   /// @param color an ArgosColor to set the LEDs too
-  void SetLedGroupColor(LedGroup group, argos_lib::ArgosColor color);
+  void SetLedGroupColor(LedGroup group, argos_lib::ArgosColor color, bool restorable = true);
+  void SetLedStripColor(LedStrip strip, argos_lib::ArgosColor color, bool restorable = true);
 
   /// @brief Sets all led groups to a given color
   /// @param color an ArgosColor to set the LEDs too
-  void SetAllGroupsColor(argos_lib::ArgosColor color);
+  void SetAllGroupsColor(argos_lib::ArgosColor color, bool restorable = true);
 
-  void SetAllGroupsFade(argos_lib::ArgosColor color);
+  void SetAllGroupsFade(argos_lib::ArgosColor color, bool restorable = true);
 
-  void SetAllGroupsFlash(argos_lib::ArgosColor color);
+  void SetAllGroupsFlash(argos_lib::ArgosColor color, bool restorable = true);
 
-  void SetAllGroupsLarson(argos_lib::ArgosColor color);
+  void SetAllGroupsLarson(argos_lib::ArgosColor color, bool restorable = true);
 
   /// @brief Set all groups of LEDs to the alliance color
-  void SetAllGroupsAllianceColor(bool fade);
+  void SetAllGroupsAllianceColor(bool fade, bool restorable = true);
 
-  void StopAllAnimations();
+  void StopAllAnimations(bool restorable = true);
 
   /// @brief Set all groups to color of given game piece
-  void SetAllGroupsGamePieceColor(GamePiece gp);
+  void SetAllGroupsGamePieceColor(GamePiece gp, bool restorable = true);
 
   /// @brief Turn off all LEDs
-  void SetAllGroupsOff();
+  void SetAllGroupsOff(bool restorable = true);
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
   void Periodic() override;
-  void FireEverywhere();
-  void Blind();
+  void FireEverywhere(bool restorable = true);
+  void Blind(bool restorable = true);
+
+  void ColorSweep(argos_lib::ArgosColor color, bool correctGamma = true, bool restorable = true);
+
+  void TemporaryAnimate(std::function<void()> animationFunction, units::millisecond_t duration);
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
   CANdle m_CANdle;
   argos_lib::ArgosLogger m_log;
+
+  const std::function<void()> m_ledsOffFunction;
+  std::function<void()> m_ledUpdateFunction;
+  std::optional<std::function<void(void)>> m_restoreAnimationFunction;
+  std::chrono::time_point<std::chrono::steady_clock> m_startTime;
+  units::millisecond_t m_temporaryDuration;
+
   constexpr static int startIndex_frontLeft = 8;     ///< Address of first LED in strip
   constexpr static int length_frontLeft = 30;        ///< Number of LEDs in strip
   constexpr static bool inverted_frontLeft = false;  ///< true indicates first index is at top of tower

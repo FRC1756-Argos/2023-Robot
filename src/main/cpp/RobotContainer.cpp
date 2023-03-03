@@ -32,7 +32,6 @@
 #include "Constants.h"
 #include "argos_lib/subsystems/led_subsystem.h"
 #include "commands/set_arm_pose_command.h"
-#include "commands/request_game_piece_command.h"
 #include "utils/custom_units.h"
 
 RobotContainer::RobotContainer()
@@ -410,9 +409,20 @@ void RobotContainer::ConfigureBindings() {
       frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
   ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
 
-  requestGamePiece.OnTrue(RequestGamePieceCommand(m_ledSubSystem, leds::requestLen, [this]() {
-                            return m_buttonBox.GetGamePiece();
-                          }).ToPtr());
+  requestGamePiece.OnTrue(frc2::InstantCommand(
+                              [this]() {
+                                m_ledSubSystem.TemporaryAnimate(
+                                    [this]() {
+                                      m_ledSubSystem.SetAllGroupsFlash(
+                                          m_buttonBox.GetGamePiece() == GamePiece::CONE ?
+                                              argos_lib::gamma_corrected_colors::kConeYellow :
+                                              argos_lib::gamma_corrected_colors::kCubePurple,
+                                          false);
+                                    },
+                                    1000_ms);
+                              },
+                              {&m_ledSubSystem})
+                              .ToPtr());
 }
 
 void RobotContainer::Disable() {
