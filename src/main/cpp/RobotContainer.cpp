@@ -73,10 +73,8 @@ RobotContainer::RobotContainer()
             m_driveSpeedMap);
 
         // Get if operator is engaging assist & supply other lateral or forward command
-        bool isAimBot = m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
         bool isAimBotEngaged =
-            isAimBot && (std::abs(deadbandTranslationSpeeds.forwardSpeedPct) > speeds::drive::aimBotThresh ||
-                         std::abs(deadbandTranslationSpeeds.leftSpeedPct) > speeds::drive::aimBotThresh);
+            m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
 
         // Read offset from vision subsystem
         std::optional<units::degree_t> degreeError = m_visionSubSystem.GetHorizontalOffsetToTarget();
@@ -92,9 +90,6 @@ RobotContainer::RobotContainer()
           // Apply the original sign
           lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
 
-          // control gracefully
-          lateralBias *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
-
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
 
           auto nudge = m_nudgeRate.Calculate(units::scalar_t(lateralBias));
@@ -105,6 +100,40 @@ RobotContainer::RobotContainer()
           frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
           m_nudgeRate.Reset(0);
+        }
+
+        if (isAimBotEngaged) {
+          if (!degreeError) {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() {
+                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontLeft, argos_lib::colors::kReallyRed, false);
+                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::colors::kReallyRed, false);
+                },
+                100_ms);
+          } else if (units::math::abs(degreeError.value()) < 1_deg) {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() {
+                  m_ledSubSystem.SetLedStripColor(
+                      LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kReallyGreen, false);
+                  m_ledSubSystem.SetLedStripColor(
+                      LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kReallyGreen, false);
+                },
+                100_ms);
+          } else if (degreeError.value() > 0_deg) {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() {
+                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kOff, false);
+                  m_ledSubSystem.FlashStrip(LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kCatYellow, false);
+                },
+                100_ms);
+          } else {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() {
+                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kOff, false);
+                  m_ledSubSystem.FlashStrip(LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kCatYellow, false);
+                },
+                100_ms);
+          }
         }
 
         m_swerveDrive.SwerveDrive(
