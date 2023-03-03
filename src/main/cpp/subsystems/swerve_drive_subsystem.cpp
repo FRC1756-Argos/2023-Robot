@@ -242,11 +242,15 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
   // SET MODULES BASED OFF OF CONTROL MODE
   auto moduleStates = GetCurrentModuleStates();
   frc::Trajectory::State desiredProfileState;
+  frc::SmartDashboard::PutBoolean("MADE IT HERE", true);
   if (m_followingProfile && m_pActiveSwerveProfile) {
     const auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                    m_swerveProfileStartTime);
+    frc::SmartDashboard::PutNumber("(SwerveFollower) Elapsed Time", elapsedTime.count());
+    frc::SmartDashboard::PutBoolean("MADE IT HERE2", true);
     if (!m_pActiveSwerveProfile->IsFinished(elapsedTime)) {
       desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
+      frc::SmartDashboard::PutBoolean("MADE IT HERE3", true);
 
       const auto controllerChassisSpeeds = m_followerController.Calculate(
           m_poseEstimator.GetEstimatedPosition(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());
@@ -276,11 +280,17 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
                                      units::feet_per_second_t{controllerChassisSpeeds.vy}.to<double>());
       frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Omega",
                                      units::degrees_per_second_t{controllerChassisSpeeds.omega}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Vel", units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
+      frc::SmartDashboard::PutNumber("(SwerveFollower) Current Vel",
+                                     units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
+      frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentXFollowerCommand",
+                                     m_followerController.getXController().GetSetpoint());
+      frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentYFollowerCommand",
+                                     m_followerController.getYController().GetSetpoint());
     } else {
       // Finished profile
       m_followingProfile = false;
       m_profileComplete = true;
+      frc::SmartDashboard::PutBoolean("(SwerveFollower) ProfileIsFinished", true);
     }
   } else if (m_followingProfile) {
     // Bad profile
@@ -628,6 +638,10 @@ void SwerveDriveSubsystem::CancelDrivingProfile() {
 
 bool SwerveDriveSubsystem::ProfileIsComplete() const {
   return m_profileComplete;
+}
+
+bool SwerveDriveSubsystem::IsFollowingProfile() const {
+  return m_followingProfile;
 }
 
 units::degree_t SwerveDriveSubsystem::GetIMUYaw() const {

@@ -186,6 +186,13 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   bool ProfileIsComplete() const;
 
   /**
+   * @brief Check if drivetrain is following a profile
+   *
+   * @return true when robot is following profile
+   */
+  bool IsFollowingProfile() const;
+
+  /**
    * @brief Get the robot velocity in chassis frame (x toward intake, y toward left) based on
    *        GetCurrentModuleStates() output
    *

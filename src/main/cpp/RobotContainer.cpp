@@ -31,6 +31,7 @@
 
 #include "Constants.h"
 #include "argos_lib/subsystems/led_subsystem.h"
+#include "commands/drive_to_position.h"
 #include "commands/set_arm_pose_command.h"
 #include "utils/custom_units.h"
 
@@ -54,7 +55,8 @@ RobotContainer::RobotContainer()
     , m_bashGuardHomingCommand(m_bash)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
-    , m_autoSelector{{&m_autoNothing}, &m_autoNothing} {
+    , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
+    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward}, &m_autoNothing} {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================

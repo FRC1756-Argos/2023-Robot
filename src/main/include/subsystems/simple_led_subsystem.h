@@ -41,6 +41,8 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
 
   void SetAllGroupsLarson(argos_lib::ArgosColor color, bool restorable = true);
 
+  argos_lib::ArgosColor GetAllianceColor();
+
   /// @brief Set all groups of LEDs to the alliance color
   void SetAllGroupsAllianceColor(bool fade, bool restorable = true);
 

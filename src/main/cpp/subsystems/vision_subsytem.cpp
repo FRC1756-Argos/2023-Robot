@@ -19,7 +19,7 @@ void VisionSubsystem::Periodic() {
 
   if (targetValues.hasTargets &&
       (targetValues.robotPose.ToPose2d().X() != 0_in && targetValues.robotPose.ToPose2d().Y() != 0_in)) {
-    m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
+    // m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
   }
 
   if (targetValues.hasTargets) {
