@@ -9,9 +9,9 @@
 #include <commands/bashguard_homing_command.h>
 #include <commands/home_arm_extension_command.h>
 #include <commands/score_cone_command.h>
+#include <frc/filter/SlewRateLimiter.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
-#include <frc/filter/SlewRateLimiter.h>
 
 #include "Constants.h"
 #include "commands/autonomous/autonomous_nothing.h"
