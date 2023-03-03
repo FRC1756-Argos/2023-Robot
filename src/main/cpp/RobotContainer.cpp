@@ -89,7 +89,20 @@ RobotContainer::RobotContainer()
           // Angle of lateral bias velocity velocity vector relative to field home
           units::degree_t lateralBiasFieldAngle = robotYaw + (degreeError.value() < 0_deg ? -90_deg : 90_deg);
 
+          // Calculate the robot-centric x velocity from field-centric velocity
+          // the field-centric velocity vector's angle relative to robot-centric zero
+          units::degree_t fieldToRobotVelAngle =
+              units::radian_t{
+                  std::atan2(deadbandTranslationSpeeds.leftSpeedPct, deadbandTranslationSpeeds.forwardSpeedPct)} -
+              robotYaw;
+          // Robot-centric x velocity component from field-centric velocity vector
+          double robotXVel =
+              std::hypot(deadbandTranslationSpeeds.forwardSpeedPct, deadbandTranslationSpeeds.leftSpeedPct) *
+              std::cos(units::radian_t{fieldToRobotVelAngle}.to<double>());
+
           // REMOVEME debugging stuff
+          frc::SmartDashboard::PutNumber("(AimBot) FieldToRobotVelAngle", fieldToRobotVelAngle.to<double>());
+          frc::SmartDashboard::PutNumber("(AimBot) RobotXVel", robotXVel);
           frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
           frc::SmartDashboard::PutNumber("(AimBot) RobotYaw", robotYaw.to<double>());
           frc::SmartDashboard::PutNumber("(AimBot) LateralBiasFieldAngle", lateralBiasFieldAngle.to<double>());
@@ -101,8 +114,8 @@ RobotContainer::RobotContainer()
           // Apply the original sign
           // lateralBias_r = std::copysign(lateralBias_r, degreeError ? degreeError.value().to<double>() : 0);
 
-          // control gracefully by considering pct forward
-          lateralBias_r *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
+          // control gracefully by considering pct robot-centric forward
+          lateralBias_r *= std::min(2.0 * std::abs(robotXVel), 1.0);
 
           // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
           // ? Put components into their own structure later
