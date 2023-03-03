@@ -506,7 +506,7 @@ frc::Pose2d SwerveDriveSubsystem::UpdateEstimatedPose() {
 }
 
 units::degree_t SwerveDriveSubsystem::GetFieldCentricAngle() const {
-  return -GetIMUYaw() - m_fieldHomeOffset;
+  return GetIMUYaw() - m_fieldHomeOffset;
 }
 
 frc::Pose2d SwerveDriveSubsystem::GetPoseEstimate(const frc::Pose2d& robotPose, const units::millisecond_t& latency) {
@@ -645,7 +645,7 @@ bool SwerveDriveSubsystem::IsFollowingProfile() const {
 }
 
 units::degree_t SwerveDriveSubsystem::GetIMUYaw() const {
-  return -units::degree_t{m_pigeonIMU.GetYaw()};
+  return units::degree_t{m_pigeonIMU.GetYaw()};
 }
 
 void SwerveDriveSubsystem::ResetIMUYaw() {

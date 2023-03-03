@@ -83,24 +83,43 @@ RobotContainer::RobotContainer()
 
         // If aim bot is engaged and there is a degree error
         if (isAimBotEngaged && degreeError) {
+          // TODO may want to validate the GetFieldCentricAngle() function just to ensure it's behaving as documented
+          units::degree_t robotYaw =
+              m_swerveDrive.GetFieldCentricAngle();  // Gets the robots yaw relative to field-centric home
+          // Angle of lateral bias velocity velocity vector relative to field home
+          units::degree_t lateralBiasFieldAngle = robotYaw + (degreeError.value() < 0_deg ? -90_deg : 90_deg);
+
+          // REMOVEME debugging stuff
           frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
+          frc::SmartDashboard::PutNumber("(AimBot) RobotYaw", robotYaw.to<double>());
+          frc::SmartDashboard::PutNumber("(AimBot) LateralBiasFieldAngle", lateralBiasFieldAngle.to<double>());
 
           // Calculate the lateral bias
-          double lateralBias =
+          double lateralBias_r =
               speeds::drive::aimBotMaxBias * (units::math::abs<units::degree_t>(degreeError.value()).to<double>() /
                                               camera::halfhorizontalAngleResolution.to<double>());
           // Apply the original sign
-          lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
+          // lateralBias_r = std::copysign(lateralBias_r, degreeError ? degreeError.value().to<double>() : 0);
 
-          // control gracefully
-          lateralBias *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
+          // control gracefully by considering pct forward
+          lateralBias_r *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
 
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
+          // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
+          // ? Put components into their own structure later
+          double lateralBias_x = lateralBias_r * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
+          double lateralBias_y = lateralBias_r * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
 
-          auto nudge = m_nudgeRate.Calculate(units::scalar_t(lateralBias));
+          // REMOVEME debugging stuff
+          frc::SmartDashboard::PutNumber("(AimBot) LateralBias_r ", lateralBias_r);
+          frc::SmartDashboard::PutNumber("(AimBot) LateralBias_x ", lateralBias_x);  // x is pct forward
+          frc::SmartDashboard::PutNumber("(AimBot) LateralBias_y ", lateralBias_y);  // y is pct left
+
+          auto nudge_x = m_nudgeRate.Calculate(units::scalar_t(lateralBias_x));
+          auto nudge_y = m_nudgeRate.Calculate(units::scalar_t(lateralBias_y));
 
           // Actually apply the lateral bias
-          deadbandTranslationSpeeds.leftSpeedPct += nudge.to<double>();
+          deadbandTranslationSpeeds.leftSpeedPct += nudge_x.to<double>();
+          deadbandTranslationSpeeds.forwardSpeedPct += nudge_y.to<double>();
 
           frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
