@@ -170,7 +170,7 @@ void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color,
       m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
     }
   } else {
-    const int tipSize = 5;
+    const int tipSize = 10;
 
     std::array<int, 6> lengths = {length_frontLeft - tipSize,
                                   length_frontRight - tipSize,
@@ -208,7 +208,7 @@ void SimpleLedSubsystem::SetAllGroupsFade(argos_lib::ArgosColor color,
     m_ledUpdateFunction = [this, color, tipColor]() { this->SetAllGroupsFade(color, false, tipColor); };
   }
 
-  const int tipSize = tipColor ? 5 : 0;
+  const int tipSize = tipColor ? 10 : 0;
 
   std::array<int, 6> lengths = {length_frontLeft - tipSize,
                                 length_frontRight - tipSize,

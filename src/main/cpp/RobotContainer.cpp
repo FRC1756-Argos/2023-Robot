@@ -62,6 +62,8 @@ RobotContainer::RobotContainer()
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
+  AllianceChanged();
+
   // ================== DEFAULT COMMANDS ===============================
   m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
       [this] {
