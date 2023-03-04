@@ -6,6 +6,7 @@
 
 #include <argos_lib/commands/swap_controllers_command.h>
 #include <argos_lib/controller/trigger_composition.h>
+#include <argos_lib/general/angle_utils.h>
 #include <argos_lib/general/color.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
@@ -82,23 +83,35 @@ RobotContainer::RobotContainer()
 
         // If aim bot is engaged and there is a degree error
         if (isAimBotEngaged && degreeError) {
-          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
+          units::degree_t robotYaw =
+              argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
+                                               0_deg,
+                                               360_deg);  // Gets the robots yaw relative to field-centric home
+          // ? Why is this negated?
+          units::degree_t error = -degreeError.value();
+          // Angle of lateral bias velocity velocity vector relative to field home
+          units::degree_t lateralBiasFieldAngle =
+              argos_lib::angle::ConstrainAngle(robotYaw + (error < 0_deg ? -90_deg : 90_deg), 0_deg, 360_deg);
 
           // Calculate the lateral bias
-          double lateralBias =
-              speeds::drive::aimBotMaxBias * (units::math::abs<units::degree_t>(degreeError.value()).to<double>() /
-                                              camera::halfhorizontalAngleResolution.to<double>());
-          // Apply the original sign
-          lateralBias = std::copysign(lateralBias, degreeError ? degreeError.value().to<double>() : 0);
+          double lateralBias_r =
+              speeds::drive::aimBotMaxBias *
+              units::math::abs<units::degree_t>(error / camera::halfhorizontalAngleResolution.to<double>())
+                  .to<double>();
 
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
+          units::scalar_t filteredLateralBias_r = m_nudgeRate.Calculate(units::scalar_t(lateralBias_r));
 
-          auto nudge = m_nudgeRate.Calculate(units::scalar_t(lateralBias));
+          // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
+          double lateralBias_x =
+              filteredLateralBias_r.to<double>() * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
+          double lateralBias_y =
+              filteredLateralBias_r.to<double>() * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
 
           // Actually apply the lateral bias
-          deadbandTranslationSpeeds.leftSpeedPct += nudge.to<double>();
+          deadbandTranslationSpeeds.leftSpeedPct += lateralBias_x;
+          deadbandTranslationSpeeds.forwardSpeedPct += lateralBias_y;
 
-          frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
+          // frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
           m_nudgeRate.Reset(0);
         }
