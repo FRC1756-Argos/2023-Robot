@@ -39,9 +39,13 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
 
   /// @brief Sets all led groups to a given color
   /// @param color an ArgosColor to set the LEDs too
-  void SetAllGroupsColor(argos_lib::ArgosColor color, bool restorable = true);
+  void SetAllGroupsColor(argos_lib::ArgosColor color,
+                         bool restorable = true,
+                         std::optional<std::function<GamePiece()>> tipColor = std::nullopt);
 
-  void SetAllGroupsFade(argos_lib::ArgosColor color, bool restorable = true);
+  void SetAllGroupsFade(argos_lib::ArgosColor color,
+                        bool restorable = true,
+                        std::optional<std::function<GamePiece()>> tipColor = std::nullopt);
 
   void SetAllGroupsFlash(argos_lib::ArgosColor color, bool restorable = true);
 
@@ -52,7 +56,9 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   argos_lib::ArgosColor GetAllianceColor();
 
   /// @brief Set all groups of LEDs to the alliance color
-  void SetAllGroupsAllianceColor(bool fade, bool restorable = true);
+  void SetAllGroupsAllianceColor(bool fade,
+                                 bool restorable = true,
+                                 std::optional<std::function<GamePiece()>> tipColor = std::nullopt);
 
   void StopAllAnimations(bool restorable = true);
 
@@ -85,6 +91,8 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   std::optional<std::function<void(void)>> m_restoreAnimationFunction;
   std::chrono::time_point<std::chrono::steady_clock> m_startTime;
   units::millisecond_t m_temporaryDuration;
+
+  constexpr static argos_lib::ArgosColor GetGamePieceColor(GamePiece gp, bool gammaCorrect = true);
 
   constexpr static int startIndex_frontLeft = 8;     ///< Address of first LED in strip
   constexpr static int length_frontLeft = 30;        ///< Number of LEDs in strip

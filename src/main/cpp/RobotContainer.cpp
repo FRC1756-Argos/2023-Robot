@@ -540,8 +540,8 @@ void RobotContainer::Enable() {
 
 void RobotContainer::AllianceChanged() {
   // If disabled, set alliance colors
-  m_ledSubSystem.SetAllGroupsAllianceColor(false);
-  m_ledSubSystem.SetDisableAnimation([this]() { m_ledSubSystem.SetAllGroupsAllianceColor(true, false); });
+  m_ledSubSystem.SetAllGroupsAllianceColor(true, true, [this]() { return m_buttonBox.GetGamePiece(); });
+  m_ledSubSystem.SetDisableAnimation([this]() { m_ledSubSystem.SetAllGroupsAllianceColor(false, false); });
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {
