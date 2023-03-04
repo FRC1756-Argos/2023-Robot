@@ -109,7 +109,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | DPad Up         | Unused |
 | DPad Right      | Unused |
 | DPad Down       | Unused |
-| DPad Left       | Unused |
+| DPad Left       | Locks Wheels (in a cool x pattern) |
 | A               | Home Swerve (hold with <kbd>B</kbd> and <kbd>X</kbd>) |
 | B               | Home Swerve (hold with <kbd>A</kbd> and <kbd>X</kbd>) |
 | X               | Home Swerve (hold with <kbd>A</kbd> and <kbd>B</kbd>) |
