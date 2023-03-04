@@ -254,6 +254,9 @@ void RobotContainer::ConfigureBindings() {
                argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
   }});
 
+  auto coneDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsConeDetected(); }});
+  auto cubeDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsCubeDetected(); }});
+
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
@@ -440,6 +443,17 @@ void RobotContainer::ConfigureBindings() {
                   .ToPtr());
   (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
       .OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
+
+  ((intakeConeTrigger && exclusiveAutoIntakeTrigger && coneDetectedTrigger.Debounce(100_ms)) ||
+   (intakeCubeTrigger && exclusiveAutoIntakeTrigger && cubeDetectedTrigger.Debounce(100_ms)))
+      .OnTrue(
+          frc2::InstantCommand([this]() {
+            m_controllers.DriverController().SetVibration(
+                argos_lib::TemporaryVibrationPattern(argos_lib::VibrationAlternatePulse(250_ms, 1.0), 500_ms));
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kReallyGreen, false); },
+                500_ms);
+          }).ToPtr());
 
   ledMissileSwitchTrigger.OnTrue(
       frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
