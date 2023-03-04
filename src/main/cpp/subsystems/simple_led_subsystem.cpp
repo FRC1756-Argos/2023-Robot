@@ -22,20 +22,41 @@ SimpleLedSubsystem::SimpleLedSubsystem(argos_lib::RobotInstance instance)
     : m_CANdle{GetCANAddr(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance),
                std::string(GetCANBus(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance))}
     , m_log{"SIMPLE_LED_SUBSYSTEM"}
-    , m_ledsOffFunction{[this]() { this->SetAllGroupsOff(); }}
+    , m_enabled{false}
+    , m_disableUpdateFunction{[]() {}}
     , m_ledUpdateFunction{[]() {}}
     , m_restoreAnimationFunction{std::nullopt}
     , m_startTime{std::chrono::steady_clock::now()}
     , m_temporaryDuration{0_ms} {
   SetAllGroupsOff();
 }
-// This method will be called once per scheduler run
-void SimpleLedSubsystem::Periodic() {
-  m_ledUpdateFunction();
-  if (m_restoreAnimationFunction &&
-      units::millisecond_t(std::chrono::steady_clock::now() - m_startTime) > m_temporaryDuration) {
+
+void SimpleLedSubsystem::Enable() {
+  m_enabled = true;
+}
+void SimpleLedSubsystem::Disable() {
+  m_enabled = false;
+  if (m_restoreAnimationFunction) {
     m_ledUpdateFunction = m_restoreAnimationFunction.value();
     m_restoreAnimationFunction = std::nullopt;
+  }
+}
+
+void SimpleLedSubsystem::SetDisableAnimation(std::function<void()> animationFunction) {
+  m_disableUpdateFunction = animationFunction;
+}
+
+// This method will be called once per scheduler run
+void SimpleLedSubsystem::Periodic() {
+  if (m_enabled) {
+    m_ledUpdateFunction();
+    if (m_restoreAnimationFunction &&
+        units::millisecond_t(std::chrono::steady_clock::now() - m_startTime) > m_temporaryDuration) {
+      m_ledUpdateFunction = m_restoreAnimationFunction.value();
+      m_restoreAnimationFunction = std::nullopt;
+    }
+  } else {
+    m_disableUpdateFunction();
   }
 }
 

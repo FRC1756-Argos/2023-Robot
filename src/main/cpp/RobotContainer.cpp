@@ -495,8 +495,14 @@ void RobotContainer::ConfigureBindings() {
                 500_ms);
           }).ToPtr());
 
-  ledMissileSwitchTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
+  ledMissileSwitchTrigger.OnTrue(frc2::InstantCommand(
+                                     [this]() {
+                                       m_ledSubSystem.FireEverywhere();
+                                       m_ledSubSystem.SetDisableAnimation(
+                                           [this]() { m_ledSubSystem.FireEverywhere(false); });
+                                     },
+                                     {&m_ledSubSystem})
+                                     .ToPtr());
   ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
 
   requestCone.OnTrue(
@@ -521,7 +527,7 @@ void RobotContainer::ConfigureBindings() {
 }
 
 void RobotContainer::Disable() {
-  m_ledSubSystem.SetAllGroupsAllianceColor(false);
+  m_ledSubSystem.Disable();
 
   m_lifter.Disable();
   m_intake.Disable();
@@ -529,16 +535,13 @@ void RobotContainer::Disable() {
 }
 
 void RobotContainer::Enable() {
-  m_ledSubSystem.SetAllGroupsAllianceColor(true);
+  m_ledSubSystem.Enable();
 }
 
 void RobotContainer::AllianceChanged() {
   // If disabled, set alliance colors
-  if (frc::DriverStation::IsDisabled()) {
-    m_ledSubSystem.SetAllGroupsAllianceColor(false);
-  } else {
-    m_ledSubSystem.SetAllGroupsAllianceColor(true);
-  }
+  m_ledSubSystem.SetAllGroupsAllianceColor(false);
+  m_ledSubSystem.SetDisableAnimation([this]() { m_ledSubSystem.SetAllGroupsAllianceColor(true, false); });
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {

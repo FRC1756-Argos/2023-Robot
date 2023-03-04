@@ -26,6 +26,11 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:
   explicit SimpleLedSubsystem(argos_lib::RobotInstance instance);
 
+  void Enable();
+  void Disable();
+
+  void SetDisableAnimation(std::function<void()> animationFunction);
+
   /// @brief Sets group of leds to given color
   /// @param group The group of leds to set
   /// @param color an ArgosColor to set the LEDs too
@@ -73,8 +78,9 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   // declared private and exposed only through public methods.
   CANdle m_CANdle;
   argos_lib::ArgosLogger m_log;
+  bool m_enabled;
 
-  const std::function<void()> m_ledsOffFunction;
+  std::function<void()> m_disableUpdateFunction;
   std::function<void()> m_ledUpdateFunction;
   std::optional<std::function<void(void)>> m_restoreAnimationFunction;
   std::chrono::time_point<std::chrono::steady_clock> m_startTime;
