@@ -224,7 +224,7 @@ void SimpleLedSubsystem::SetAllGroupsFade(argos_lib::ArgosColor color,
                                 (inverted_backLeft ? tipSize : 0) + startIndex_backLeft};
   for (size_t i = 0; i < lengths.size(); ++i) {
     auto fadeAnimation =
-        ctre::phoenix::led::SingleFadeAnimation(color.r, color.g, color.b, 0, 0.9, lengths.at(i), offsets.at(i));
+        ctre::phoenix::led::SingleFadeAnimation(color.r, color.g, color.b, 0, 0.7, lengths.at(i), offsets.at(i));
     m_CANdle.Animate(fadeAnimation, i);
   }
 

@@ -53,7 +53,6 @@ RobotContainer::RobotContainer()
     , m_ledSubSystem(m_instance)
     , m_visionSubSystem(m_instance, &m_swerveDrive)
     , m_homeArmExtensionCommand(m_lifter)
-    , m_bashGuardHomingCommand(m_bash)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
@@ -477,7 +476,11 @@ void RobotContainer::ConfigureBindings() {
 
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
-  startupBashGuardHomeTrigger.OnTrue(&m_bashGuardHomingCommand);
+  startupBashGuardHomeTrigger.OnTrue(
+      frc2::SequentialCommandGroup(BashGuardHomingCommand(m_bash), frc2::InstantCommand([this]() {
+                                     m_bash.SetExtensionLength(measure_up::bash::retractedExtension);
+                                   }))
+          .ToPtr());
 
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
   frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);

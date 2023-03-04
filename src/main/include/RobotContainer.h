@@ -77,7 +77,6 @@ class RobotContainer {
   SimpleLedSubsystem m_ledSubSystem;
   VisionSubsystem m_visionSubSystem;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
-  BashGuardHomingCommand m_bashGuardHomingCommand;
   ScoreConeCommand m_scoreConeCommand;
 
   // Autonomous
