@@ -49,7 +49,13 @@ struct Node {
 // Reference 5.5 in game manual for naming (Inner grid is least x, outer is grid with most x, and middle is... middle)
 // Refernce pg 10 in field drawings for scoring grid dimensions
 // Node index 0 of inner grid is 14.5244 in in x direction, and 20.185 in in y direction (Blue alliance)
+// All field positions are relative to friendly alliance
 namespace field_points {
+  // Field max x and y
+  constexpr auto fieldMaxY = 315.5975_in;
+  constexpr auto fieldMaxX = 651.2225_in;
+  constexpr auto fieldMiddleX = fieldMaxX / 2;
+
   // double human player substation height from floor, depth, and width
   constexpr auto doubleSubstationHeight = 37.375_in;
   constexpr auto doubleSubstationDepth = 13_in;
@@ -58,6 +64,19 @@ namespace field_points {
   constexpr auto singleSubstationHeightTop = 45.125_in;
   constexpr auto singleSubstationHeightBottom = 27.125_in;
   constexpr auto singleSubstationWidth = 22.75_in;
+
+  // Reference game_piece_positions in Docs directory for conventions
+  namespace game_pieces {
+    constexpr auto gp_0 = frc::Translation3d{278.25_in, 135.4125_in, 0_in};
+    constexpr auto gp_1 = frc::Translation3d{278.25_in, 183.4125_in, 0_in};
+    constexpr auto gp_2 = frc::Translation3d{278.25_in, 231.4125_in, 0_in};
+    constexpr auto gp_3 = frc::Translation3d{378.25_in, 279.4125_in, 0_in};
+  }  // namespace game_pieces
+
+  namespace charge_station {
+    constexpr units::inch_t innerEdgeX = 114.93685_in;
+    constexpr units::inch_t outerEdgeX = 191.06315_in;
+  }  // namespace charge_station
 
   namespace grids {
     constexpr auto gridDepth = 54.05_in;  ///< Distance from alliance station wall to end of grid dividers
@@ -91,7 +110,7 @@ namespace field_points {
     constexpr auto outerGridMiddleY = 174.185_in;
     constexpr auto outerGridRightY = 196.185_in;
 
-    namespace blue_alliance {
+    namespace friendly_alliance {
       // Blue alliance X-positions for scoring
       constexpr auto highNodeX = 14.5244_in;
       constexpr auto middleNodeX = 31.55_in;
@@ -140,8 +159,21 @@ namespace field_points {
 
       }  // namespace outer_grid
 
-    }  // namespace blue_alliance
+    }  // namespace friendly_alliance
   }    // namespace grids
+
+  namespace utils {
+    /// @brief Reflects the point source over the middle of the field to get equivelent points accross the field
+    /// @param source The point to reflect
+    /// @return The reflected point accross the middle of the field
+    inline frc::Translation3d ReflectFieldPoint(const frc::Translation3d source) {
+      return frc::Translation3d{
+          field_points::fieldMiddleX + units::math::abs<units::inch_t>(source.X() - field_points::fieldMiddleX),
+          source.Y(),
+          source.Z()};
+    }
+
+  }  // namespace utils
 }  // namespace field_points
 
 namespace cone {
