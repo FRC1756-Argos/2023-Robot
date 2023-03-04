@@ -82,16 +82,36 @@ RobotContainer::RobotContainer()
             m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kLeftTrigger);
 
         // Read offset from vision subsystem
-        std::optional<units::degree_t> degreeError = m_visionSubSystem.GetHorizontalOffsetToTarget();
+        std::optional<units::degree_t> visionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
 
         // If aim bot is engaged and there is a degree error
-        if (isAimBotEngaged && degreeError) {
+        if (isAimBotEngaged && visionHorizontalOffset) {
+          std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
+
+          if (gamePieceDepth) {
+            /// Get distance to the target
+            auto distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
+                            field_points::grids::middleConeNodeDepth;
+
+            // invert distance if wrist is inverted
+            if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
+              gamePieceDepth = gamePieceDepth.value() *= -1;
+            }
+
+            // * Constant scalar for game piece depth influlence
+            gamePieceDepth = gamePieceDepth.value() *= 0.7;
+
+            // ? Why is this inverted?
+            units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance);
+            visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
+          }
+
           units::degree_t robotYaw =
               argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
                                                0_deg,
                                                360_deg);  // Gets the robots yaw relative to field-centric home
           // ? Why is this negated?
-          units::degree_t error = -degreeError.value();
+          units::degree_t error = -visionHorizontalOffset.value();
           // Angle of lateral bias velocity velocity vector relative to field home
           units::degree_t lateralBiasFieldAngle =
               argos_lib::angle::ConstrainAngle(robotYaw + (error < 0_deg ? -90_deg : 90_deg), 0_deg, 360_deg);
@@ -122,11 +142,11 @@ RobotContainer::RobotContainer()
 
         if (isAimBotEngaged) {
           AlignLedStatus debouncedLedStatus;
-          if (!degreeError) {
+          if (!visionHorizontalOffset) {
             debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::NoTarget);
-          } else if (units::math::abs(degreeError.value()) < 1_deg) {
+          } else if (units::math::abs(visionHorizontalOffset.value()) < 1_deg) {
             debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::Aligned);
-          } else if (degreeError.value() > 0_deg) {
+          } else if (visionHorizontalOffset.value() > 0_deg) {
             debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::FlashRight);
           } else {
             debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::FlashLeft);
@@ -248,9 +268,6 @@ RobotContainer::RobotContainer()
         if (bashSpeed > 0.0 || m_bash.IsBashGuardManualOverride()) {
           m_bash.SetExtensionSpeed(bashSpeed);
         }
-
-        // REMOVEME CONTROL DEBUG READOUTS
-        frc::SmartDashboard::PutNumber("BashPointCount", m_bash.GetMotorMPBufferCount());
       },
       {&m_bash}));
 

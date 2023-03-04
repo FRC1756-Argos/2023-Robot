@@ -12,6 +12,7 @@
 #include <constants/encoders.h>
 #include <constants/measure_up.h>
 #include <constants/motors.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <units/angular_velocity.h>
 #include <units/time.h>
 
@@ -240,8 +241,10 @@ void LifterSubsystem::UpdateArmExtensionHome() {
 
 void LifterSubsystem::InitializeWristHomes() {
   const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
+  frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  // Testing
   if (wristHomes) {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
+    frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
 
     units::degree_t calcValue =
         argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);

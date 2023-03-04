@@ -15,6 +15,7 @@
 IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
     : m_intakeMotor{GetCANAddr(
           address::comp_bot::intake::intakeMotor, address::comp_bot::intake::intakeMotor, instance)}
+    , m_robotInstance{instance}
     , m_intakeSensor1(instance == argos_lib::RobotInstance::Competition ?
                           address::comp_bot::sensors::tofSensorIntake :
                           address::practice_bot::sensors::tofSensorIntake)
@@ -34,7 +35,8 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
 
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {
-  frc::SmartDashboard::PutNumber("SensorDistance", GetIntakeDistance().to<double>());
+  std::optional<units::inch_t> sensDistance = GetIntakeDistance();
+  frc::SmartDashboard::PutNumber("SensorDistance", sensDistance ? sensDistance.value().to<double>() : -1);
   frc::SmartDashboard::PutBoolean("ConeDetection", IsConeDetected());
   frc::SmartDashboard::PutBoolean("CubeDetection", IsCubeDetected());
 }
@@ -78,9 +80,22 @@ void IntakeSubsystem::Disable() {
   IntakeStop();
 }
 
-units::inch_t IntakeSubsystem::GetIntakeDistance() {
-  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor1.GetRange());
-  return (measure_up::lifter::wrist::wristWidth / 2) - (GetIntakeDistance + cone::coneWidth / 2) + 1.5_in;
+std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
+  if (!IsConeDetected()) {
+    return std::nullopt;
+  }
+
+  units::inch_t sensorDistance = units::make_unit<units::millimeter_t>(m_intakeSensor1.GetRange());
+
+  // * useful for wrist positions
+  // if (m_robotInstance == argos_lib::RobotInstance::Competition) {
+  //   sensorDistance = measure_up::lifter::wrist::wristWidth - sensorDistance;
+  // }
+
+  // * removed 1.5 inch fudge
+  units::inch_t gamePieceDepth = (measure_up::lifter::wrist::wristWidth / 2) - (sensorDistance + cone::coneWidth / 2);
+
+  return gamePieceDepth;
 }
 
 bool IntakeSubsystem::IsConeDetected() {
