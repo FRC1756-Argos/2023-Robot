@@ -92,13 +92,15 @@ RobotContainer::RobotContainer()
             /// Get distance to the target
             auto distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
                             field_points::grids::middleConeNodeDepth;
+
+            // invert distance if wrist is inverted
+            if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
+              distance *= -1;
+            }
+
             // ? Why is this inverted?
             units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance);
             visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
-
-            // REMOVEME debugging stuff
-            frc::SmartDashboard::PutNumber("(AimBot) IntakeDistance(inches)", gamePieceDepth.value().to<double>());
-            frc::SmartDashboard::PutNumber("(AimBot) IntakeOffset(degrees)", intakeOffset.to<double>());
           }
 
           units::degree_t robotYaw =
@@ -263,9 +265,6 @@ RobotContainer::RobotContainer()
         if (bashSpeed > 0.0 || m_bash.IsBashGuardManualOverride()) {
           m_bash.SetExtensionSpeed(bashSpeed);
         }
-
-        // REMOVEME CONTROL DEBUG READOUTS
-        frc::SmartDashboard::PutNumber("BashPointCount", m_bash.GetMotorMPBufferCount());
       },
       {&m_bash}));
 
