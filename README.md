@@ -116,7 +116,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Y               | Field Home (hold) |
 | LB              | Unused |
 | RB              | Cone/Cube Intake (game piece selected by operator control box switch) |
-| LT              | Unused |
+| LT              | Enable vision alignment |
 | RT              | Cone/Cube Score (game piece selected by operator control box switch) |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
 | Start           | Swap (hold with <kbd>Back</kbd>) |
@@ -136,7 +136,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Y               | Home Wrist (hold with <kbd>X</kbd>) |
 | DPad Up         | Request game piece |
 | DPad Right      | Unused |
-| DPad Down       | Enable vision alignment |
+| DPad Down       | Unused |
 | DPad Left       | Unused |
 | LB              | Intake Reverse |
 | RB              | Intake Forward |

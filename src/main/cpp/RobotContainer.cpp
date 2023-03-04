@@ -74,7 +74,7 @@ RobotContainer::RobotContainer()
 
         // Get if operator is engaging assist & supply other lateral or forward command
         bool isAimBotEngaged =
-            m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
+            m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kLeftTrigger);
 
         // Read offset from vision subsystem
         std::optional<units::degree_t> degreeError = m_visionSubSystem.GetHorizontalOffsetToTarget();
@@ -284,7 +284,8 @@ void RobotContainer::ConfigureBindings() {
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
-  auto requestGamePiece = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kUp);
+  auto requestCone = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kUp);
+  auto requestCube = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
 
   auto ledMissileSwitchTrigger = m_buttonBox.TriggerLED();
 
@@ -332,7 +333,7 @@ void RobotContainer::ConfigureBindings() {
 
   // VISION TRIGGERS
   auto reflectiveTargetTrigger =
-      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
+      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
   reflectiveTargetTrigger.OnTrue(
       frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
           .ToPtr());
@@ -405,6 +406,7 @@ void RobotContainer::ConfigureBindings() {
           .ToPtr());
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
+  scoreConeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
   scoreCubeTrigger.OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCube(); }, {&m_intake}).ToPtr());
   scoreCubeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
 
@@ -459,20 +461,25 @@ void RobotContainer::ConfigureBindings() {
       frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
   ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
 
-  requestGamePiece.OnTrue(frc2::InstantCommand(
-                              [this]() {
-                                m_ledSubSystem.TemporaryAnimate(
-                                    [this]() {
-                                      m_ledSubSystem.SetAllGroupsFlash(
-                                          m_buttonBox.GetGamePiece() == GamePiece::CONE ?
-                                              argos_lib::gamma_corrected_colors::kConeYellow :
-                                              argos_lib::gamma_corrected_colors::kCubePurple,
-                                          false);
-                                    },
-                                    1000_ms);
-                              },
-                              {&m_ledSubSystem})
-                              .ToPtr());
+  requestCone.OnTrue(
+      frc2::InstantCommand(
+          [this]() {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kConeYellow, false); },
+                1000_ms);
+          },
+          {&m_ledSubSystem})
+          .ToPtr());
+
+  requestCube.OnTrue(
+      frc2::InstantCommand(
+          [this]() {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kCubePurple, false); },
+                1000_ms);
+          },
+          {&m_ledSubSystem})
+          .ToPtr());
 }
 
 void RobotContainer::Disable() {

@@ -39,9 +39,16 @@ void ScoreConeCommand::Initialize() {
                                        30_ips,
                                        speeds::armKinematicSpeeds::effectorAcceleration};
 
-  m_allCommands = frc2::ParallelCommandGroup(frc2::SequentialCommandGroup(gpScore, safetyRaise),
-                                             frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms), m_retractIntake))
-                      .ToPtr();
+  if (m_lifter.GetArmPose().Y() > 20_in) {
+    m_allCommands = frc2::ParallelCommandGroup(frc2::SequentialCommandGroup(gpScore, safetyRaise),
+                                               frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms), m_retractIntake))
+                        .ToPtr();
+  } else {
+    m_allCommands =
+        frc2::ParallelCommandGroup(frc2::InstantCommand{[this]() { m_intake.EjectConeForReal(); }, {&m_intake}},
+                                   frc2::WaitCommand(750_ms))
+            .ToPtr();
+  }
   // Initialize all commands
   m_allCommands.Schedule();
 }
