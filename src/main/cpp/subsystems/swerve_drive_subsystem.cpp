@@ -244,15 +244,12 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
   // SET MODULES BASED OFF OF CONTROL MODE
   auto moduleStates = GetCurrentModuleStates();
   frc::Trajectory::State desiredProfileState;
-  frc::SmartDashboard::PutBoolean("MADE IT HERE", true);
   if (m_followingProfile && m_pActiveSwerveProfile) {
     const auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                    m_swerveProfileStartTime);
     frc::SmartDashboard::PutNumber("(SwerveFollower) Elapsed Time", elapsedTime.count());
-    frc::SmartDashboard::PutBoolean("MADE IT HERE2", true);
     if (!m_pActiveSwerveProfile->IsFinished(elapsedTime)) {
       desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
-      frc::SmartDashboard::PutBoolean("MADE IT HERE3", true);
 
       const auto controllerChassisSpeeds = m_followerController.Calculate(
           m_poseEstimator.GetEstimatedPosition(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());

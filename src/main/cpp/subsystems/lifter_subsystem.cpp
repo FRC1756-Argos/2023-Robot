@@ -248,7 +248,6 @@ void LifterSubsystem::InitializeWristHomes() {
 
     units::degree_t calcValue =
         argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
-    frc::SmartDashboard::PutNumber("calcValueValue", calcValue.to<double>());  //Testing
 
     m_wristEncoder.SetPosition(calcValue.to<double>());
 

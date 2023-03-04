@@ -35,7 +35,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
 
   /// @brief ToF stuff
   /// @return
-  units::inch_t GetIntakeDistance();
+  std::optional<units::inch_t> GetIntakeDistance();
   bool IsConeDetected();
   bool IsCubeDetected();
 
@@ -43,6 +43,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
   WPI_TalonSRX m_intakeMotor;
+  argos_lib::RobotInstance m_robotInstance;
 
   /// @brief ToF sensor thingy
   frc::TimeOfFlight m_intakeSensor1;

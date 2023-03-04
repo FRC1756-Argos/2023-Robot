@@ -86,12 +86,20 @@ RobotContainer::RobotContainer()
 
         // If aim bot is engaged and there is a degree error
         if (isAimBotEngaged && visionHorizontalOffset) {
+          std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
 
-          /// Get distance to the target
-          auto distance =
-              measure_up::chassis::length / 2 + measure_up::bumperExtension + field_points::grids::middleConeNodeDepth;
-          std::optional<units::degree_t> intakeOffset = units::math::asin(m_intake.GetIntakeDistance() / distance);
-          visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset.value();
+          if (gamePieceDepth) {
+            /// Get distance to the target
+            auto distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
+                            field_points::grids::middleConeNodeDepth;
+            // ? Why is this inverted?
+            units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance);
+            visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
+
+            // REMOVEME debugging stuff
+            frc::SmartDashboard::PutNumber("(AimBot) IntakeDistance(inches)", gamePieceDepth.value().to<double>());
+            frc::SmartDashboard::PutNumber("(AimBot) IntakeOffset(degrees)", intakeOffset.to<double>());
+          }
 
           units::degree_t robotYaw =
               argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
