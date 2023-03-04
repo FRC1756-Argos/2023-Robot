@@ -82,20 +82,15 @@ RobotContainer::RobotContainer()
 
         // If aim bot is engaged and there is a degree error
         if (isAimBotEngaged && degreeError) {
-          // TODO may want to validate the GetFieldCentricAngle() function just to ensure it's behaving as documented
           units::degree_t robotYaw =
               argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
                                                0_deg,
                                                360_deg);  // Gets the robots yaw relative to field-centric home
+          // ? Why is this negated?
           units::degree_t error = -degreeError.value();
           // Angle of lateral bias velocity velocity vector relative to field home
           units::degree_t lateralBiasFieldAngle =
               argos_lib::angle::ConstrainAngle(robotYaw + (error < 0_deg ? -90_deg : 90_deg), 0_deg, 360_deg);
-
-          // REMOVEME debugging stuff
-          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", error.to<double>());
-          frc::SmartDashboard::PutNumber("(AimBot) RobotYaw", robotYaw.to<double>());
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBiasFieldAngle", lateralBiasFieldAngle.to<double>());
 
           // Calculate the lateral bias
           double lateralBias_r =
@@ -106,17 +101,10 @@ RobotContainer::RobotContainer()
           units::scalar_t filteredLateralBias_r = m_nudgeRate.Calculate(units::scalar_t(lateralBias_r));
 
           // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
-          // ? Put components into their own structure later
           double lateralBias_x =
               filteredLateralBias_r.to<double>() * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
           double lateralBias_y =
               filteredLateralBias_r.to<double>() * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
-
-          // REMOVEME debugging stuff
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBias_r ", lateralBias_r);
-          frc::SmartDashboard::PutNumber("(AimBot) FilteredLateralBias_r ", filteredLateralBias_r.to<double>());
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBias_x ", lateralBias_x);  // x is pct forward
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBias_y ", lateralBias_y);  // y is pct left
 
           // Actually apply the lateral bias
           deadbandTranslationSpeeds.leftSpeedPct += lateralBias_x;
