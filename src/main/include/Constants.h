@@ -30,6 +30,8 @@ namespace speeds {
   namespace armKinematicSpeeds {
     constexpr auto effectorVelocity = 60_ips;
     constexpr auto effectorAcceleration = 45_ips2;
+    constexpr auto effectorFastVelocity = 80_ips;
+    constexpr auto effectorFastAcceleration = 60_ips2;
   }  // namespace armKinematicSpeeds
 }  // namespace speeds
 

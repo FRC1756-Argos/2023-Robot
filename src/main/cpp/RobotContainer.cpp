@@ -435,7 +435,9 @@ void RobotContainer::ConfigureBindings() {
                                              ScoringPosition{.column = ScoringColumn::coneIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
-                                             PathType::concaveDown))
+                                             PathType::concaveDown,
+                                             speeds::armKinematicSpeeds::effectorFastVelocity,
+                                             speeds::armKinematicSpeeds::effectorFastAcceleration))
                   .ToPtr());
   (intakeCubeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
@@ -445,7 +447,9 @@ void RobotContainer::ConfigureBindings() {
                                              ScoringPosition{.column = ScoringColumn::cubeIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
-                                             PathType::concaveDown))
+                                             PathType::concaveDown,
+                                             speeds::armKinematicSpeeds::effectorFastVelocity,
+                                             speeds::armKinematicSpeeds::effectorFastAcceleration))
                   .ToPtr());
   exclusiveAutoIntakeTrigger.OnFalse(
       frc2::ParallelCommandGroup(
