@@ -95,23 +95,23 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   constexpr static argos_lib::ArgosColor GetGamePieceColor(GamePiece gp, bool gammaCorrect = true);
 
   constexpr static int startIndex_frontLeft = 8;     ///< Address of first LED in strip
-  constexpr static int length_frontLeft = 30;        ///< Number of LEDs in strip
+  constexpr static int length_frontLeft = 29;        ///< Number of LEDs in strip
   constexpr static bool inverted_frontLeft = false;  ///< true indicates first index is at top of tower
-  constexpr static int startIndex_frontRight = 38;
+  constexpr static int startIndex_frontRight = 37;
   constexpr static int length_frontRight = 30;
   constexpr static bool inverted_frontRight = true;
 
-  constexpr static int startIndex_sideFront = 68;
+  constexpr static int startIndex_sideFront = 67;
   constexpr static int length_sideFront = 61;
   constexpr static bool inverted_sideFront = false;
-  constexpr static int startIndex_sideBack = 129;
+  constexpr static int startIndex_sideBack = 128;
   constexpr static int length_sideBack = 61;
   constexpr static bool inverted_sideBack = true;
 
-  constexpr static int startIndex_backRight = 190;
+  constexpr static int startIndex_backRight = 189;
   constexpr static int length_backRight = 58;
   constexpr static bool inverted_backRight = false;
-  constexpr static int startIndex_backLeft = 248;
+  constexpr static int startIndex_backLeft = 247;
   constexpr static int length_backLeft = 57;
   constexpr static bool inverted_backLeft = true;
 };
