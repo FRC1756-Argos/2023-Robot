@@ -125,6 +125,9 @@ class VisionSubsystem : public frc2::SubsystemBase {
    */
   void Periodic() override;
 
+  /// @brief it disables (duh)
+  void Disable();
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

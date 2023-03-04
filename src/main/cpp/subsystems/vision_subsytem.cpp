@@ -67,6 +67,10 @@ LimelightTarget::tValues VisionSubsystem::GetCameraTargetValues() {
   return m_cameraInterface.m_target.GetTarget();
 }
 
+void VisionSubsystem::Disable() {
+  SetReflectiveVisionMode(false);
+}
+
 // LIMELIGHT TARGET MEMBER FUNCTIONS ===============================================================
 
 LimelightTarget::tValues LimelightTarget::GetTarget() {
