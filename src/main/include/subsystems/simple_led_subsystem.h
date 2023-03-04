@@ -20,6 +20,7 @@
 
 enum class LedGroup { SIDES, BACK, FRONT };
 enum class LedStrip { FrontLeft, FrontRight, SideFront, SideBack, BackRight, BackLeft };
+enum class AlignLedStatus { NoTarget, FlashLeft, FlashRight, Aligned };
 
 class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:

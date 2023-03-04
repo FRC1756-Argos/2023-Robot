@@ -5,6 +5,7 @@
 #pragma once
 
 #include <argos_lib/config/config_types.h>
+#include <argos_lib/general/generic_debouncer.h>
 #include <argos_lib/subsystems/swappable_controllers_subsystem.h>
 #include <commands/bashguard_homing_command.h>
 #include <commands/drive_to_position.h>
@@ -91,4 +92,5 @@ class RobotContainer {
 
   nt::GenericEntry* p_wristSetpoint;
   frc::SlewRateLimiter<units::scalar> m_nudgeRate;
+  argos_lib::GenericDebouncer<AlignLedStatus> m_alignLedDebouncer;
 };

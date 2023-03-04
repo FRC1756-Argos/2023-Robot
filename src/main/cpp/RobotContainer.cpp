@@ -58,7 +58,8 @@ RobotContainer::RobotContainer()
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
     , m_autoSelector{{&m_autoNothing, &m_autoDriveForward}, &m_autoNothing}
-    , m_nudgeRate{1 / 1_s} {
+    , m_nudgeRate{1 / 1_s}
+    , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
   // ================== DEFAULT COMMANDS ===============================
@@ -114,41 +115,63 @@ RobotContainer::RobotContainer()
           // frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
           m_nudgeRate.Reset(0);
+          m_alignLedDebouncer.Reset(AlignLedStatus::NoTarget);
         }
 
         if (isAimBotEngaged) {
+          AlignLedStatus debouncedLedStatus;
           if (!degreeError) {
-            m_ledSubSystem.TemporaryAnimate(
-                [this]() {
-                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontLeft, argos_lib::colors::kReallyRed, false);
-                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::colors::kReallyRed, false);
-                },
-                100_ms);
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::NoTarget);
           } else if (units::math::abs(degreeError.value()) < 1_deg) {
-            m_ledSubSystem.TemporaryAnimate(
-                [this]() {
-                  m_ledSubSystem.SetLedStripColor(
-                      LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kReallyGreen, false);
-                  m_ledSubSystem.SetLedStripColor(
-                      LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kReallyGreen, false);
-                },
-                100_ms);
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::Aligned);
           } else if (degreeError.value() > 0_deg) {
-            m_ledSubSystem.TemporaryAnimate(
-                [this]() {
-                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kOff, false);
-                  m_ledSubSystem.FlashStrip(LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kCatYellow, false);
-                },
-                100_ms);
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::FlashRight);
           } else {
-            m_ledSubSystem.TemporaryAnimate(
-                [this]() {
-                  m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kOff, false);
-                  m_ledSubSystem.FlashStrip(LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kCatYellow, false);
-                },
-                100_ms);
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::FlashLeft);
+          }
+
+          switch (debouncedLedStatus) {
+            case AlignLedStatus::NoTarget:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(LedStrip::FrontLeft, argos_lib::colors::kReallyRed, false);
+                    m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::colors::kReallyRed, false);
+                  },
+                  100_ms);
+              break;
+            case AlignLedStatus::Aligned:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kReallyGreen, false);
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kReallyGreen, false);
+                  },
+                  100_ms);
+              break;
+            case AlignLedStatus::FlashRight:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kOff, false);
+                    m_ledSubSystem.FlashStrip(
+                        LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kCatYellow, false);
+                  },
+                  100_ms);
+              break;
+            case AlignLedStatus::FlashLeft:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kOff, false);
+                    m_ledSubSystem.FlashStrip(
+                        LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kCatYellow, false);
+                  },
+                  100_ms);
+              break;
           }
         }
+
         if (m_swerveDrive.GetManualOverride() || deadbandTranslationSpeeds.forwardSpeedPct != 0 ||
             deadbandTranslationSpeeds.leftSpeedPct != 0 || deadbandRotSpeed != 0) {
           m_swerveDrive.SwerveDrive(
