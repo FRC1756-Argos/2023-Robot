@@ -443,6 +443,12 @@ void SwerveDriveSubsystem::Home(const units::degree_t& angle) {
   m_backLeft.m_encoder.SetPosition(angle.to<double>(), 50);
 }
 
+double SwerveDriveSubsystem::GetRobotPitchRate() {
+  double xyz_dps[3];
+  m_pigeonIMU.GetRawGyro(xyz_dps);
+  return xyz_dps[1];
+}
+
 void SwerveDriveSubsystem::LockWheels() {
   m_manualOverride = false;
 
