@@ -71,7 +71,8 @@ RobotContainer::RobotContainer()
                     argos_lib::XboxController::JoystickHand::
                         kLeftHand)},  // X axis is positive right, but swerve coordinates are positive left
             m_driveSpeedMap);
-
+        auto deadbandRotSpeed = m_driveRotSpeed(
+            -m_controllers.DriverController().GetX(argos_lib::XboxController::JoystickHand::kRightHand));
         // Get if operator is engaging assist & supply other lateral or forward command
         bool isAimBotEngaged =
             m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
@@ -135,14 +136,13 @@ RobotContainer::RobotContainer()
                 100_ms);
           }
         }
-
-        m_swerveDrive.SwerveDrive(
-            deadbandTranslationSpeeds.forwardSpeedPct,
-            deadbandTranslationSpeeds.leftSpeedPct,
-            m_driveRotSpeed(-m_controllers.DriverController().GetX(
-                argos_lib::XboxController::JoystickHand::
-                    kRightHand)));  // X axis is positive right (CW), but swerve coordinates are positive left (CCW)
-
+        if (m_swerveDrive.GetManualOverride() || deadbandTranslationSpeeds.forwardSpeedPct != 0 ||
+            deadbandTranslationSpeeds.leftSpeedPct != 0 || deadbandRotSpeed != 0) {
+          m_swerveDrive.SwerveDrive(
+              deadbandTranslationSpeeds.forwardSpeedPct,
+              deadbandTranslationSpeeds.leftSpeedPct,
+              deadbandRotSpeed);  // X axis is positive right (CW), but swerve coordinates are positive left (CCW)
+        }
         // DEBUG STUFF
         frc::SmartDashboard::PutNumber(
             "(DRIVER) Joystick Left Y",
@@ -292,6 +292,7 @@ void RobotContainer::ConfigureBindings() {
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
                                                                       argos_lib::XboxController::Button::kA,
                                                                       argos_lib::XboxController::Button::kB});
+  auto lockWheels = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kDown);
 
   auto fieldHome = m_controllers.DriverController().TriggerDebounced(argos_lib::XboxController::Button::kY);
   auto intakeForwardTrigger =
@@ -361,6 +362,7 @@ void RobotContainer::ConfigureBindings() {
   // DRIVE TRIGGER ACTIVATION
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
+  lockWheels.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.LockWheels(); }, {&m_swerveDrive}).ToPtr());
 
   // Intake trigger activation
   (intakeForwardTrigger && exclusiveManualIntakeTrigger)

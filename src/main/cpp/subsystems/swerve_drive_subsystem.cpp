@@ -75,6 +75,7 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
     , m_fsStorage(paths::swerveHomesPath)
     , m_followingProfile(false)
     , m_profileComplete(false)
+    , m_manualOverride(false)
     , m_pActiveSwerveProfile(nullptr)
     , m_swerveProfileStartTime()
     , m_linearPID(instance == argos_lib::RobotInstance::Competition ?
@@ -225,6 +226,7 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
     }
   } else {
     // Manual override
+    m_manualOverride = true;
     m_followingProfile = false;
     m_profileComplete = false;
   }
@@ -444,6 +446,40 @@ void SwerveDriveSubsystem::Home(const units::degree_t& angle) {
   m_backLeft.m_encoder.SetPosition(angle.to<double>(), 50);
 }
 
+void SwerveDriveSubsystem::LockWheels() {
+  m_manualOverride = false;
+
+  auto currentState = GetCurrentModuleStates();
+
+  auto frontLeftPosition = frc::SwerveModuleState{0_mps, 45_deg};
+  auto frontRightPosition = frc::SwerveModuleState{0_mps, -45_deg};
+  auto backRightPosition = frc::SwerveModuleState{0_mps, 45_deg};
+  auto backLeftPosition = frc::SwerveModuleState{0_mps, -45_deg};
+
+  auto desiredFrontLeftState =
+      argos_lib::swerve::Optimize(frontLeftPosition, currentState.at(0).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+  auto desiredFrontRightState =
+      argos_lib::swerve::Optimize(frontRightPosition, currentState.at(1).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+  auto desiredBackRightState =
+      argos_lib::swerve::Optimize(backRightPosition, currentState.at(2).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+  auto desiredBackLeftState =
+      argos_lib::swerve::Optimize(backLeftPosition, currentState.at(3).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+
+  m_frontLeft.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                         sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredFrontLeftState.angle.Degrees()));
+
+  m_frontRight.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                          sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredFrontRightState.angle.Degrees()));
+  m_backRight.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                         sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredBackRightState.angle.Degrees()));
+  m_backLeft.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                        sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredBackLeftState.angle.Degrees()));
+}
+
+bool SwerveDriveSubsystem::GetManualOverride() {
+  return m_manualOverride;
+}
+
 void SwerveDriveSubsystem::FieldHome(units::degree_t homeAngle, bool updateOdometry) {
   m_fieldHomeOffset = -GetIMUYaw() - homeAngle;
   if (updateOdometry) {
@@ -625,6 +661,7 @@ void SwerveDriveSubsystem::UpdateFollowerRotationalPIDConstraints(
 
 void SwerveDriveSubsystem::StartDrivingProfile(SwerveTrapezoidalProfileSegment newProfile) {
   m_profileComplete = false;
+  m_manualOverride = false;
   m_pActiveSwerveProfile = std::make_unique<SwerveTrapezoidalProfileSegment>(newProfile);
   m_followerController = frc::HolonomicDriveController(m_linearPID, m_linearPID, m_rotationalPID);
   m_swerveProfileStartTime = std::chrono::steady_clock::now();
