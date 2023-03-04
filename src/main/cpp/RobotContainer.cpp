@@ -6,6 +6,7 @@
 
 #include <argos_lib/commands/swap_controllers_command.h>
 #include <argos_lib/controller/trigger_composition.h>
+#include <argos_lib/general/angle_utils.h>
 #include <argos_lib/general/color.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
@@ -83,56 +84,45 @@ RobotContainer::RobotContainer()
         if (isAimBotEngaged && degreeError) {
           // TODO may want to validate the GetFieldCentricAngle() function just to ensure it's behaving as documented
           units::degree_t robotYaw =
-              m_swerveDrive.GetFieldCentricAngle();  // Gets the robots yaw relative to field-centric home
+              argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
+                                               0_deg,
+                                               360_deg);  // Gets the robots yaw relative to field-centric home
+          units::degree_t error = -degreeError.value();
           // Angle of lateral bias velocity velocity vector relative to field home
-          units::degree_t lateralBiasFieldAngle = robotYaw + (degreeError.value() < 0_deg ? -90_deg : 90_deg);
-
-          // Calculate the robot-centric x velocity from field-centric velocity
-          // the field-centric velocity vector's angle relative to robot-centric zero
-          units::degree_t fieldToRobotVelAngle =
-              units::radian_t{
-                  std::atan2(deadbandTranslationSpeeds.leftSpeedPct, deadbandTranslationSpeeds.forwardSpeedPct)} -
-              robotYaw;
-          // Robot-centric x velocity component from field-centric velocity vector
-          double robotXVel =
-              std::hypot(deadbandTranslationSpeeds.forwardSpeedPct, deadbandTranslationSpeeds.leftSpeedPct) *
-              std::cos(units::radian_t{fieldToRobotVelAngle}.to<double>());
+          units::degree_t lateralBiasFieldAngle =
+              argos_lib::angle::ConstrainAngle(robotYaw + (error < 0_deg ? -90_deg : 90_deg), 0_deg, 360_deg);
 
           // REMOVEME debugging stuff
-          frc::SmartDashboard::PutNumber("(AimBot) FieldToRobotVelAngle", fieldToRobotVelAngle.to<double>());
-          frc::SmartDashboard::PutNumber("(AimBot) RobotXVel", robotXVel);
-          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", degreeError.value().to<double>());
+          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", error.to<double>());
           frc::SmartDashboard::PutNumber("(AimBot) RobotYaw", robotYaw.to<double>());
           frc::SmartDashboard::PutNumber("(AimBot) LateralBiasFieldAngle", lateralBiasFieldAngle.to<double>());
 
           // Calculate the lateral bias
           double lateralBias_r =
-              speeds::drive::aimBotMaxBias * (units::math::abs<units::degree_t>(degreeError.value()).to<double>() /
-                                              camera::halfhorizontalAngleResolution.to<double>());
-          // Apply the original sign
-          // lateralBias_r = std::copysign(lateralBias_r, degreeError ? degreeError.value().to<double>() : 0);
+              speeds::drive::aimBotMaxBias *
+              units::math::abs<units::degree_t>(error / camera::halfhorizontalAngleResolution.to<double>())
+                  .to<double>();
 
-          // control gracefully by considering pct robot-centric forward
-          lateralBias_r *= std::min(2.0 * std::abs(robotXVel), 1.0);
+          units::scalar_t filteredLateralBias_r = m_nudgeRate.Calculate(units::scalar_t(lateralBias_r));
 
           // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
           // ? Put components into their own structure later
-          double lateralBias_x = lateralBias_r * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
-          double lateralBias_y = lateralBias_r * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
+          double lateralBias_x =
+              filteredLateralBias_r.to<double>() * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
+          double lateralBias_y =
+              filteredLateralBias_r.to<double>() * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
 
           // REMOVEME debugging stuff
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias_r ", lateralBias_r);
+          frc::SmartDashboard::PutNumber("(AimBot) FilteredLateralBias_r ", filteredLateralBias_r.to<double>());
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias_x ", lateralBias_x);  // x is pct forward
           frc::SmartDashboard::PutNumber("(AimBot) LateralBias_y ", lateralBias_y);  // y is pct left
 
-          auto nudge_x = m_nudgeRate.Calculate(units::scalar_t(lateralBias_x));
-          auto nudge_y = m_nudgeRate.Calculate(units::scalar_t(lateralBias_y));
-
           // Actually apply the lateral bias
-          deadbandTranslationSpeeds.leftSpeedPct += nudge_x.to<double>();
-          deadbandTranslationSpeeds.forwardSpeedPct += nudge_y.to<double>();
+          deadbandTranslationSpeeds.leftSpeedPct += lateralBias_x;
+          deadbandTranslationSpeeds.forwardSpeedPct += lateralBias_y;
 
-          frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
+          // frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
           m_nudgeRate.Reset(0);
         }
@@ -368,12 +358,20 @@ void RobotContainer::ConfigureBindings() {
   // VISION TRIGGERS
   auto reflectiveTargetTrigger =
       m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
-  reflectiveTargetTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
-          .ToPtr());
-  reflectiveTargetTrigger.OnFalse(
-      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
-          .ToPtr());
+  reflectiveTargetTrigger.OnTrue(frc2::InstantCommand(
+                                     [this]() {
+                                       m_visionSubSystem.SetReflectiveVisionMode(true);
+                                       frc::SmartDashboard::PutBoolean("VisionOn", true);
+                                     },
+                                     {&m_visionSubSystem})
+                                     .ToPtr());
+  reflectiveTargetTrigger.OnFalse(frc2::InstantCommand(
+                                      [this]() {
+                                        m_visionSubSystem.SetReflectiveVisionMode(false);
+                                        frc::SmartDashboard::PutBoolean("VisionOn", false);
+                                      },
+                                      {&m_visionSubSystem})
+                                      .ToPtr());
 
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
