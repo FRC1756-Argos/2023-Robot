@@ -187,6 +187,53 @@ void SimpleLedSubsystem::SetAllGroupsFlash(argos_lib::ArgosColor color, bool res
   }
 }
 
+void SimpleLedSubsystem::FlashStrip(LedStrip strip, argos_lib::ArgosColor color, bool restorable) {
+  if (restorable) {
+    m_ledUpdateFunction = [this, color]() { this->SetAllGroupsFlash(color, false); };
+  }
+
+  int startIndex = -1;
+  int len = -1;
+
+  switch (strip) {
+    case LedStrip::FrontLeft:
+      startIndex = startIndex_frontLeft;
+      len = length_frontLeft;
+      break;
+    case LedStrip::FrontRight:
+      startIndex = startIndex_frontRight;
+      len = length_frontRight;
+      break;
+    case LedStrip::SideFront:
+      startIndex = startIndex_sideFront;
+      len = length_sideFront;
+      break;
+    case LedStrip::SideBack:
+      startIndex = startIndex_sideBack;
+      len = length_sideBack;
+      break;
+    case LedStrip::BackLeft:
+      startIndex = startIndex_backLeft;
+      len = length_backLeft;
+      break;
+    case LedStrip::BackRight:
+      startIndex = startIndex_backRight;
+      len = length_backRight;
+      break;
+  }
+
+  if (startIndex < 0 || len < 0) {
+    m_log.Log(argos_lib::LogLevel::ERR, "INVALID LED LENGTH OR START INDEX\n");
+  }
+
+  auto flashAnimation = ctre::phoenix::led::StrobeAnimation(color.r, color.g, color.b, 0, 0.1, len, startIndex);
+  auto rslt = m_CANdle.Animate(flashAnimation, static_cast<int>(strip));
+
+  if (rslt != ctre::phoenix::ErrorCode::OKAY) {
+    m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
+  }
+}
+
 void SimpleLedSubsystem::SetAllGroupsLarson(argos_lib::ArgosColor color, bool restorable) {
   if (restorable) {
     m_ledUpdateFunction = [this, color]() { this->SetAllGroupsLarson(color, false); };
