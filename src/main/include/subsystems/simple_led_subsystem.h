@@ -20,10 +20,16 @@
 
 enum class LedGroup { SIDES, BACK, FRONT };
 enum class LedStrip { FrontLeft, FrontRight, SideFront, SideBack, BackRight, BackLeft };
+enum class AlignLedStatus { NoTarget, FlashLeft, FlashRight, Aligned };
 
 class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:
   explicit SimpleLedSubsystem(argos_lib::RobotInstance instance);
+
+  void Enable();
+  void Disable();
+
+  void SetDisableAnimation(std::function<void()> animationFunction);
 
   /// @brief Sets group of leds to given color
   /// @param group The group of leds to set
@@ -33,9 +39,13 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
 
   /// @brief Sets all led groups to a given color
   /// @param color an ArgosColor to set the LEDs too
-  void SetAllGroupsColor(argos_lib::ArgosColor color, bool restorable = true);
+  void SetAllGroupsColor(argos_lib::ArgosColor color,
+                         bool restorable = true,
+                         std::optional<std::function<GamePiece()>> tipColor = std::nullopt);
 
-  void SetAllGroupsFade(argos_lib::ArgosColor color, bool restorable = true);
+  void SetAllGroupsFade(argos_lib::ArgosColor color,
+                        bool restorable = true,
+                        std::optional<std::function<GamePiece()>> tipColor = std::nullopt);
 
   void SetAllGroupsFlash(argos_lib::ArgosColor color, bool restorable = true);
 
@@ -46,7 +56,9 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   argos_lib::ArgosColor GetAllianceColor();
 
   /// @brief Set all groups of LEDs to the alliance color
-  void SetAllGroupsAllianceColor(bool fade, bool restorable = true);
+  void SetAllGroupsAllianceColor(bool fade,
+                                 bool restorable = true,
+                                 std::optional<std::function<GamePiece()>> tipColor = std::nullopt);
 
   void StopAllAnimations(bool restorable = true);
 
@@ -72,12 +84,15 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   // declared private and exposed only through public methods.
   CANdle m_CANdle;
   argos_lib::ArgosLogger m_log;
+  bool m_enabled;
 
-  const std::function<void()> m_ledsOffFunction;
+  std::function<void()> m_disableUpdateFunction;
   std::function<void()> m_ledUpdateFunction;
   std::optional<std::function<void(void)>> m_restoreAnimationFunction;
   std::chrono::time_point<std::chrono::steady_clock> m_startTime;
   units::millisecond_t m_temporaryDuration;
+
+  constexpr static argos_lib::ArgosColor GetGamePieceColor(GamePiece gp, bool gammaCorrect = true);
 
   constexpr static int startIndex_frontLeft = 8;     ///< Address of first LED in strip
   constexpr static int length_frontLeft = 30;        ///< Number of LEDs in strip
