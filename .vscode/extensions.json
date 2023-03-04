@@ -8,6 +8,7 @@
     "xaver.clang-format",
     "gruntfuggly.todo-tree",
     "elagil.pre-commit-helper",
-    "stackbreak.comment-divider"
+    "stackbreak.comment-divider",
+    "aaron-bond.better-comments"
   ]
 }
