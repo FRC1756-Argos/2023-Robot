@@ -186,12 +186,26 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   bool ProfileIsComplete() const;
 
   /**
+   * @brief Check if drivetrain is following a profile
+   *
+   * @return true when robot is following profile
+   */
+  bool IsFollowingProfile() const;
+
+  /**
    * @brief Get the robot velocity in chassis frame (x toward intake, y toward left) based on
    *        GetCurrentModuleStates() output
    *
    * @return frc::ChassisSpeeds Velocity based on module states
    */
   frc::ChassisSpeeds GetChassisVelocity();
+
+  /**
+   * @brief Put the robot wheels in an x shape where it locks the movement of it
+   */
+  void LockWheels();
+
+  bool GetManualOverride();
 
  private:
   argos_lib::RobotInstance m_instance;
@@ -232,6 +246,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   bool m_followingProfile;  ///< True when an incomplete drive profile is being run
   bool m_profileComplete;   ///< True once a drive profile has been completed
+  bool m_manualOverride;
   std::unique_ptr<SwerveTrapezoidalProfileSegment> m_pActiveSwerveProfile;      ///< Profile to execute
   std::chrono::time_point<std::chrono::steady_clock> m_swerveProfileStartTime;  ///< Time when active profile began
   frc2::PIDController m_linearPID;  ///< Correction parameters for x/y error when following drive profile

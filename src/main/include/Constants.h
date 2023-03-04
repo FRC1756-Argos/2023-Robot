@@ -67,7 +67,7 @@ namespace networkTables {
 
 namespace leds {
   // Length of request animation in seconds
-  constexpr units::time::second_t requestLen = 5_s;
+  constexpr units::time::second_t requestLen = 2_s;
 }  // namespace leds
 namespace camera {
   constexpr char reflectivePipeline = 1;

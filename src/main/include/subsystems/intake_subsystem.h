@@ -27,6 +27,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
 
   void IntakeCone();
   void EjectCone();
+  void EjectConeForReal();
   void IntakeCube();
   void EjectCube();
   void IntakeStop();

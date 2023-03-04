@@ -48,13 +48,17 @@ void IntakeSubsystem::EjectCone() {
   m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.2);
   m_haveCone = false;
 }
+void IntakeSubsystem::EjectConeForReal() {
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -1.0);
+  m_haveCone = false;
+}
 void IntakeSubsystem::IntakeCube() {
   m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.7);
   m_haveCube = true;
   m_haveCone = false;
 }
 void IntakeSubsystem::EjectCube() {
-  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.7);
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.7);
   m_haveCube = false;
 }
 
@@ -62,7 +66,7 @@ void IntakeSubsystem::IntakeStop() {
   if (m_haveCone) {
     m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.3);
   } else if (m_haveCube) {
-    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.2);
+    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.6);
   } else {
     m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.0);
   }

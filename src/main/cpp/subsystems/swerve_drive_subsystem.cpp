@@ -75,6 +75,7 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
     , m_fsStorage(paths::swerveHomesPath)
     , m_followingProfile(false)
     , m_profileComplete(false)
+    , m_manualOverride(false)
     , m_pActiveSwerveProfile(nullptr)
     , m_swerveProfileStartTime()
     , m_linearPID(instance == argos_lib::RobotInstance::Competition ?
@@ -225,6 +226,7 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
     }
   } else {
     // Manual override
+    m_manualOverride = true;
     m_followingProfile = false;
     m_profileComplete = false;
   }
@@ -242,11 +244,15 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
   // SET MODULES BASED OFF OF CONTROL MODE
   auto moduleStates = GetCurrentModuleStates();
   frc::Trajectory::State desiredProfileState;
+  frc::SmartDashboard::PutBoolean("MADE IT HERE", true);
   if (m_followingProfile && m_pActiveSwerveProfile) {
     const auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                    m_swerveProfileStartTime);
+    frc::SmartDashboard::PutNumber("(SwerveFollower) Elapsed Time", elapsedTime.count());
+    frc::SmartDashboard::PutBoolean("MADE IT HERE2", true);
     if (!m_pActiveSwerveProfile->IsFinished(elapsedTime)) {
       desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
+      frc::SmartDashboard::PutBoolean("MADE IT HERE3", true);
 
       const auto controllerChassisSpeeds = m_followerController.Calculate(
           m_poseEstimator.GetEstimatedPosition(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());
@@ -276,11 +282,17 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
                                      units::feet_per_second_t{controllerChassisSpeeds.vy}.to<double>());
       frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Omega",
                                      units::degrees_per_second_t{controllerChassisSpeeds.omega}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Vel", units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
+      frc::SmartDashboard::PutNumber("(SwerveFollower) Current Vel",
+                                     units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
+      frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentXFollowerCommand",
+                                     m_followerController.getXController().GetSetpoint());
+      frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentYFollowerCommand",
+                                     m_followerController.getYController().GetSetpoint());
     } else {
       // Finished profile
       m_followingProfile = false;
       m_profileComplete = true;
+      frc::SmartDashboard::PutBoolean("(SwerveFollower) ProfileIsFinished", true);
     }
   } else if (m_followingProfile) {
     // Bad profile
@@ -432,6 +444,40 @@ void SwerveDriveSubsystem::Home(const units::degree_t& angle) {
   m_frontRight.m_encoder.SetPosition(angle.to<double>(), 50);
   m_backRight.m_encoder.SetPosition(angle.to<double>(), 50);
   m_backLeft.m_encoder.SetPosition(angle.to<double>(), 50);
+}
+
+void SwerveDriveSubsystem::LockWheels() {
+  m_manualOverride = false;
+
+  auto currentState = GetCurrentModuleStates();
+
+  auto frontLeftPosition = frc::SwerveModuleState{0_mps, 45_deg};
+  auto frontRightPosition = frc::SwerveModuleState{0_mps, -45_deg};
+  auto backRightPosition = frc::SwerveModuleState{0_mps, 45_deg};
+  auto backLeftPosition = frc::SwerveModuleState{0_mps, -45_deg};
+
+  auto desiredFrontLeftState =
+      argos_lib::swerve::Optimize(frontLeftPosition, currentState.at(0).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+  auto desiredFrontRightState =
+      argos_lib::swerve::Optimize(frontRightPosition, currentState.at(1).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+  auto desiredBackRightState =
+      argos_lib::swerve::Optimize(backRightPosition, currentState.at(2).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+  auto desiredBackLeftState =
+      argos_lib::swerve::Optimize(backLeftPosition, currentState.at(3).angle.Degrees(), 0_rpm, 0_fps, 0_fps);
+
+  m_frontLeft.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                         sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredFrontLeftState.angle.Degrees()));
+
+  m_frontRight.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                          sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredFrontRightState.angle.Degrees()));
+  m_backRight.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                         sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredBackRightState.angle.Degrees()));
+  m_backLeft.m_turn.Set(ctre::phoenix::motorcontrol::TalonFXControlMode::Position,
+                        sensor_conversions::swerve_drive::turn::ToSensorUnit(desiredBackLeftState.angle.Degrees()));
+}
+
+bool SwerveDriveSubsystem::GetManualOverride() {
+  return m_manualOverride;
 }
 
 void SwerveDriveSubsystem::FieldHome(units::degree_t homeAngle, bool updateOdometry) {
@@ -615,6 +661,7 @@ void SwerveDriveSubsystem::UpdateFollowerRotationalPIDConstraints(
 
 void SwerveDriveSubsystem::StartDrivingProfile(SwerveTrapezoidalProfileSegment newProfile) {
   m_profileComplete = false;
+  m_manualOverride = false;
   m_pActiveSwerveProfile = std::make_unique<SwerveTrapezoidalProfileSegment>(newProfile);
   m_followerController = frc::HolonomicDriveController(m_linearPID, m_linearPID, m_rotationalPID);
   m_swerveProfileStartTime = std::chrono::steady_clock::now();
@@ -628,6 +675,10 @@ void SwerveDriveSubsystem::CancelDrivingProfile() {
 
 bool SwerveDriveSubsystem::ProfileIsComplete() const {
   return m_profileComplete;
+}
+
+bool SwerveDriveSubsystem::IsFollowingProfile() const {
+  return m_followingProfile;
 }
 
 units::degree_t SwerveDriveSubsystem::GetIMUYaw() const {

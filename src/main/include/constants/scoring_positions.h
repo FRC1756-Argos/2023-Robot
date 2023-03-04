@@ -29,11 +29,11 @@ namespace scoring_positions {
     constexpr static SetpointPosition coneLow(frc::Translation2d(24.5_in, 19_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneLow_wristInverted(frc::Translation2d(24.5_in, 19_in),
                                                             BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneMid(frc::Translation2d(37.5_in, 44.5_in), BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneMid_wristInverted(frc::Translation2d(34_in, 44.5_in),
+    constexpr static SetpointPosition coneMid(frc::Translation2d(36.5_in, 44.5_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneMid_wristInverted(frc::Translation2d(33_in, 44.5_in),
                                                             BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneHigh(frc::Translation2d(53.5_in, 54_in), BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(52.5_in, 54_in),
+    constexpr static SetpointPosition coneHigh(frc::Translation2d(51.5_in, 54_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(50.5_in, 54_in),
                                                              BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow(frc::Translation2d(20.5_in, 23_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow_wristInverted(frc::Translation2d(20.5_in, 23_in),
@@ -44,7 +44,7 @@ namespace scoring_positions {
     constexpr static SetpointPosition cubeHigh(frc::Translation2d(48.5_in, 48_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeHigh_wristInverted(frc::Translation2d(48.5_in, 48_in),
                                                              BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneIntake(frc::Translation2d(29.5_in, 12.25_in), BashGuardPosition::Deployed);
+    constexpr static SetpointPosition coneIntake(frc::Translation2d(29.5_in, 11.75_in), BashGuardPosition::Deployed);
     constexpr static SetpointPosition cubeIntake(frc::Translation2d(29.5_in, 13.75_in), BashGuardPosition::Deployed);
     constexpr static SetpointPosition stow(frc::Translation2d(10.5_in, 19.5_in), BashGuardPosition::Retracted);
   }  // namespace lifter_extension_end

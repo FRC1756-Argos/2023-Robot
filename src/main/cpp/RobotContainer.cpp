@@ -6,6 +6,7 @@
 
 #include <argos_lib/commands/swap_controllers_command.h>
 #include <argos_lib/controller/trigger_composition.h>
+#include <argos_lib/general/angle_utils.h>
 #include <argos_lib/general/color.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
@@ -16,6 +17,8 @@
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/ParallelCommandGroup.h>
 #include <frc2/command/RunCommand.h>
+#include <frc2/command/SequentialCommandGroup.h>
+#include <frc2/command/WaitCommand.h>
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
 
@@ -29,8 +32,8 @@
 
 #include "Constants.h"
 #include "argos_lib/subsystems/led_subsystem.h"
+#include "commands/drive_to_position.h"
 #include "commands/set_arm_pose_command.h"
-#include "commands/request_game_piece_command.h"
 #include "utils/custom_units.h"
 
 RobotContainer::RobotContainer()
@@ -53,8 +56,13 @@ RobotContainer::RobotContainer()
     , m_bashGuardHomingCommand(m_bash)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
-    , m_autoSelector{{&m_autoNothing}, &m_autoNothing} {
+    , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
+    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward}, &m_autoNothing}
+    , m_nudgeRate{1 / 1_s}
+    , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
+
+  AllianceChanged();
 
   // ================== DEFAULT COMMANDS ===============================
   m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
@@ -67,53 +75,119 @@ RobotContainer::RobotContainer()
                     argos_lib::XboxController::JoystickHand::
                         kLeftHand)},  // X axis is positive right, but swerve coordinates are positive left
             m_driveSpeedMap);
-
+        auto deadbandRotSpeed = m_driveRotSpeed(
+            -m_controllers.DriverController().GetX(argos_lib::XboxController::JoystickHand::kRightHand));
         // Get if operator is engaging assist & supply other lateral or forward command
-        bool isAimBot = m_controllers.OperatorController().GetRawButton(argos_lib::XboxController::Button::kDown);
         bool isAimBotEngaged =
-            isAimBot && (std::abs(deadbandTranslationSpeeds.forwardSpeedPct) > speeds::drive::aimBotThresh ||
-                         std::abs(deadbandTranslationSpeeds.leftSpeedPct) > speeds::drive::aimBotThresh);
+            m_controllers.DriverController().GetRawButton(argos_lib::XboxController::Button::kLeftTrigger);
 
         // Read offset from vision subsystem
-        std::optional<units::degree_t> VisionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
+        std::optional<units::degree_t> visionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
 
-        if (VisionHorizontalOffset) {
+        // If aim bot is engaged and there is a degree error
+        if (isAimBotEngaged && visionHorizontalOffset) {
+
+          /// Get distance to the target
           auto distance =
               measure_up::chassis::length / 2 + measure_up::bumperExtension + field_points::grids::middleConeNodeDepth;
           std::optional<units::degree_t> intakeOffset = units::math::asin(m_intake.GetIntakeDistance() / distance);
-          VisionHorizontalOffset = VisionHorizontalOffset.value() + intakeOffset.value();
-        }
+          visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset.value();
 
-        // If aim bot is engaged and there is a degree error
-        if (isAimBotEngaged && VisionHorizontalOffset) {
-          frc::SmartDashboard::PutNumber("(AimBot) DegreeError", VisionHorizontalOffset.value().to<double>());
+          units::degree_t robotYaw =
+              argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
+                                               0_deg,
+                                               360_deg);  // Gets the robots yaw relative to field-centric home
+          // ? Why is this negated?
+          units::degree_t error = -visionHorizontalOffset.value();
+          // Angle of lateral bias velocity velocity vector relative to field home
+          units::degree_t lateralBiasFieldAngle =
+              argos_lib::angle::ConstrainAngle(robotYaw + (error < 0_deg ? -90_deg : 90_deg), 0_deg, 360_deg);
 
           // Calculate the lateral bias
-          double lateralBias = speeds::drive::aimBotMaxBias *
-                               (units::math::abs<units::degree_t>(VisionHorizontalOffset.value()).to<double>() /
-                                camera::halfhorizontalAngleResolution.to<double>());
-          // Apply the original sign
-          lateralBias =
-              std::copysign(lateralBias, VisionHorizontalOffset ? VisionHorizontalOffset.value().to<double>() : 0);
+          double lateralBias_r =
+              speeds::drive::aimBotMaxBias *
+              units::math::abs<units::degree_t>(error / camera::halfhorizontalAngleResolution.to<double>())
+                  .to<double>();
 
-          // control gracefully
-          lateralBias *= std::min(2.0 * std::abs(deadbandTranslationSpeeds.forwardSpeedPct), 1.0);
+          units::scalar_t filteredLateralBias_r = m_nudgeRate.Calculate(units::scalar_t(lateralBias_r));
 
-          frc::SmartDashboard::PutNumber("(AimBot) LateralBias ", lateralBias);
+          // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
+          double lateralBias_x =
+              filteredLateralBias_r.to<double>() * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
+          double lateralBias_y =
+              filteredLateralBias_r.to<double>() * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
 
           // Actually apply the lateral bias
-          deadbandTranslationSpeeds.leftSpeedPct += lateralBias;
+          deadbandTranslationSpeeds.leftSpeedPct += lateralBias_x;
+          deadbandTranslationSpeeds.forwardSpeedPct += lateralBias_y;
 
-          frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
+          // frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
+        } else {
+          m_nudgeRate.Reset(0);
+          m_alignLedDebouncer.Reset(AlignLedStatus::NoTarget);
         }
 
-        m_swerveDrive.SwerveDrive(
-            deadbandTranslationSpeeds.forwardSpeedPct,
-            deadbandTranslationSpeeds.leftSpeedPct,
-            m_driveRotSpeed(-m_controllers.DriverController().GetX(
-                argos_lib::XboxController::JoystickHand::
-                    kRightHand)));  // X axis is positive right (CW), but swerve coordinates are positive left (CCW)
+        if (isAimBotEngaged) {
+          AlignLedStatus debouncedLedStatus;
+          if (!visionHorizontalOffset) {
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::NoTarget);
+          } else if (units::math::abs(visionHorizontalOffset.value()) < 1_deg) {
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::Aligned);
+          } else if (visionHorizontalOffset.value() > 0_deg) {
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::FlashRight);
+          } else {
+            debouncedLedStatus = m_alignLedDebouncer(AlignLedStatus::FlashLeft);
+          }
 
+          switch (debouncedLedStatus) {
+            case AlignLedStatus::NoTarget:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(LedStrip::FrontLeft, argos_lib::colors::kReallyRed, false);
+                    m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::colors::kReallyRed, false);
+                  },
+                  100_ms);
+              break;
+            case AlignLedStatus::Aligned:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kReallyGreen, false);
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kReallyGreen, false);
+                  },
+                  100_ms);
+              break;
+            case AlignLedStatus::FlashRight:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kOff, false);
+                    m_ledSubSystem.FlashStrip(
+                        LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kCatYellow, false);
+                  },
+                  100_ms);
+              break;
+            case AlignLedStatus::FlashLeft:
+              m_ledSubSystem.TemporaryAnimate(
+                  [this]() {
+                    m_ledSubSystem.SetLedStripColor(
+                        LedStrip::FrontRight, argos_lib::gamma_corrected_colors::kOff, false);
+                    m_ledSubSystem.FlashStrip(
+                        LedStrip::FrontLeft, argos_lib::gamma_corrected_colors::kCatYellow, false);
+                  },
+                  100_ms);
+              break;
+          }
+        }
+
+        if (m_swerveDrive.GetManualOverride() || deadbandTranslationSpeeds.forwardSpeedPct != 0 ||
+            deadbandTranslationSpeeds.leftSpeedPct != 0 || deadbandRotSpeed != 0) {
+          m_swerveDrive.SwerveDrive(
+              deadbandTranslationSpeeds.forwardSpeedPct,
+              deadbandTranslationSpeeds.leftSpeedPct,
+              deadbandRotSpeed);  // X axis is positive right (CW), but swerve coordinates are positive left (CCW)
+        }
         // DEBUG STUFF
         frc::SmartDashboard::PutNumber(
             "(DRIVER) Joystick Left Y",
@@ -225,6 +299,9 @@ void RobotContainer::ConfigureBindings() {
                argos_lib::XboxController::JoystickHand::kLeftHand)) > 0.2;
   }});
 
+  auto coneDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsConeDetected(); }});
+  auto cubeDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsCubeDetected(); }});
+
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
@@ -252,7 +329,8 @@ void RobotContainer::ConfigureBindings() {
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
-  auto requestGamePiece = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kUp);
+  auto requestCone = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kUp);
+  auto requestCube = m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
 
   auto ledMissileSwitchTrigger = m_buttonBox.TriggerLED();
 
@@ -260,6 +338,7 @@ void RobotContainer::ConfigureBindings() {
   auto homeDrive = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kX,
                                                                       argos_lib::XboxController::Button::kA,
                                                                       argos_lib::XboxController::Button::kB});
+  auto lockWheels = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kDown);
 
   auto fieldHome = m_controllers.DriverController().TriggerDebounced(argos_lib::XboxController::Button::kY);
   auto intakeForwardTrigger =
@@ -268,10 +347,21 @@ void RobotContainer::ConfigureBindings() {
       m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
   auto exclusiveManualIntakeTrigger = argos_lib::triggers::OneOf({intakeForwardTrigger, intakeReverseTrigger});
 
-  auto intakeConeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
-  auto intakeCubeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
-  auto scoreConeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger);
-  auto scoreCubeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
+  auto cubeSelectedTrigger = frc2::Trigger{[this]() { return m_buttonBox.GetGamePiece() == GamePiece::CUBE; }};
+  auto coneSelectedTrigger = !cubeSelectedTrigger;
+
+  auto intakeConeTrigger =
+      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight) &&
+      coneSelectedTrigger;
+  auto intakeCubeTrigger =
+      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight) &&
+      cubeSelectedTrigger;
+  auto scoreConeTrigger =
+      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger) &&
+      coneSelectedTrigger;
+  auto scoreCubeTrigger =
+      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger) &&
+      cubeSelectedTrigger;
 
   auto exclusiveAutoIntakeTrigger = argos_lib::triggers::OneOf({intakeConeTrigger, intakeCubeTrigger});
 
@@ -289,7 +379,7 @@ void RobotContainer::ConfigureBindings() {
 
   // VISION TRIGGERS
   auto reflectiveTargetTrigger =
-      m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
+      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
   reflectiveTargetTrigger.OnTrue(
       frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
           .ToPtr());
@@ -318,6 +408,7 @@ void RobotContainer::ConfigureBindings() {
   // DRIVE TRIGGER ACTIVATION
   fieldHome.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.FieldHome(); }, {&m_swerveDrive}).ToPtr());
   homeDrive.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.Home(0_deg); }, {&m_swerveDrive}).ToPtr());
+  lockWheels.OnTrue(frc2::InstantCommand([this]() { m_swerveDrive.LockWheels(); }, {&m_swerveDrive}).ToPtr());
 
   // Intake trigger activation
   (intakeForwardTrigger && exclusiveManualIntakeTrigger)
@@ -347,19 +438,22 @@ void RobotContainer::ConfigureBindings() {
                                              PathType::concaveDown))
                   .ToPtr());
   exclusiveAutoIntakeTrigger.OnFalse(
-      frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}),
-                                 SetArmPoseCommand(
-                                     m_lifter,
-                                     m_bash,
-                                     ScoringPosition{.column = ScoringColumn::stow},
-                                     [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                                     []() { return false; },
-                                     PathType::concaveDown))  //,
-                                                              //  10_ips,
-                                                              //  30_ips2))
+      frc2::ParallelCommandGroup(
+          frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms),
+                                       frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
+          SetArmPoseCommand(
+              m_lifter,
+              m_bash,
+              ScoringPosition{.column = ScoringColumn::stow},
+              [this]() { return m_buttonBox.GetBashGuardStatus(); },
+              []() { return false; },
+              PathType::concaveDown))  //,
+                                       //  10_ips,
+                                       //  30_ips2))
           .ToPtr());
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
+  scoreConeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
   scoreCubeTrigger.OnTrue(frc2::InstantCommand([this]() { m_intake.EjectCube(); }, {&m_intake}).ToPtr());
   scoreCubeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
 
@@ -377,37 +471,72 @@ void RobotContainer::ConfigureBindings() {
   frc::SmartDashboard::PutNumber("MPTesting/TargetZ (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
 
-  newTargetTrigger.OnTrue(
-      SetArmPoseCommand(
-          m_lifter,
-          m_bash,
-          [this]() { return m_buttonBox.GetScoringPosition(); },
-          [this]() { return m_buttonBox.GetBashGuardStatus(); },
-          [this]() { return m_buttonBox.GetSpareSwitchStatus(); },  /// @todo Replace with intake feedback (#53)
-          PathType::concaveDown)
-          .ToPtr());
-  stowPositionTrigger.OnTrue(SetArmPoseCommand(
-                                 m_lifter,
-                                 m_bash,
-                                 ScoringPosition{.column = ScoringColumn::stow},
-                                 [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                                 []() { return false; },
-                                 PathType::concaveDown,
-                                 30_ips)
-                                 .ToPtr());
-  stowPositionTrigger.OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
+  (!exclusiveAutoIntakeTrigger && newTargetTrigger)
+      .OnTrue(SetArmPoseCommand(
+                  m_lifter,
+                  m_bash,
+                  [this]() { return m_buttonBox.GetScoringPosition(); },
+                  [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                  [this]() { return m_buttonBox.GetSpareSwitchStatus(); },  /// @todo Replace with intake feedback (#53)
+                  PathType::concaveDown)
+                  .ToPtr());
+  (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
+      .OnTrue(SetArmPoseCommand(
+                  m_lifter,
+                  m_bash,
+                  ScoringPosition{.column = ScoringColumn::stow},
+                  [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                  []() { return false; },
+                  PathType::concaveDown,
+                  30_ips)
+                  .ToPtr());
+  (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
+      .OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
 
-  ledMissileSwitchTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_ledSubSystem.FireEverywhere(); }, {&m_ledSubSystem}).ToPtr());
+  ((intakeConeTrigger && exclusiveAutoIntakeTrigger && coneDetectedTrigger.Debounce(100_ms)) ||
+   (intakeCubeTrigger && exclusiveAutoIntakeTrigger && cubeDetectedTrigger.Debounce(100_ms)))
+      .OnTrue(
+          frc2::InstantCommand([this]() {
+            m_controllers.DriverController().SetVibration(
+                argos_lib::TemporaryVibrationPattern(argos_lib::VibrationAlternatePulse(250_ms, 1.0), 500_ms));
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kReallyGreen, false); },
+                500_ms);
+          }).ToPtr());
+
+  ledMissileSwitchTrigger.OnTrue(frc2::InstantCommand(
+                                     [this]() {
+                                       m_ledSubSystem.FireEverywhere();
+                                       m_ledSubSystem.SetDisableAnimation(
+                                           [this]() { m_ledSubSystem.FireEverywhere(false); });
+                                     },
+                                     {&m_ledSubSystem})
+                                     .ToPtr());
   ledMissileSwitchTrigger.OnFalse(frc2::InstantCommand([this]() { AllianceChanged(); }).ToPtr());
 
-  requestGamePiece.OnTrue(RequestGamePieceCommand(m_ledSubSystem, leds::requestLen, [this]() {
-                            return m_buttonBox.GetGamePiece();
-                          }).ToPtr());
+  requestCone.OnTrue(
+      frc2::InstantCommand(
+          [this]() {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kConeYellow, false); },
+                1000_ms);
+          },
+          {&m_ledSubSystem})
+          .ToPtr());
+
+  requestCube.OnTrue(
+      frc2::InstantCommand(
+          [this]() {
+            m_ledSubSystem.TemporaryAnimate(
+                [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kCubePurple, false); },
+                1000_ms);
+          },
+          {&m_ledSubSystem})
+          .ToPtr());
 }
 
 void RobotContainer::Disable() {
-  m_ledSubSystem.SetAllGroupsAllianceColor(false);
+  m_ledSubSystem.Disable();
 
   m_lifter.Disable();
   m_intake.Disable();
@@ -415,16 +544,13 @@ void RobotContainer::Disable() {
 }
 
 void RobotContainer::Enable() {
-  m_ledSubSystem.SetAllGroupsAllianceColor(true);
+  m_ledSubSystem.Enable();
 }
 
 void RobotContainer::AllianceChanged() {
   // If disabled, set alliance colors
-  if (frc::DriverStation::IsDisabled()) {
-    m_ledSubSystem.SetAllGroupsAllianceColor(false);
-  } else {
-    m_ledSubSystem.SetAllGroupsAllianceColor(true);
-  }
+  m_ledSubSystem.SetAllGroupsAllianceColor(true, true, [this]() { return m_buttonBox.GetGamePiece(); });
+  m_ledSubSystem.SetDisableAnimation([this]() { m_ledSubSystem.SetAllGroupsAllianceColor(false, false); });
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {
