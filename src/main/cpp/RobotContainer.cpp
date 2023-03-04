@@ -95,8 +95,11 @@ RobotContainer::RobotContainer()
 
             // invert distance if wrist is inverted
             if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
-              distance *= -1;
+              gamePieceDepth = gamePieceDepth.value() *= -1;
             }
+
+            // * Constant scalar for game piece depth influlence
+            gamePieceDepth = gamePieceDepth.value() *= 0.8;
 
             // ? Why is this inverted?
             units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance);
