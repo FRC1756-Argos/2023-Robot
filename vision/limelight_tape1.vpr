@@ -47,10 +47,10 @@ hue_max:95
 hue_min:81
 image_flip:0
 image_source:0
-img_to_show:0
+img_to_show:1
 intersection_filter:0
 invert_hue:0
-lcgain:40
+lcgain:12
 multigroup_max:2
 multigroup_min:1
 multigroup_rejector:1
