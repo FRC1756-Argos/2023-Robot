@@ -534,6 +534,7 @@ void RobotContainer::Disable() {
   m_lifter.Disable();
   m_intake.Disable();
   m_bash.Disable();
+  m_visionSubSystem.Disable();
 }
 
 void RobotContainer::Enable() {
