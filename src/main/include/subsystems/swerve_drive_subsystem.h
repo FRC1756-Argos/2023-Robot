@@ -207,6 +207,20 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   bool GetManualOverride();
 
+  /**
+   * @brief Get the robot pitch as determined by the pigeon IMU
+   *
+   * @return pitch in unit degrees
+   */
+  units::degree_t GetRobotPitch() const { return units::degree_t{m_pigeonIMU.GetPitch()}; }
+
+  /**
+   * @brief Get the rate of robot pitch
+   *
+   * @return pitch rate in unit degrees per second
+   */
+  double GetRobotPitchRate();
+
  private:
   argos_lib::RobotInstance m_instance;
 

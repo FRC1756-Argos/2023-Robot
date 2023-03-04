@@ -240,6 +240,8 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
   frc::SmartDashboard::PutNumber("CONTROL MODE", m_controlMode);
   frc::SmartDashboard::PutNumber("IMU ANGLE", m_imu.GetAngle().to<double>());
   frc::SmartDashboard::PutNumber("IMU PIGEON ANGLE", m_pigeonIMU.GetYaw());
+  frc::SmartDashboard::PutNumber("IMU Pitch", GetRobotPitch().to<double>());
+  frc::SmartDashboard::PutNumber("IMU Pitch Rate", GetRobotPitchRate());
 
   // SET MODULES BASED OFF OF CONTROL MODE
   auto moduleStates = GetCurrentModuleStates();
@@ -441,6 +443,12 @@ void SwerveDriveSubsystem::Home(const units::degree_t& angle) {
   m_frontRight.m_encoder.SetPosition(angle.to<double>(), 50);
   m_backRight.m_encoder.SetPosition(angle.to<double>(), 50);
   m_backLeft.m_encoder.SetPosition(angle.to<double>(), 50);
+}
+
+double SwerveDriveSubsystem::GetRobotPitchRate() {
+  double xyz_dps[] = {0.0, 0.0, 0.0};
+  m_pigeonIMU.GetRawGyro(xyz_dps);
+  return xyz_dps[0];
 }
 
 void SwerveDriveSubsystem::LockWheels() {
