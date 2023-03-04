@@ -346,20 +346,12 @@ void RobotContainer::ConfigureBindings() {
   // VISION TRIGGERS
   auto reflectiveTargetTrigger =
       m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kDown);
-  reflectiveTargetTrigger.OnTrue(frc2::InstantCommand(
-                                     [this]() {
-                                       m_visionSubSystem.SetReflectiveVisionMode(true);
-                                       frc::SmartDashboard::PutBoolean("VisionOn", true);
-                                     },
-                                     {&m_visionSubSystem})
-                                     .ToPtr());
-  reflectiveTargetTrigger.OnFalse(frc2::InstantCommand(
-                                      [this]() {
-                                        m_visionSubSystem.SetReflectiveVisionMode(false);
-                                        frc::SmartDashboard::PutBoolean("VisionOn", false);
-                                      },
-                                      {&m_visionSubSystem})
-                                      .ToPtr());
+  reflectiveTargetTrigger.OnTrue(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
+          .ToPtr());
+  reflectiveTargetTrigger.OnFalse(
+      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
+          .ToPtr());
 
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
