@@ -246,6 +246,12 @@ void LifterSubsystem::InitializeWristHomes() {
     units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
     frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
 
+    frc::SmartDashboard::PutNumber("currentencoderValue - home",
+                                   (currentencoder - wristHomes.value()).to<double>());  // Testing
+    frc::SmartDashboard::PutNumber(
+        "currentencoderValue - home constrained",
+        units::degree_t(argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg))
+            .to<double>());  // Testing
     units::degree_t calcValue =
         argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
 
@@ -262,7 +268,7 @@ void LifterSubsystem::InitializeWristHomes() {
 void LifterSubsystem::UpdateWristHome() {
   const auto homeAngle = measure_up::lifter::wrist::homeAngle;
   units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-  auto valToSave = argos_lib::angle::ConstrainAngle(currentEncoder - homeAngle, -180_deg, 180_deg);
+  auto valToSave = argos_lib::angle::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg);
   bool saved = m_wristHomingStorage.Save(valToSave);
   if (!saved) {
     m_logger.Log(argos_lib::LogLevel::ERR, "Wrist homes failed to save to to file system\n");
