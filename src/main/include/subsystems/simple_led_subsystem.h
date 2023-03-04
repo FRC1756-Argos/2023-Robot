@@ -19,7 +19,7 @@
 #include <functional>
 
 enum class LedGroup { SIDES, BACK, FRONT };
-enum class LedStrip { FrontLeft, FrontRight, SideFront, SideBack, BackLeft, BackRight };
+enum class LedStrip { FrontLeft, FrontRight, SideFront, SideBack, BackRight, BackLeft };
 
 class SimpleLedSubsystem : public frc2::SubsystemBase {
  public:
@@ -38,6 +38,8 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   void SetAllGroupsFade(argos_lib::ArgosColor color, bool restorable = true);
 
   void SetAllGroupsFlash(argos_lib::ArgosColor color, bool restorable = true);
+
+  void FlashStrip(LedStrip strip, argos_lib::ArgosColor color, bool restorable = true);
 
   void SetAllGroupsLarson(argos_lib::ArgosColor color, bool restorable = true);
 
