@@ -6,6 +6,9 @@
 
 #include <frc2/command/CommandScheduler.h>
 
+// Includes the GamePiece enum
+#include <constants/field_points.h>
+
 OperatorControlBox::OperatorControlBox(int port)
     : GenericHID(port)
     , m_pEvent(frc2::CommandScheduler::GetInstance().GetDefaultButtonLoop())
@@ -55,6 +58,10 @@ frc2::Trigger OperatorControlBox::TriggerGamePiece() {
 
 bool OperatorControlBox::GetGamePieceStatus() {
   return GetRawButton(boxIndex_game_piece);
+}
+
+GamePiece OperatorControlBox::GetGamePiece() {
+  return static_cast<GamePiece>(GetGamePieceStatus());
 }
 
 frc2::Trigger OperatorControlBox::TriggerBashGuard() {

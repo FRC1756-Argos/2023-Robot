@@ -52,7 +52,10 @@ class OperatorControlBox : public frc::GenericHID {
 
   [[nodiscard]] frc2::Trigger TriggerGamePiece();
 
+  // False if cone, Cube if true
   [[nodiscard]] bool GetGamePieceStatus();
+
+  [[nodiscard]] GamePiece GetGamePiece();
 
   [[nodiscard]] frc2::Trigger TriggerBashGuard();
 

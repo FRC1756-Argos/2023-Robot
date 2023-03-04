@@ -4,18 +4,15 @@
 
 #pragma once
 
+#include <frc/geometry/Pose2d.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
 
-#include <string>
+#include "subsystems/swerve_drive_subsystem.h"
 
-#include "commands/autonomous/autonomous_command.h"
-
-class AutonomousNothing
-    : public frc2::CommandHelper<frc2::CommandBase, AutonomousNothing>
-    , public AutonomousCommand {
+class InitializeOdometryCommand : public frc2::CommandHelper<frc2::CommandBase, InitializeOdometryCommand> {
  public:
-  AutonomousNothing();
+  InitializeOdometryCommand(SwerveDriveSubsystem* pDrive, frc::Pose2d initialPose);
 
   void Initialize() override;
 
@@ -25,12 +22,7 @@ class AutonomousNothing
 
   bool IsFinished() override;
 
-  /**
-   * @copydoc AutonomousCommand::GetName()
-   */
-  std::string GetName() const final;
-  /**
-   * @copydoc AutonomousCommand::GetCommand()
-   */
-  frc2::Command* GetCommand() final;
+ private:
+  SwerveDriveSubsystem* m_pDrive;
+  frc::Pose2d m_initialPose;
 };

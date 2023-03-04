@@ -109,15 +109,15 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | DPad Up         | Unused |
 | DPad Right      | Unused |
 | DPad Down       | Unused |
-| DPad Left       | Unused |
+| DPad Left       | Locks Wheels (in a cool x pattern) |
 | A               | Home Swerve (hold with <kbd>B</kbd> and <kbd>X</kbd>) |
 | B               | Home Swerve (hold with <kbd>A</kbd> and <kbd>X</kbd>) |
 | X               | Home Swerve (hold with <kbd>A</kbd> and <kbd>B</kbd>) |
 | Y               | Field Home (hold) |
-| LB              | Cube Intake |
-| RB              | Cone Intake |
-| LT              | Cube Score |
-| RT              | Cone Score |
+| LB              | Unused |
+| RB              | Cone/Cube Intake (game piece selected by operator control box switch) |
+| LT              | Enable vision alignment |
+| RT              | Cone/Cube Score (game piece selected by operator control box switch) |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |
@@ -134,7 +134,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | B               | Home Shoulder (hold with <kbd>A</kbd>) |
 | X               | Home Wrist (hold with <kbd>Y</kbd>) |
 | Y               | Home Wrist (hold with <kbd>X</kbd>) |
-| DPad Up         | Unused |
+| DPad Up         | Request game piece |
 | DPad Right      | Unused |
 | DPad Down       | Unused |
 | DPad Left       | Unused |
