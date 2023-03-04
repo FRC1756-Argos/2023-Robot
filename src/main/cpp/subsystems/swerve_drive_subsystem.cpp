@@ -240,6 +240,8 @@ void SwerveDriveSubsystem::SwerveDrive(const double& fwVelocity,
   frc::SmartDashboard::PutNumber("CONTROL MODE", m_controlMode);
   frc::SmartDashboard::PutNumber("IMU ANGLE", m_imu.GetAngle().to<double>());
   frc::SmartDashboard::PutNumber("IMU PIGEON ANGLE", m_pigeonIMU.GetYaw());
+  frc::SmartDashboard::PutNumber("IMU Pitch", GetRobotPitch().to<double>());
+  frc::SmartDashboard::PutNumber("IMU Pitch Rate", GetRobotPitchRate());
 
   // SET MODULES BASED OFF OF CONTROL MODE
   auto moduleStates = GetCurrentModuleStates();
