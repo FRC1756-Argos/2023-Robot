@@ -448,7 +448,7 @@ void SwerveDriveSubsystem::Home(const units::degree_t& angle) {
 double SwerveDriveSubsystem::GetRobotPitchRate() {
   double xyz_dps[] = {0.0, 0.0, 0.0};
   m_pigeonIMU.GetRawGyro(xyz_dps);
-  return xyz_dps[1];
+  return xyz_dps[0];
 }
 
 void SwerveDriveSubsystem::LockWheels() {
