@@ -23,19 +23,21 @@ AutonomousBalance::AutonomousBalance(SwerveDriveSubsystem& drive,
     , m_lifter{lifter}
     , m_leds{leds}
     , m_allCommands{
-          InitializeOdometryCommand{&m_drive, {0_m, 0_m, 180_deg}}.ToPtr().AndThen(
-              DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr().AndThen(
-                  BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr())),
+          (InitializeOdometryCommand{&m_drive, {0_m, 0_m, 180_deg}}.ToPtr())
+              .AndThen(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr())
+              .AndThen(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr()),
       } {}
 
 // Called when the command is initially scheduled.
 void AutonomousBalance::Initialize() {
   m_leds.ColorSweep(m_leds.GetAllianceColor(), true);
-  m_allCommands.Schedule();
+  m_allCommands.get()->Initialize();
 }
 
 // Called repeatedly when this Command is scheduled to run
-void AutonomousBalance::Execute() {}
+void AutonomousBalance::Execute() {
+  m_allCommands.get()->Execute();
+}
 
 // Called once the command ends or is interrupted.
 void AutonomousBalance::End(bool interrupted) {

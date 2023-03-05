@@ -73,7 +73,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    * @param sideVelocity Percent speed perpendicular to the robots front.  Range [-1.0, 1.0] where positive 1.0 is full speed left
    * @param rotVelocity Percent speed of rotation of the chassis.  Range [-1.0, 1.0] where positive 1.0 is full speed counterclockwise
    */
-  void SwerveDrive(const double& fwVelocity, const double& sideVelocity, const double& rotVelocity);
+  void SwerveDrive(const double fwVelocity, const double sideVelocity, const double rotVelocity);
 
   /// @brief Same as polar swerve drive function, but also takes in a rotational velocity to apply ONLY USE IN FIELD-CENTRIC
   /// @param velAngle Angle of velocity vector, [0, 360] with 0 degrees being field-centric home
@@ -223,7 +223,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    *
    * @return pitch in unit degrees
    */
-  units::degree_t GetRobotPitch() const { return units::degree_t{m_pigeonIMU.GetPitch()}; }
+  units::degree_t GetRobotPitch() const { return units::degree_t{m_pigeonIMU.GetRoll()}; }
 
   /**
    * @brief Get the rate of robot pitch

@@ -32,20 +32,20 @@ void DriveUntilPitchRate::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void DriveUntilPitchRate::Execute() {
-  // Cancel if manually overriden
-  if (m_pDrive->GetManualOverride()) {
-    m_pDrive->SwerveDrive(m_velAngle, m_velocityRamper.Calculate(m_power).to<double>());
-  } else {
-    Cancel();
-  }
-
-  std::chrono::seconds sinceStart =
-      std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - m_startTime);
+  units::second_t sinceStart{std::chrono::high_resolution_clock::now() - m_startTime};
 
   // If command goes over alloted time
-  if (sinceStart.count() >= m_timeout.to<double>()) {
+  if (sinceStart >= m_timeout) {
+    m_pDrive->StopDrive();
     Cancel();  // Interrupt the command
+    return;
   }
+
+  // Slew rate limiter just increases to 100% power for some reason...
+  m_pDrive->SwerveDrive(m_velAngle,
+                        std::clamp(m_velocityRamper.Calculate(m_power).to<double>(),
+                                   std::min(m_initialPower, m_power),
+                                   std::max(m_initialPower, m_power)));
 }
 
 // Called once the command ends or is interrupted.
@@ -58,11 +58,15 @@ void DriveUntilPitchRate::End(bool interrupted) {
 // Returns true when the command should end.
 bool DriveUntilPitchRate::IsFinished() {
   // * abs because we could be going backwards up the station too
+  bool finished = false;
+  auto pitchRate = m_pDrive->GetRobotPitchRate();
   switch (m_approachDirection) {
     case ApproachDirection::Increasing:
-      return m_pDrive->GetRobotPitchRate() >= m_pitchRateGoal;
+      finished = pitchRate >= m_pitchRateGoal;
+      break;
     case ApproachDirection::Decreasing:
-      return m_pDrive->GetRobotPitchRate() <= m_pitchRateGoal;
+      finished = pitchRate <= m_pitchRateGoal;
+      break;
   }
-  return true;
+  return finished;
 }

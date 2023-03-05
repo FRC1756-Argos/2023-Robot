@@ -23,7 +23,6 @@ class DriveOverChargingStation : public frc2::CommandHelper<frc2::CommandBase, D
   bool IsFinished() override;
 
  private:
-  bool m_subCommandFailed;                ///< True indicates child command failed and this command should exit
   SwerveDriveSubsystem* m_pDrive;         ///< Raw pointer to swerve drive subsystem object
   const units::degree_t m_approachAngle;  ///< Angle of drive direction relative to field-centric
   units::degree_t m_robotYawAngle;        ///< Robot orientation
