@@ -56,7 +56,8 @@ RobotContainer::RobotContainer()
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
-    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward}, &m_autoNothing}
+    , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
+    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance}, &m_autoNothing}
     , m_nudgeRate{1 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
