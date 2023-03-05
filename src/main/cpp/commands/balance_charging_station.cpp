@@ -2,16 +2,17 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include "commands/drive_over_charging_station.h"
+#include "commands/balance_charging_station.h"
 
 #include <argos_lib/general/angle_utils.h>
+#include <frc2/command/InstantCommand.h>
 
 #include "commands/drive_until_pitch.h"
 #include "commands/drive_until_pitch_rate.h"
 
-DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
-                                                   units::degree_t approachAngle,
-                                                   units::degree_t robotYaw)
+BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
+                                               units::degree_t approachAngle,
+                                               units::degree_t robotYaw)
     : m_subCommandFailed{false}
     , m_pDrive{drive}
     , m_approachAngle{approachAngle}
@@ -48,37 +49,16 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                       m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                       2_s}
                       .Unless([this]() { return m_subCommandFailed; })
-                      .FinallyDo([this](bool cancelled) { m_subCommandFailed = m_subCommandFailed || cancelled; }))
-              .AndThen(
-                  DriveUntilPitch{drive,
-                                  approachAngle,
-                                  0.1,
-                                  0.25,
-                                  thresholds::robotClimbPitch * m_initialPitchSign * -1,
-                                  m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
-                                  2_s}
-                      .Unless([this]() { return m_subCommandFailed; })
-                      .FinallyDo([this](bool cancelled) { m_subCommandFailed = m_subCommandFailed || cancelled; }))
-              .AndThen(
-
-                  DriveUntilPitch{drive,
-                                  approachAngle,
-                                  0.3,
-                                  0.1,
-                                  thresholds::robotHitChargingStationPitch * m_initialPitchSign * -1,
-                                  m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
-                                  2_s}
-                      .Unless([this]() { return m_subCommandFailed; })
                       .FinallyDo([this](bool cancelled) { m_subCommandFailed = m_subCommandFailed || cancelled; }))} {}
 
 // Called when the command is initially scheduled.
-void DriveOverChargingStation::Initialize() {
+void BalanceChargingStation::Initialize() {
   m_subCommandFailed = false;
   m_commands.Schedule();
 }
 
 // Called repeatedly when this Command is scheduled to run
-void DriveOverChargingStation::Execute() {
+void BalanceChargingStation::Execute() {
   if (!m_commands.IsScheduled()) {
     Cancel();
     return;
@@ -86,14 +66,15 @@ void DriveOverChargingStation::Execute() {
 }
 
 // Called once the command ends or is interrupted.
-void DriveOverChargingStation::End(bool interrupted) {
+void BalanceChargingStation::End(bool interrupted) {
   if (interrupted) {
     m_commands.Cancel();
   }
   m_pDrive->StopDrive();
+  m_pDrive->LockWheels();
 }
 
 // Returns true when the command should end.
-bool DriveOverChargingStation::IsFinished() {
+bool BalanceChargingStation::IsFinished() {
   return m_commands.get()->IsFinished();
 }

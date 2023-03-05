@@ -10,9 +10,9 @@
 
 #include "subsystems/swerve_drive_subsystem.h"
 
-class DriveOverChargingStation : public frc2::CommandHelper<frc2::CommandBase, DriveOverChargingStation> {
+class BalanceChargingStation : public frc2::CommandHelper<frc2::CommandBase, BalanceChargingStation> {
  public:
-  DriveOverChargingStation(SwerveDriveSubsystem* drive, units::degree_t approachAngle, units::degree_t robotYaw);
+  BalanceChargingStation(SwerveDriveSubsystem* drive, units::degree_t approachAngle, units::degree_t robotYaw);
 
   void Initialize() override;
 
