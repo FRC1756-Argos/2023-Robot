@@ -59,6 +59,6 @@ bool DriveUntilPitch::IsFinished() {
   if (units::math::abs(m_pDrive->GetRobotPitch()) >= m_pitchGoal) {
     return true;
   } else {
-    return false;  ///> Pitch goal was not reached, continue
+    return false;  // Pitch goal was not reached, continue
   }
 }
