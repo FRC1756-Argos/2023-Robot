@@ -230,7 +230,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    *
    * @return pitch rate in unit degrees per second
    */
-  double GetRobotPitchRate();
+  units::degrees_per_second_t GetRobotPitchRate();
 
  private:
   argos_lib::RobotInstance m_instance;
