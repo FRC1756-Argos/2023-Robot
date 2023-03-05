@@ -2,7 +2,7 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include "../../argos_lib/include/argos_lib/commands/drive_until_pitch.h"
+#include "commands/drive_until_pitch.h"
 
 #include <chrono>
 
@@ -24,7 +24,7 @@ DriveUntilPitch::DriveUntilPitch(SwerveDriveSubsystem* swerveDrive,
     , m_pitchGoal{pitchGoal}
     , m_approachDirection{approachDirection}
     , m_timeout{timeout}
-    , m_velocityRamper{2 / 1_s, initialPower} {
+    , m_velocityRamper{2 / 1_s, 2 / 1_s, initialPower} {
   // * AddRequirements OK here because no child commands are called that depend on subsystem
   AddRequirements(swerveDrive);
 }
@@ -62,10 +62,11 @@ void DriveUntilPitch::End(bool interrupted) {
 // Returns true when the command should end.
 bool DriveUntilPitch::IsFinished() {
   // * abs because we could be going backwards up the station too
-  switch (ApproachDirection) {
+  switch (m_approachDirection) {
     case ApproachDirection::Increasing:
       return m_pDrive->GetRobotPitch() >= m_pitchGoal;
     case ApproachDirection::Decreasing:
       return m_pDrive->GetRobotPitch() <= m_pitchGoal;
   }
+  return true;
 }
