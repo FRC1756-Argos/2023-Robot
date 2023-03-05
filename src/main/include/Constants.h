@@ -19,7 +19,16 @@
 #include "networktables/NetworkTable.h"
 #include "networktables/NetworkTableInstance.h"
 
-namespace thresholds {}  // namespace thresholds
+namespace thresholds {
+  /// @brief Target pitch to reach when climbing up the charge station
+  constexpr units::degree_t robotClimbPitch = 12_deg;
+}  // namespace thresholds
+
+namespace timeouts {
+  /// @brief The amount of time to wait before robot should abort trying to achieve target pitch on charge station
+  constexpr units::second_t robotClimbStation = 5_s;
+  // TODO add max time the robot should take to level the charge station
+}  // namespace timeouts
 
 namespace speeds {
   namespace drive {
