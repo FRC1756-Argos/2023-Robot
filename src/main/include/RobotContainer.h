@@ -16,6 +16,7 @@
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "commands/autonomous/autonomous_balance.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
 #include "commands/autonomous/autonomous_nothing.h"
 #include "controls/operator_control_box.h"
@@ -82,6 +83,7 @@ class RobotContainer {
   // Autonomous
   AutonomousNothing m_autoNothing;
   AutonomousDriveForward m_autoDriveForward;
+  AutonomousBalance m_autoBalance;
 
   AutoSelector m_autoSelector;
 

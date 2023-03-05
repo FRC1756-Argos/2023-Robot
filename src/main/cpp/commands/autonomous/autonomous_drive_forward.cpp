@@ -32,7 +32,7 @@ AutonomousDriveForward::AutonomousDriveForward(SwerveDriveSubsystem& drive,
 
 // Called when the command is initially scheduled.
 void AutonomousDriveForward::Initialize() {
-  m_leds.SetAllGroupsFlash(m_leds.GetAllianceColor());
+  m_leds.ColorSweep(m_leds.GetAllianceColor(), true);
   m_allCommands.Initialize();
 }
 
@@ -44,7 +44,6 @@ void AutonomousDriveForward::Execute() {
 // Called once the command ends or is interrupted.
 void AutonomousDriveForward::End(bool interrupted) {
   m_allCommands.End(interrupted);
-  m_leds.ColorSweep(m_leds.GetAllianceColor(), true);
 }
 
 // Returns true when the command should end.

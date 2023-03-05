@@ -56,7 +56,8 @@ RobotContainer::RobotContainer()
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
-    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward}, &m_autoNothing}
+    , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
+    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance}, &m_autoNothing}
     , m_nudgeRate{1 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
@@ -193,8 +194,9 @@ RobotContainer::RobotContainer()
           }
         }
 
-        if (m_swerveDrive.GetManualOverride() || deadbandTranslationSpeeds.forwardSpeedPct != 0 ||
-            deadbandTranslationSpeeds.leftSpeedPct != 0 || deadbandRotSpeed != 0) {
+        if (frc::DriverStation::IsTeleop() && m_swerveDrive.GetManualOverride() ||
+            deadbandTranslationSpeeds.forwardSpeedPct != 0 || deadbandTranslationSpeeds.leftSpeedPct != 0 ||
+            deadbandRotSpeed != 0) {
           m_swerveDrive.SwerveDrive(
               deadbandTranslationSpeeds.forwardSpeedPct,
               deadbandTranslationSpeeds.leftSpeedPct,
@@ -494,7 +496,7 @@ void RobotContainer::ConfigureBindings() {
                   m_bash,
                   [this]() { return m_buttonBox.GetScoringPosition(); },
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                  [this]() { return m_buttonBox.GetSpareSwitchStatus(); },  /// @todo Replace with intake feedback (#53)
+                  [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
                   PathType::concaveDown)
                   .ToPtr());
   (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
@@ -510,8 +512,8 @@ void RobotContainer::ConfigureBindings() {
   (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
       .OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
 
-  ((intakeConeTrigger && exclusiveAutoIntakeTrigger && coneDetectedTrigger.Debounce(100_ms)) ||
-   (intakeCubeTrigger && exclusiveAutoIntakeTrigger && cubeDetectedTrigger.Debounce(100_ms)))
+  ((coneDetectedTrigger.Debounce(100_ms) && intakeConeTrigger && exclusiveAutoIntakeTrigger) ||
+   (cubeDetectedTrigger.Debounce(100_ms) && intakeCubeTrigger && exclusiveAutoIntakeTrigger))
       .OnTrue(
           frc2::InstantCommand([this]() {
             m_controllers.DriverController().SetVibration(

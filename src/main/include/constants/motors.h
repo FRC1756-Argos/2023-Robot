@@ -116,8 +116,8 @@ namespace motorConfig {
 
     }  // namespace drive
     namespace lifter {
-      // TODO both of these are temporarily set to generic drive motor configs
-      //  but will need their own configs and control loop values in the future
+      /// @todo both of these are temporarily set to generic drive motor configs
+      ///  but will need their own configs and control loop values in the future
       struct armExtension {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::TalonFXInvertType::Clockwise;
         constexpr static bool sensorPhase = false;

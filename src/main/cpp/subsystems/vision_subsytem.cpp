@@ -58,7 +58,7 @@ void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
   table->PutNumber("pipeline", requestedPipeline);
 }
 
-// TODO deprecate?
+/// @todo deprecate?
 bool VisionSubsystem::AimToPlaceCone() {
   return true;
 }
