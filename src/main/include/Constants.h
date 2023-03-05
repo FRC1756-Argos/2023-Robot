@@ -89,3 +89,6 @@ namespace camera {
   constexpr auto halfhorizontalAngleResolution = horizontalAngleResolution / 2;
   constexpr auto verticalAngleResolution = 49.7_deg;
 }  // namespace camera
+
+/// @brief Designate the threshold approach direction
+enum class ApproachDirection { Increasing, Decreasing };

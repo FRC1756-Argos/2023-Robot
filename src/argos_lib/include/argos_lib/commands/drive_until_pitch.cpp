@@ -12,27 +12,33 @@
 DriveUntilPitch::DriveUntilPitch(SwerveDriveSubsystem* swerveDrive,
                                  units::degree_t velAngle,
                                  double power,
+                                 double initialPower,
                                  units::degree_t pitchGoal,
+                                 ApproachDirection approachDirection,
                                  units::time::second_t timeout)
     : m_pDrive{swerveDrive}
     , m_velAngle{velAngle}
     , m_power{power}
+    , m_initialPower{initialPower}
     , m_startTime{std::chrono::high_resolution_clock::now()}
     , m_pitchGoal{pitchGoal}
-    , m_timeout{timeout} {  // * AddRequirements OK here because no child commands are called that depend on subsystem
+    , m_approachDirection{approachDirection}
+    , m_timeout{timeout}
+    , m_velocityRamper{2 / 1_s, initialPower} {
+  // * AddRequirements OK here because no child commands are called that depend on subsystem
   AddRequirements(swerveDrive);
 }
 
 // Called when the command is initially scheduled.
 void DriveUntilPitch::Initialize() {
-  // * Nothing to initialize
+  m_velocityRamper.Reset(m_initialPower);
 }
 
 // Called repeatedly when this Command is scheduled to run
 void DriveUntilPitch::Execute() {
   // Cancel if manually overriden
   if (m_pDrive->GetManualOverride()) {
-    m_pDrive->SwerveDrive(m_velAngle, m_power);
+    m_pDrive->SwerveDrive(m_velAngle, m_velocityRamper.Calculate(m_power).to<double>());
   } else {
     Cancel();
   }
@@ -55,10 +61,11 @@ void DriveUntilPitch::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool DriveUntilPitch::IsFinished() {
-  // * abs because we could be going backwkards up the station too
-  if (units::math::abs(m_pDrive->GetRobotPitch()) >= m_pitchGoal) {
-    return true;
-  } else {
-    return false;  // Pitch goal was not reached, continue
+  // * abs because we could be going backwards up the station too
+  switch (ApproachDirection) {
+    case ApproachDirection::Increasing:
+      return m_pDrive->GetRobotPitch() >= m_pitchGoal;
+    case ApproachDirection::Decreasing:
+      return m_pDrive->GetRobotPitch() <= m_pitchGoal;
   }
 }
