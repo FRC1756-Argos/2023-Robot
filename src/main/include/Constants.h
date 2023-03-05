@@ -22,6 +22,9 @@
 namespace thresholds {
   /// @brief Target pitch to reach when climbing up the charge station
   constexpr units::degree_t robotClimbPitch = 12_deg;
+  constexpr units::degree_t robotHitChargingStationPitch = 3_deg;
+  constexpr units::degree_t robotLeftChargingStationPitch = 3_deg;
+  constexpr units::degrees_per_second_t robotTippingPitchRate = -3_deg_per_s;
 }  // namespace thresholds
 
 namespace timeouts {
