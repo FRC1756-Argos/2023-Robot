@@ -5,8 +5,10 @@
 #pragma once
 
 #include <commands/autonomous/autonomous_command.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
+#include <frc2/command/SequentialCommandGroup.h>
 #include <subsystems/bash_guard_subsystem.h>
 #include <subsystems/intake_subsystem.h>
 #include <subsystems/lifter_subsystem.h>
@@ -15,15 +17,16 @@
 
 #include <string>
 
-class AutonomousBalance
-    : public frc2::CommandHelper<frc2::CommandBase, AutonomousBalance>
+class PlaceConeCommand
+    : public frc2::CommandHelper<frc2::CommandBase, PlaceConeCommand>
     , public AutonomousCommand {
  public:
-  AutonomousBalance(SwerveDriveSubsystem& drive,
-                    BashGuardSubsystem& bash,
-                    LifterSubsystem& lifter,
-                    SimpleLedSubsystem& leds,
-                    IntakeSubsystem& intake);
+  PlaceConeCommand(BashGuardSubsystem& bash,
+                   LifterSubsystem& lifter,
+                   SimpleLedSubsystem& leds,
+                   IntakeSubsystem& intake,
+                   frc::Translation2d desiredArmPos,
+                   ScoringPosition scoringPos);
 
   void Initialize() override;
 
@@ -43,11 +46,19 @@ class AutonomousBalance
   frc2::Command* GetCommand() final;
 
  private:
-  SwerveDriveSubsystem& m_drive;
+  static units::degree_t GetShoulderAngle(const LifterSubsystem& lifter, const frc::Translation2d& pose) {
+    units::degree_t shoulderAngle = lifter.ConvertLifterPose(pose).shoulderAngle;
+    frc::SmartDashboard::PutNumber("(GetShoulderAngle) degrees", units::degree_t(shoulderAngle).to<double>());
+    return shoulderAngle;
+  }
+
   BashGuardSubsystem& m_bashGuard;
   LifterSubsystem& m_lifter;
   SimpleLedSubsystem& m_leds;
   IntakeSubsystem& m_intake;
+
+  frc::Translation2d m_desiredArmPos;
+  ScoringPosition m_scoringPosition;
 
   frc2::CommandPtr m_allCommands;
 };

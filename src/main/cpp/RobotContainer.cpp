@@ -55,8 +55,8 @@ RobotContainer::RobotContainer()
     , m_homeArmExtensionCommand(m_lifter)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
-    , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
-    , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
+    , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance, &m_autoLoadingStation2Cone}, &m_autoNothing}
     , m_nudgeRate{1 / 1_s}

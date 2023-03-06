@@ -9,6 +9,7 @@
 #include <frc2/command/CommandHelper.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <subsystems/bash_guard_subsystem.h>
+#include <subsystems/intake_subsystem.h>
 #include <subsystems/lifter_subsystem.h>
 #include <subsystems/simple_led_subsystem.h>
 #include <subsystems/swerve_drive_subsystem.h>
@@ -22,7 +23,8 @@ class AutonomousDriveForward
   AutonomousDriveForward(SwerveDriveSubsystem& drive,
                          BashGuardSubsystem& bash,
                          LifterSubsystem& lifter,
-                         SimpleLedSubsystem& leds);
+                         SimpleLedSubsystem& leds,
+                         IntakeSubsystem& intake);
 
   void Initialize() override;
 
@@ -46,6 +48,7 @@ class AutonomousDriveForward
   BashGuardSubsystem& m_bashGuard;
   LifterSubsystem& m_lifter;
   SimpleLedSubsystem& m_leds;
+  IntakeSubsystem& m_intake;
 
   frc2::SequentialCommandGroup m_allCommands;
 };
