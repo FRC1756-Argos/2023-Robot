@@ -61,8 +61,8 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                  path_constraints::translation::loadingStationGridToGp0,
                                                  path_constraints::rotation::loadingStationGridToGp0}
                                      .ToPtr()))
-                       .AlongWith(SetArmPoseCommand{m_lifter,
-                                                    m_bashGuard,
+                       .AlongWith(SetArmPoseCommand{&m_lifter,
+                                                    &m_bashGuard,
                                                     ScoringPosition{ScoringColumn::coneIntake, ScoringRow::invalid},
                                                     []() { return false; },
                                                     []() { return false; },
@@ -87,8 +87,8 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                 path_constraints::translation::loadingStationGridToGp0,
                                                 path_constraints::rotation::loadingStationGridToGp0}
                                     .ToPtr())
-                       .AlongWith(SetArmPoseCommand{m_lifter,
-                                                    m_bashGuard,
+                       .AlongWith(SetArmPoseCommand{&m_lifter,
+                                                    &m_bashGuard,
                                                     ScoringPosition{ScoringColumn::leftGrid_leftCone, ScoringRow::low},
                                                     []() { return false; },
                                                     []() { return false; },
@@ -115,8 +115,8 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                  path_constraints::translation::loadingStationGridToGp0,
                                                  path_constraints::rotation::loadingStationGridToGp0}
                                      .ToPtr()))
-                       .AlongWith(SetArmPoseCommand{m_lifter,
-                                                    m_bashGuard,
+                       .AlongWith(SetArmPoseCommand{&m_lifter,
+                                                    &m_bashGuard,
                                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
                                                     []() { return false; },
                                                     []() { return false; },

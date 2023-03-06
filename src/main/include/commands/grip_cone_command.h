@@ -10,9 +10,7 @@
 #include <frc2/command/CommandHelper.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/InstantCommand.h>
-#include <subsystems/bash_guard_subsystem.h>
 #include <subsystems/intake_subsystem.h>
-#include <subsystems/lifter_subsystem.h>
 
 #include <memory>
 
@@ -25,7 +23,7 @@
  */
 class GripConeCommand : public frc2::CommandHelper<frc2::CommandBase, GripConeCommand> {
  public:
-  GripConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& bash, IntakeSubsystem& intake);
+  explicit GripConeCommand(IntakeSubsystem* intake);
 
   void Initialize() override;
 
@@ -36,9 +34,5 @@ class GripConeCommand : public frc2::CommandHelper<frc2::CommandBase, GripConeCo
   bool IsFinished() override;
 
  private:
-  LifterSubsystem& m_lifter;
-  IntakeSubsystem& m_intake;
-  BashGuardSubsystem& m_bash;
-
   frc2::CommandPtr m_allCommands;
 };

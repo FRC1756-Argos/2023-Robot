@@ -23,7 +23,7 @@ AutonomousDriveForward::AutonomousDriveForward(SwerveDriveSubsystem& drive,
     , m_leds{leds}
     , m_intake{intake}
     , m_allCommands{InitializeOdometryCommand{&m_drive, {0_m, 0_m, 0_deg}},
-                    GripConeCommand{m_lifter, m_bashGuard, m_intake},
+                    GripConeCommand{&intake},
                     DriveToPosition{
                         &m_drive,
                         {0_m, 0_m, 0_deg},

@@ -6,6 +6,7 @@
 
 #include <commands/drive_to_position.h>
 #include <commands/initialize_odometry_command.h>
+#include <commands/set_arm_pose_command.h>
 #include <units/acceleration.h>
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
@@ -29,15 +30,21 @@ AutonomousBalance::AutonomousBalance(SwerveDriveSubsystem& drive,
     , m_allCommands{
           (InitializeOdometryCommand{&m_drive, {0_m, 0_m, 180_deg}}.ToPtr())
               .AndThen(PlaceConeCommand{
-                  m_bashGuard,
-                  m_lifter,
-                  m_leds,
-                  m_intake,
+                  &bash,
+                  &lifter,
+                  &intake,
                   scoring_positions::lifter_extension_end::coneHigh.lifterPosition,
                   ScoringPosition{.column = ScoringColumn::leftGrid_leftCone, .row = ScoringRow::high},
               }
                            .ToPtr())
-              .AndThen(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr())
+              .AndThen(SetArmPoseCommand{&lifter,
+                                         &bash,
+                                         ScoringPosition{.column = ScoringColumn::stow},
+                                         []() { return false; },
+                                         []() { return false; },
+                                         PathType::concaveDown}
+                           .ToPtr()
+                           .AlongWith(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr()))
               .AndThen(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr()),
       } {}
 

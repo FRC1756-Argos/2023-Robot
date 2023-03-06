@@ -7,6 +7,7 @@
 #include <commands/drive_to_position.h>
 #include <commands/initialize_odometry_command.h>
 #include <frc2/command/WaitCommand.h>
+#include <frc2/command/WaitUntilCommand.h>
 #include <units/acceleration.h>
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
@@ -17,54 +18,38 @@
 #include "commands/set_arm_pose_command.h"
 #include "constants/scoring_positions.h"
 
-PlaceConeCommand::PlaceConeCommand(BashGuardSubsystem& bash,
-                                   LifterSubsystem& lifter,
-                                   SimpleLedSubsystem& leds,
-                                   IntakeSubsystem& intake,
-                                   frc::Translation2d desArmPos,
+PlaceConeCommand::PlaceConeCommand(BashGuardSubsystem* bash,
+                                   LifterSubsystem* lifter,
+                                   IntakeSubsystem* intake,
+                                   frc::Translation2d m_desiredArmPos,
                                    ScoringPosition scoringPos)
     : m_bashGuard{bash}
     , m_lifter{lifter}
-    , m_leds{leds}
     , m_intake{intake}
-    , m_desiredArmPos{desArmPos}
+    , m_desiredArmPos{m_desiredArmPos}
     , m_scoringPosition{scoringPos}
-    , m_allCommands{
-          ((GripConeCommand(m_lifter, m_bashGuard, m_intake))
-               .ToPtr()
-               .AlongWith(
-                   frc2::InstantCommand(
-                       [this]() {
-                         m_lifter.SetShoulderAngle(this->GetShoulderAngle(
-                             m_lifter,
-                             m_desiredArmPos));  // scoring_positions::lifter_extension_end::coneHigh.lifterPosition
-                       },
-                       {&m_lifter})
-                       .ToPtr()))
-              .AndThen(frc2::WaitCommand(1_s).ToPtr())
-              .AndThen(
-                  SetArmPoseCommand(
-                      m_lifter,
-                      m_bashGuard,
-                      m_scoringPosition,  // ScoringPosition{.column = ScoringColumn::leftGrid_leftCone, .row = ScoringRow::high},
-                      [this]() { return false; },
-                      [this]() { return false; },
-                      PathType::unmodified)
-                      .ToPtr())
-              .AndThen(ScoreConeCommand{m_lifter, m_bashGuard, m_intake}.ToPtr())
-              .AndThen(SetArmPoseCommand(
-                           m_lifter,
-                           m_bashGuard,
-                           ScoringPosition{.column = ScoringColumn::stow},
-                           [this]() { return false; },
-                           [this]() { return false; },
-                           PathType::concaveDown)
-                           .ToPtr()),
-      } {}
+    , m_allCommands{frc2::InstantCommand{[]() {}}} {}
 
 // Called when the command is initially scheduled.
 void PlaceConeCommand::Initialize() {
-  m_leds.ColorSweep(m_leds.GetAllianceColor(), true);
+  m_allCommands =
+      GripConeCommand(m_intake)
+          .ToPtr()
+          .AlongWith(frc2::InstantCommand([this]() {
+                       LifterSubsystem& lifterRef = *m_lifter;
+                       m_lifter->SetShoulderAngle(PlaceConeCommand::GetShoulderAngle(lifterRef, m_desiredArmPos));
+                     }).ToPtr())
+          .AndThen(frc2::WaitUntilCommand([this]() {
+                     return m_bashGuard->IsBashGuardHomed() && m_lifter->IsArmExtensionHomed();
+                   }).ToPtr())
+          .AndThen(SetArmPoseCommand{m_lifter,
+                                     m_bashGuard,
+                                     m_scoringPosition,
+                                     []() { return false; },
+                                     []() { return false; },
+                                     PathType::concaveDown}
+                       .ToPtr())
+          .AndThen(ScoreConeCommand{*m_lifter, *m_bashGuard, *m_intake}.ToPtr());
   m_allCommands.get()->Initialize();
 }
 

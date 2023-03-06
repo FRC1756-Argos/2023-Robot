@@ -52,7 +52,7 @@ VelocityComponents path_planning::DecomposeVelocity(const ArmMPPathPoint& pathPo
 CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
                                                        const BashGuardMPPath& bashGuardPath,
                                                        const ArmPathPoint& shoulderFulcrum,
-                                                       const LifterSubsystem& lifter) {
+                                                       LifterSubsystem* lifter) {
   CompositeMPPath compositePath{.startTime = std::chrono::steady_clock::now(),
                                 .shoulderPath = {},
                                 .extensionPath = {},
@@ -93,7 +93,7 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
   for (const auto& point : generalPath) {
     const ArmPathPoint armPositionVector(point.position.x - shoulderFulcrum.x, point.position.z - shoulderFulcrum.z);
     VelocityComponents velocities = DecomposeVelocity(point, armPositionVector);
-    auto joints = lifter.ConvertLifterPose(frc::Translation2d(point.position.x, point.position.z));
+    auto joints = lifter->ConvertLifterPose(frc::Translation2d(point.position.x, point.position.z));
     compositePath.extensionPath.emplace_back(point.time, joints.armLen, velocities.v_radial);
     compositePath.shoulderPath.emplace_back(point.time, joints.shoulderAngle, velocities.v_tangential);
   }

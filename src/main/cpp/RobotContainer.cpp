@@ -432,8 +432,8 @@ void RobotContainer::ConfigureBindings() {
   (intakeConeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
                                          SetArmPoseCommand(
-                                             m_lifter,
-                                             m_bash,
+                                             &m_lifter,
+                                             &m_bash,
                                              ScoringPosition{.column = ScoringColumn::coneIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
@@ -444,8 +444,8 @@ void RobotContainer::ConfigureBindings() {
   (intakeCubeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
                                          SetArmPoseCommand(
-                                             m_lifter,
-                                             m_bash,
+                                             &m_lifter,
+                                             &m_bash,
                                              ScoringPosition{.column = ScoringColumn::cubeIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
@@ -458,8 +458,8 @@ void RobotContainer::ConfigureBindings() {
           frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms),
                                        frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
           SetArmPoseCommand(
-              m_lifter,
-              m_bash,
+              &m_lifter,
+              &m_bash,
               ScoringPosition{.column = ScoringColumn::stow},
               [this]() { return m_buttonBox.GetBashGuardStatus(); },
               []() { return false; },
@@ -493,8 +493,8 @@ void RobotContainer::ConfigureBindings() {
 
   (!exclusiveAutoIntakeTrigger && newTargetTrigger)
       .OnTrue(SetArmPoseCommand(
-                  m_lifter,
-                  m_bash,
+                  &m_lifter,
+                  &m_bash,
                   [this]() { return m_buttonBox.GetScoringPosition(); },
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
@@ -502,8 +502,8 @@ void RobotContainer::ConfigureBindings() {
                   .ToPtr());
   (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
       .OnTrue(SetArmPoseCommand(
-                  m_lifter,
-                  m_bash,
+                  &m_lifter,
+                  &m_bash,
                   ScoringPosition{.column = ScoringColumn::stow},
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
