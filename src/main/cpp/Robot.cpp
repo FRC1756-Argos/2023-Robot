@@ -68,6 +68,8 @@ void Robot::TeleopInit() {
   // this line or comment it out.
   if (m_pAutonomousCommand) {
     m_pAutonomousCommand->Cancel();
+    m_pAutonomousCommand = nullptr;
+    m_container.AllianceChanged();  // Reset LED pattern on transition from auto to teleop
   }
 }
 
