@@ -63,7 +63,7 @@ namespace game_piece_pickup {
   namespace blue_alliance {
     constexpr auto gamePiece0_3d =
         field_points::blue_alliance::game_pieces::gp_0 -
-        frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 12_in, 0_m};
+        frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
     constexpr auto gamePiece0 = frc::Pose2d{
         {game_piece_pickup::blue_alliance::gamePiece0_3d.X(), game_piece_pickup::blue_alliance::gamePiece0_3d.Y()},
         0_deg};
@@ -75,10 +75,10 @@ namespace game_piece_pickup {
 
 namespace path_constraints {
   namespace translation {
-    static const auto loadingStationBackOut = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
-    static const auto loadingStationGridToGp0 = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 10_fps_sq};
+    static const auto loadingStationBackOut = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 8_fps_sq};
+    static const auto loadingStationGridToGp0 = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 8_fps_sq};
     static const auto gp0ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
-    static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 10_fps_sq};
+    static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
   }  // namespace translation
   namespace rotation {
     static const auto loadingStationBackOut =

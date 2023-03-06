@@ -562,6 +562,7 @@ void RobotContainer::Disable() {
   m_intake.Disable();
   m_bash.Disable();
   m_visionSubSystem.Disable();
+  m_swerveDrive.Disable();
 }
 
 void RobotContainer::Enable() {

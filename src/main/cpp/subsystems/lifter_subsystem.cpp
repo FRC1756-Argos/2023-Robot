@@ -240,29 +240,32 @@ void LifterSubsystem::UpdateArmExtensionHome() {
 }
 
 void LifterSubsystem::InitializeWristHomes() {
-  const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
-  frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  // Testing
-  if (wristHomes) {
-    units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-    frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
+  /// @todo Stupid CANCoder won't consistently return a good absolute position >:(
+  // const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
+  // frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  // Testing
+  // if (wristHomes) {
+  //   units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
+  //   frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
 
-    frc::SmartDashboard::PutNumber("currentencoderValue - home",
-                                   (currentencoder - wristHomes.value()).to<double>());  // Testing
-    frc::SmartDashboard::PutNumber(
-        "currentencoderValue - home constrained",
-        units::degree_t(argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg))
-            .to<double>());  // Testing
-    units::degree_t calcValue =
-        argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
+  //   frc::SmartDashboard::PutNumber("currentencoderValue - home",
+  //                                  (currentencoder - wristHomes.value()).to<double>());  // Testing
+  //   frc::SmartDashboard::PutNumber(
+  //       "currentencoderValue - home constrained",
+  //       units::degree_t(argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg))
+  //           .to<double>());  // Testing
+  //   units::degree_t calcValue =
+  //       argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
 
-    m_wristEncoder.SetPosition(calcValue.to<double>());
+  //   m_wristEncoder.SetPosition(calcValue.to<double>());
 
-    m_wristHomed = true;
+  //   m_wristHomed = true;
 
-    EnableWristSoftLimits();
-  } else {
-    m_wristHomed = false;
-  }
+  //   EnableWristSoftLimits();
+  // } else {
+  //   m_wristHomed = false;
+  // }
+  m_wristEncoder.SetPosition(0);
+  m_wristHomed = true;
 }
 
 void LifterSubsystem::UpdateWristHome() {

@@ -6,6 +6,7 @@
 
 #include <commands/drive_to_position.h>
 #include <commands/initialize_odometry_command.h>
+#include <commands/place_cone_command.h>
 #include <frc/DriverStation.h>
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/ParallelCommandGroup.h>
@@ -45,6 +46,14 @@ void AutonomousLoadingStation2Cone::Initialize() {
   m_allCommands =
       InitializeOdometryCommand{&m_drive, {startingPosition}}
           .ToPtr()
+          .AndThen(PlaceConeCommand{
+              &m_bashGuard,
+              &m_lifter,
+              &m_intake,
+              scoring_positions::lifter_extension_end::coneHigh.lifterPosition,
+              ScoringPosition{.column = ScoringColumn::leftGrid_leftCone, .row = ScoringRow::high},
+          }
+                       .ToPtr())
           .AndThen((DriveToPosition{&m_drive,
                                     startingPosition,
                                     startingPosition.Rotation().Degrees(),
@@ -61,15 +70,25 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                  path_constraints::translation::loadingStationGridToGp0,
                                                  path_constraints::rotation::loadingStationGridToGp0}
                                      .ToPtr()))
-                       .AlongWith(SetArmPoseCommand{&m_lifter,
-                                                    &m_bashGuard,
-                                                    ScoringPosition{ScoringColumn::coneIntake, ScoringRow::invalid},
-                                                    []() { return false; },
-                                                    []() { return false; },
-                                                    PathType::concaveDown,
-                                                    speeds::armKinematicSpeeds::effectorFastVelocity,
-                                                    speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                      .ToPtr())
+                       .AlongWith((SetArmPoseCommand{&m_lifter,
+                                                     &m_bashGuard,
+                                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                     []() { return false; },
+                                                     []() { return false; },
+                                                     PathType::concaveDown,
+                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
+                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                       .ToPtr())
+                                      .AndThen(SetArmPoseCommand{
+                                          &m_lifter,
+                                          &m_bashGuard,
+                                          ScoringPosition{ScoringColumn::coneIntake, ScoringRow::invalid},
+                                          []() { return false; },
+                                          []() { return false; },
+                                          PathType::concaveDown,
+                                          speeds::armKinematicSpeeds::effectorFastVelocity,
+                                          speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                                   .ToPtr()))
                        .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCone(); }}.ToPtr()))
           .AndThen(DriveToPosition{&m_drive,
                                    pickupPosition,
@@ -84,8 +103,8 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                 interimWaypoint.Rotation().Degrees(),
                                                 startingPosition,
                                                 startingPosition.Rotation().Degrees(),
-                                                path_constraints::translation::loadingStationGridToGp0,
-                                                path_constraints::rotation::loadingStationGridToGp0}
+                                                path_constraints::translation::loadingStationPullIn,
+                                                path_constraints::rotation::loadingStationPullIn}
                                     .ToPtr())
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bashGuard,

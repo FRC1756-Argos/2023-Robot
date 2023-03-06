@@ -27,7 +27,7 @@ namespace controlLoop {
         constexpr static double allowableError = 0.0;
       };  // namespace drive
       struct linear_follower {
-        constexpr static double kP = 8.0;
+        constexpr static double kP = 7.5;
         constexpr static double kI = 0.0;
         constexpr static double kD = 0.0;
       };  // namespace linear_follower
