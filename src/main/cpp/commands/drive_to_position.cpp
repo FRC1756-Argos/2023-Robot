@@ -32,7 +32,7 @@ void DriveToPosition::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void DriveToPosition::Execute() {
-  // No need to do anything beyond initialize
+  m_pDrive->SwerveDrive(0, 0, 0);
 }
 
 // Called once the command ends or is interrupted.

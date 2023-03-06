@@ -158,8 +158,7 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
 
 void SwerveDriveSubsystem::Disable() {
   m_controlMode = DriveControlMode::fieldCentricControl;
-  m_followingProfile = false;
-  m_profileComplete = false;
+  CancelDrivingProfile();
   StopDrive();
 }
 

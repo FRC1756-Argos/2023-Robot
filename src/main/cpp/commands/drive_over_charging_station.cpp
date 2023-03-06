@@ -10,6 +10,7 @@
 
 #include "commands/drive_until_pitch.h"
 #include "commands/drive_until_pitch_rate.h"
+#include "constants/auto.h"
 
 DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                                    units::degree_t approachAngle,

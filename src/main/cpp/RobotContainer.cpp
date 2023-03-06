@@ -57,7 +57,8 @@ RobotContainer::RobotContainer()
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
     , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
-    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance}, &m_autoNothing}
+    , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
+    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance, &m_autoLoadingStation2Cone}, &m_autoNothing}
     , m_nudgeRate{1 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
@@ -194,9 +195,9 @@ RobotContainer::RobotContainer()
           }
         }
 
-        if (frc::DriverStation::IsTeleop() && m_swerveDrive.GetManualOverride() ||
-            deadbandTranslationSpeeds.forwardSpeedPct != 0 || deadbandTranslationSpeeds.leftSpeedPct != 0 ||
-            deadbandRotSpeed != 0) {
+        if (frc::DriverStation::IsTeleop() &&
+            (m_swerveDrive.GetManualOverride() || deadbandTranslationSpeeds.forwardSpeedPct != 0 ||
+             deadbandTranslationSpeeds.leftSpeedPct != 0 || deadbandRotSpeed != 0)) {
           m_swerveDrive.SwerveDrive(
               deadbandTranslationSpeeds.forwardSpeedPct,
               deadbandTranslationSpeeds.leftSpeedPct,
