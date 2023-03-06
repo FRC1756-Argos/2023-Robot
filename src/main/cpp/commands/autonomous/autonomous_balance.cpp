@@ -11,19 +11,32 @@
 #include <units/angular_velocity.h>
 #include <units/velocity.h>
 
+#include "constants/scoring_positions.h"
 #include "commands/balance_charging_station.h"
 #include "commands/drive_over_charging_station.h"
+#include "commands/place_cone_command.h"
 
 AutonomousBalance::AutonomousBalance(SwerveDriveSubsystem& drive,
                                      BashGuardSubsystem& bash,
                                      LifterSubsystem& lifter,
-                                     SimpleLedSubsystem& leds)
+                                     SimpleLedSubsystem& leds,
+                                     IntakeSubsystem& intake)
     : m_drive{drive}
     , m_bashGuard{bash}
     , m_lifter{lifter}
     , m_leds{leds}
+    , m_intake{intake}
     , m_allCommands{
           (InitializeOdometryCommand{&m_drive, {0_m, 0_m, 180_deg}}.ToPtr())
+              .AndThen(PlaceConeCommand{
+                  m_bashGuard,
+                  m_lifter,
+                  m_leds,
+                  m_intake,
+                  scoring_positions::lifter_extension_end::coneHigh.lifterPosition,
+                  ScoringPosition{.column = ScoringColumn::leftGrid_leftCone, .row = ScoringRow::high},
+              }
+                           .ToPtr())
               .AndThen(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr())
               .AndThen(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr()),
       } {}

@@ -6,6 +6,7 @@
 
 #include <commands/drive_to_position.h>
 #include <commands/initialize_odometry_command.h>
+#include <commands/grip_cone_command.h>
 #include <units/acceleration.h>
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
@@ -14,12 +15,15 @@
 AutonomousDriveForward::AutonomousDriveForward(SwerveDriveSubsystem& drive,
                                                BashGuardSubsystem& bash,
                                                LifterSubsystem& lifter,
-                                               SimpleLedSubsystem& leds)
+                                               SimpleLedSubsystem& leds,
+                                               IntakeSubsystem& intake)
     : m_drive{drive}
     , m_bashGuard{bash}
     , m_lifter{lifter}
     , m_leds{leds}
+    , m_intake{intake}
     , m_allCommands{InitializeOdometryCommand{&m_drive, {0_m, 0_m, 0_deg}},
+                    GripConeCommand{m_lifter, m_bashGuard, m_intake},
                     DriveToPosition{
                         &m_drive,
                         {0_m, 0_m, 0_deg},

@@ -568,8 +568,8 @@ units::degree_t SwerveDriveSubsystem::GetFieldCentricAngle() const {
 }
 
 frc::Pose2d SwerveDriveSubsystem::GetPoseEstimate(const frc::Pose2d& robotPose, const units::millisecond_t& latency) {
-  const auto newEstPose = m_poseEstimator.Update(frc::Rotation2d{-GetIMUYaw()}, GetCurrentModulePositions());
-  const auto continuousEstPoseAngle = GetContinuousPoseEstAngle();
+  // const auto newEstPose = m_poseEstimator.Update(frc::Rotation2d{-GetIMUYaw()}, GetCurrentModulePositions());
+  // const auto continuousEstPoseAngle = GetContinuousPoseEstAngle();
 
   // Account for Vision Measurement here
   frc::Timer timer;
