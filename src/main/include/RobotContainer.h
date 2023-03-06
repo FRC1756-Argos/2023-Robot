@@ -18,6 +18,7 @@
 #include "Constants.h"
 #include "commands/autonomous/autonomous_balance.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
+#include "commands/autonomous/autonomous_loading_station_2_cone.h"
 #include "commands/autonomous/autonomous_nothing.h"
 #include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
@@ -84,6 +85,7 @@ class RobotContainer {
   AutonomousNothing m_autoNothing;
   AutonomousDriveForward m_autoDriveForward;
   AutonomousBalance m_autoBalance;
+  AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
 
   AutoSelector m_autoSelector;
 

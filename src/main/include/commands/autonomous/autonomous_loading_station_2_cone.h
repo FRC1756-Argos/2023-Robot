@@ -7,6 +7,7 @@
 #include <commands/autonomous/autonomous_command.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
+#include <frc2/command/SequentialCommandGroup.h>
 #include <subsystems/bash_guard_subsystem.h>
 #include <subsystems/intake_subsystem.h>
 #include <subsystems/lifter_subsystem.h>
@@ -15,15 +16,15 @@
 
 #include <string>
 
-class AutonomousBalance
-    : public frc2::CommandHelper<frc2::CommandBase, AutonomousBalance>
+class AutonomousLoadingStation2Cone
+    : public frc2::CommandHelper<frc2::CommandBase, AutonomousLoadingStation2Cone>
     , public AutonomousCommand {
  public:
-  AutonomousBalance(SwerveDriveSubsystem& drive,
-                    BashGuardSubsystem& bash,
-                    LifterSubsystem& lifter,
-                    SimpleLedSubsystem& leds,
-                    IntakeSubsystem& intake);
+  AutonomousLoadingStation2Cone(SwerveDriveSubsystem& drive,
+                                BashGuardSubsystem& bash,
+                                LifterSubsystem& lifter,
+                                IntakeSubsystem& intake,
+                                SimpleLedSubsystem& leds);
 
   void Initialize() override;
 
@@ -46,8 +47,8 @@ class AutonomousBalance
   SwerveDriveSubsystem& m_drive;
   BashGuardSubsystem& m_bashGuard;
   LifterSubsystem& m_lifter;
-  SimpleLedSubsystem& m_leds;
   IntakeSubsystem& m_intake;
+  SimpleLedSubsystem& m_leds;
 
   frc2::CommandPtr m_allCommands;
 };

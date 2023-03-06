@@ -55,9 +55,10 @@ RobotContainer::RobotContainer()
     , m_homeArmExtensionCommand(m_lifter)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
-    , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
-    , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem}
-    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance}, &m_autoNothing}
+    , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
+    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance, &m_autoLoadingStation2Cone}, &m_autoNothing}
     , m_nudgeRate{1 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
@@ -194,9 +195,9 @@ RobotContainer::RobotContainer()
           }
         }
 
-        if (frc::DriverStation::IsTeleop() && m_swerveDrive.GetManualOverride() ||
-            deadbandTranslationSpeeds.forwardSpeedPct != 0 || deadbandTranslationSpeeds.leftSpeedPct != 0 ||
-            deadbandRotSpeed != 0) {
+        if (frc::DriverStation::IsTeleop() &&
+            (m_swerveDrive.GetManualOverride() || deadbandTranslationSpeeds.forwardSpeedPct != 0 ||
+             deadbandTranslationSpeeds.leftSpeedPct != 0 || deadbandRotSpeed != 0)) {
           m_swerveDrive.SwerveDrive(
               deadbandTranslationSpeeds.forwardSpeedPct,
               deadbandTranslationSpeeds.leftSpeedPct,
@@ -431,8 +432,8 @@ void RobotContainer::ConfigureBindings() {
   (intakeConeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
                                          SetArmPoseCommand(
-                                             m_lifter,
-                                             m_bash,
+                                             &m_lifter,
+                                             &m_bash,
                                              ScoringPosition{.column = ScoringColumn::coneIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
@@ -443,8 +444,8 @@ void RobotContainer::ConfigureBindings() {
   (intakeCubeTrigger && exclusiveAutoIntakeTrigger)
       .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
                                          SetArmPoseCommand(
-                                             m_lifter,
-                                             m_bash,
+                                             &m_lifter,
+                                             &m_bash,
                                              ScoringPosition{.column = ScoringColumn::cubeIntake},
                                              [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                              []() { return false; },
@@ -457,8 +458,8 @@ void RobotContainer::ConfigureBindings() {
           frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms),
                                        frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
           SetArmPoseCommand(
-              m_lifter,
-              m_bash,
+              &m_lifter,
+              &m_bash,
               ScoringPosition{.column = ScoringColumn::stow},
               [this]() { return m_buttonBox.GetBashGuardStatus(); },
               []() { return false; },
@@ -492,8 +493,8 @@ void RobotContainer::ConfigureBindings() {
 
   (!exclusiveAutoIntakeTrigger && newTargetTrigger)
       .OnTrue(SetArmPoseCommand(
-                  m_lifter,
-                  m_bash,
+                  &m_lifter,
+                  &m_bash,
                   [this]() { return m_buttonBox.GetScoringPosition(); },
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
@@ -501,8 +502,8 @@ void RobotContainer::ConfigureBindings() {
                   .ToPtr());
   (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
       .OnTrue(SetArmPoseCommand(
-                  m_lifter,
-                  m_bash,
+                  &m_lifter,
+                  &m_bash,
                   ScoringPosition{.column = ScoringColumn::stow},
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
@@ -561,6 +562,7 @@ void RobotContainer::Disable() {
   m_intake.Disable();
   m_bash.Disable();
   m_visionSubSystem.Disable();
+  m_swerveDrive.Disable();
 }
 
 void RobotContainer::Enable() {

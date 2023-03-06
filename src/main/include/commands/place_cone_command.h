@@ -5,26 +5,28 @@
 #pragma once
 
 #include <commands/autonomous/autonomous_command.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <subsystems/bash_guard_subsystem.h>
 #include <subsystems/intake_subsystem.h>
 #include <subsystems/lifter_subsystem.h>
-#include <subsystems/simple_led_subsystem.h>
 #include <subsystems/swerve_drive_subsystem.h>
 
 #include <string>
 
-class AutonomousDriveForward
-    : public frc2::CommandHelper<frc2::CommandBase, AutonomousDriveForward>
+#include "constants/scoring_positions.h"
+
+class PlaceConeCommand
+    : public frc2::CommandHelper<frc2::CommandBase, PlaceConeCommand>
     , public AutonomousCommand {
  public:
-  AutonomousDriveForward(SwerveDriveSubsystem& drive,
-                         BashGuardSubsystem& bash,
-                         LifterSubsystem& lifter,
-                         SimpleLedSubsystem& leds,
-                         IntakeSubsystem& intake);
+  PlaceConeCommand(BashGuardSubsystem* bash,
+                   LifterSubsystem* lifter,
+                   IntakeSubsystem* intake,
+                   frc::Translation2d desiredArmPos,
+                   ScoringPosition scoringPos);
 
   void Initialize() override;
 
@@ -44,11 +46,18 @@ class AutonomousDriveForward
   frc2::Command* GetCommand() final;
 
  private:
-  SwerveDriveSubsystem& m_drive;
-  BashGuardSubsystem& m_bashGuard;
-  LifterSubsystem& m_lifter;
-  SimpleLedSubsystem& m_leds;
-  IntakeSubsystem& m_intake;
+  static units::degree_t GetShoulderAngle(const LifterSubsystem& lifter, const frc::Translation2d& pose) {
+    units::degree_t shoulderAngle = lifter.ConvertLifterPose(pose).shoulderAngle;
+    frc::SmartDashboard::PutNumber("(GetShoulderAngle) degrees", units::degree_t(shoulderAngle).to<double>());
+    return shoulderAngle;
+  }
 
-  frc2::SequentialCommandGroup m_allCommands;
+  BashGuardSubsystem* m_bashGuard;
+  LifterSubsystem* m_lifter;
+  IntakeSubsystem* m_intake;
+
+  frc::Translation2d m_desiredArmPos;
+  ScoringPosition m_scoringPosition;
+
+  frc2::CommandPtr m_allCommands;
 };

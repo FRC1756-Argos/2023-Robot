@@ -22,7 +22,7 @@ namespace path_planning {
   [[nodiscard]] CompositeMPPath GenerateCompositeMPPath(ArmMPPath generalPath,
                                                         const BashGuardMPPath& bashGuardPath,
                                                         const ArmPathPoint& shoulderFulcrum,
-                                                        const LifterSubsystem& lifter);
+                                                        LifterSubsystem* lifter);
   [[nodiscard]] BashGuardMPPath GenerateProfiledBashGuard(const BashGuardPoint& startPoint,
                                                           const BashGuardPoint& endPoint,
                                                           const PathDynamicsConstraints& constraints,

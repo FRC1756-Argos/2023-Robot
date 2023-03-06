@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <argos_lib/general/angle_utils.h>
 #include <frc/geometry/Pose2d.h>
 #include <frc/geometry/Translation2d.h>
 #include <frc/geometry/Translation3d.h>
@@ -62,6 +63,8 @@ namespace utils {
     return frc::Translation3d{source.X(), field_dimensions::fieldMaxY - source.Y(), source.Z()};
   }
 
+  frc::Pose2d ReflectFieldPoint(const frc::Pose2d source);
+
   constexpr units::inch_t ReflectYLine(const units::inch_t source) {
     return field_dimensions::fieldMaxY - source;
   }
@@ -115,24 +118,24 @@ namespace field_points {
   namespace blue_alliance {
     // Reference game_piece_positions in Docs directory for conventions
     namespace game_pieces {
-      constexpr auto gp_0 = frc::Translation3d{278.25_in, 180.185_in, 0_in};
-      constexpr auto gp_1 = frc::Translation3d{278.25_in, 230.25_in, 0_in};
-      constexpr auto gp_2 = frc::Translation3d{278.25_in, 182.25_in, 0_in};
-      constexpr auto gp_3 = frc::Translation3d{278.25_in, 134.25_in, 0_in};
+      constexpr auto gp_0 = frc::Translation3d{278.25_in, 180_in, 0_in};
+      constexpr auto gp_1 = frc::Translation3d{278.25_in, 132_in, 0_in};
+      constexpr auto gp_2 = frc::Translation3d{278.25_in, 84_in, 0_in};
+      constexpr auto gp_3 = frc::Translation3d{278.25_in, 36_in, 0_in};
     }  // namespace game_pieces
 
     // Blue Alliance Y-Positions for nodes
     // Columns are named left, middle, right as if you are facing them from inside the field
     // Same as documented picture in /docs
-    constexpr auto innerGridLeftY = 20.185_in;
-    constexpr auto innerGridMiddleY = 42.185_in;
-    constexpr auto innerGridRightY = 64.185_in;
-    constexpr auto coopGridLeftY = 86.185_in;
+    constexpr auto innerGridLeftY = 196.185_in;
+    constexpr auto innerGridMiddleY = 174.185_in;
+    constexpr auto innerGridRightY = 152.185_in;
+    constexpr auto coopGridLeftY = 130.185_in;
     constexpr auto coopGridMiddleY = 108.185_in;
-    constexpr auto coopGridRightY = 130.185_in;
-    constexpr auto outerGridLeftY = 152.185_in;
-    constexpr auto outerGridMiddleY = 174.185_in;
-    constexpr auto outerGridRightY = 196.185_in;
+    constexpr auto coopGridRightY = 86.185_in;
+    constexpr auto outerGridLeftY = 64.185_in;
+    constexpr auto outerGridMiddleY = 42.185_in;
+    constexpr auto outerGridRightY = 20.185_in;
     namespace inner_grid {
 
       // Top row

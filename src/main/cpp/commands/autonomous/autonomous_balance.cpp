@@ -6,6 +6,7 @@
 
 #include <commands/drive_to_position.h>
 #include <commands/initialize_odometry_command.h>
+#include <commands/set_arm_pose_command.h>
 #include <units/acceleration.h>
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
@@ -13,18 +14,37 @@
 
 #include "commands/balance_charging_station.h"
 #include "commands/drive_over_charging_station.h"
+#include "commands/place_cone_command.h"
+#include "constants/scoring_positions.h"
 
 AutonomousBalance::AutonomousBalance(SwerveDriveSubsystem& drive,
                                      BashGuardSubsystem& bash,
                                      LifterSubsystem& lifter,
-                                     SimpleLedSubsystem& leds)
+                                     SimpleLedSubsystem& leds,
+                                     IntakeSubsystem& intake)
     : m_drive{drive}
     , m_bashGuard{bash}
     , m_lifter{lifter}
     , m_leds{leds}
+    , m_intake{intake}
     , m_allCommands{
           (InitializeOdometryCommand{&m_drive, {0_m, 0_m, 180_deg}}.ToPtr())
-              .AndThen(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr())
+              .AndThen(PlaceConeCommand{
+                  &bash,
+                  &lifter,
+                  &intake,
+                  scoring_positions::lifter_extension_end::coneHigh.lifterPosition,
+                  ScoringPosition{.column = ScoringColumn::leftGrid_leftCone, .row = ScoringRow::high},
+              }
+                           .ToPtr())
+              .AndThen(SetArmPoseCommand{&lifter,
+                                         &bash,
+                                         ScoringPosition{.column = ScoringColumn::stow},
+                                         []() { return false; },
+                                         []() { return false; },
+                                         PathType::concaveDown}
+                           .ToPtr()
+                           .AlongWith(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr()))
               .AndThen(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr()),
       } {}
 
