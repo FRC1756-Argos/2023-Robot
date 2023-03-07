@@ -6,13 +6,13 @@
 
 #include <commands/drive_to_position.h>
 #include <commands/grip_cone_command.h>
-#include <commands/place_cone_command.h>
 #include <commands/initialize_odometry_command.h>
+#include <commands/place_cone_command.h>
+#include <constants/field_points.h>
 #include <units/acceleration.h>
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
 #include <units/velocity.h>
-#include <constants/field_points.h>
 
 AutonomousPlaceExit::AutonomousPlaceExit(SwerveDriveSubsystem& drive,
                                          BashGuardSubsystem& bash,
