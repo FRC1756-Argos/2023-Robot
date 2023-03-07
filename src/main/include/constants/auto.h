@@ -93,7 +93,7 @@ namespace path_constraints {
     static const auto loadingStationBackOut = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 8_fps_sq};
     static const auto loadingStationGridToGp0 = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 8_fps_sq};
     static const auto gp0ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
-    static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
+    static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
   }  // namespace translation
   namespace rotation {
     static const auto loadingStationBackOut =
