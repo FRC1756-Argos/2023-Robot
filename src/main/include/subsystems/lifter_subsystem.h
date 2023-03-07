@@ -84,6 +84,9 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param wristAngle
   void SetWristAngle(units::degree_t wristAngle);
 
+  units::degree_t GetWristAbsoluteAngle();
+  double GetLastWristTimestamp();
+
   /// @brief updating wrist homes for encoder
   void UpdateWristHome();
 

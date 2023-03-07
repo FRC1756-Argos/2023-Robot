@@ -170,7 +170,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 
 ## Software Checkout
 
-> :warning: **Warning:** Due to a bug with wrist homing ([#136](https://github.com/FRC1756-Argos/2023-Robot/issues/136)) robot must start up with wrist at 0&deg; orientation (wheels up, bar down).
+> :memo: **Note:** Wrist should start near 0&deg; orientation (wheels up, bar down).
 
 ### Pits
 - Soft limit tests on extension, bash, shoulder

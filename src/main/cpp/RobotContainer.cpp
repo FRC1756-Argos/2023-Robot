@@ -463,9 +463,9 @@ void RobotContainer::ConfigureBindings() {
               ScoringPosition{.column = ScoringColumn::stow},
               [this]() { return m_buttonBox.GetBashGuardStatus(); },
               []() { return false; },
-              PathType::concaveDown))  //,
-                                       //  10_ips,
-                                       //  30_ips2))
+              PathType::concaveDown,
+              speeds::armKinematicSpeeds::effectorFastVelocity,
+              speeds::armKinematicSpeeds::effectorFastAcceleration))
           .ToPtr());
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
@@ -507,8 +507,7 @@ void RobotContainer::ConfigureBindings() {
                   ScoringPosition{.column = ScoringColumn::stow},
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
-                  PathType::concaveDown,
-                  30_ips)
+                  PathType::concaveDown)
                   .ToPtr());
   (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
       .OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());

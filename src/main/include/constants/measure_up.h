@@ -42,7 +42,7 @@ namespace measure_up {
       constexpr auto minAngle = -180_deg;
       constexpr auto invertedAngle = -180_deg;
       constexpr auto nominalAngle = 0_deg;
-      constexpr auto maxAngle = 45_deg;
+      constexpr auto maxAngle = 10_deg;
       constexpr auto wristWidth = 18.5_in;
     }  // namespace wrist
     namespace shoulder {
@@ -66,9 +66,9 @@ namespace measure_up {
   }    // namespace lifter
   namespace bash {
     constexpr auto homeExtension = 2_in;
-    constexpr auto retractedExtension = 2.5_in;
+    constexpr auto retractedExtension = 2.75_in;
     constexpr auto deployedExtension = 24.5_in;
-    constexpr auto minExtension = 3_in;
+    constexpr auto minExtension = 2.25_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
   // namespace wrist {

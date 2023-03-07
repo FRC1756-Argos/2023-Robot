@@ -7,6 +7,7 @@
 #include <commands/drive_to_position.h>
 #include <commands/initialize_odometry_command.h>
 #include <commands/set_arm_pose_command.h>
+#include <frc2/command/WaitCommand.h>
 #include <units/acceleration.h>
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
@@ -45,6 +46,7 @@ AutonomousBalance::AutonomousBalance(SwerveDriveSubsystem& drive,
                                          PathType::concaveDown}
                            .ToPtr()
                            .AlongWith(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr()))
+              .AndThen(frc2::WaitCommand(500_ms).ToPtr())
               .AndThen(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr()),
       } {}
 

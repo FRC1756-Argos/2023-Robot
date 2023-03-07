@@ -119,8 +119,6 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
       argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::wristEncoder>(m_wristEncoder, 100_ms);
   if (!wristSuccess) {
     m_logger.Log(argos_lib::LogLevel::ERR, "Wirst encoder configuration failed\n");
-  } else {
-    InitializeWristHomes();
   }
 
   bool shoulderSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::shoulderEncoderConf>(
@@ -129,8 +127,6 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
   if (!shoulderSuccess) {
     m_logger.Log(argos_lib::LogLevel::ERR, "Shoulder encoder configuration failed, shoulder not homed\n");
     m_shoulderHomed = false;
-  } else {
-    InitializeShoulderHome();
   }
 }
 
@@ -221,8 +217,23 @@ void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
               sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
 }
 
+units::degree_t LifterSubsystem::GetWristAbsoluteAngle() {
+  return units::degree_t(m_wristEncoder.GetAbsolutePosition());
+}
+
+double LifterSubsystem::GetLastWristTimestamp() {
+  return m_wristEncoder.GetLastTimestamp();
+}
+
 // This method will be called once per scheduler run
-void LifterSubsystem::Periodic() {}
+void LifterSubsystem::Periodic() {
+  if (!m_wristHomed && m_wristHomingStorage.Load()) {
+    InitializeWristHomes();
+  }
+  if (!m_shoulderHomed && m_shoulderHomeStorage.Load()) {
+    InitializeShoulderHome();
+  }
+}
 
 void LifterSubsystem::Disable() {
   StopMotionProfile();
@@ -240,32 +251,30 @@ void LifterSubsystem::UpdateArmExtensionHome() {
 }
 
 void LifterSubsystem::InitializeWristHomes() {
-  /// @todo Stupid CANCoder won't consistently return a good absolute position >:(
-  // const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
-  // frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  // Testing
-  // if (wristHomes) {
-  //   units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-  //   frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
+  const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
+  frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  // Testing
+  if (wristHomes) {
+    units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
 
-  //   frc::SmartDashboard::PutNumber("currentencoderValue - home",
-  //                                  (currentencoder - wristHomes.value()).to<double>());  // Testing
-  //   frc::SmartDashboard::PutNumber(
-  //       "currentencoderValue - home constrained",
-  //       units::degree_t(argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg))
-  //           .to<double>());  // Testing
-  //   units::degree_t calcValue =
-  //       argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
+    frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
 
-  //   m_wristEncoder.SetPosition(calcValue.to<double>());
+    frc::SmartDashboard::PutNumber("currentencoderValue - home",
+                                   (currentencoder - wristHomes.value()).to<double>());  // Testing
+    frc::SmartDashboard::PutNumber(
+        "currentencoderValue - home constrained",
+        units::degree_t(argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg))
+            .to<double>());  // Testing
+    units::degree_t calcValue =
+        argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
 
-  //   m_wristHomed = true;
+    m_wristEncoder.SetPosition(calcValue.to<double>());
 
-  //   EnableWristSoftLimits();
-  // } else {
-  //   m_wristHomed = false;
-  // }
-  m_wristEncoder.SetPosition(0);
-  m_wristHomed = true;
+    m_wristHomed = true;
+
+    EnableWristSoftLimits();
+  } else {
+    m_wristHomed = false;
+  }
 }
 
 void LifterSubsystem::UpdateWristHome() {

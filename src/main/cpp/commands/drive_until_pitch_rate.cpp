@@ -28,6 +28,7 @@ DriveUntilPitchRate::DriveUntilPitchRate(SwerveDriveSubsystem* swerveDrive,
 void DriveUntilPitchRate::Initialize() {
   m_velocityRamper.Reset(m_initialPower);
   m_startTime = std::chrono::high_resolution_clock::now();
+  // std::printf("Driving to pitch rate: %0.2f\n", m_pitchRateGoal.to<double>());
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -68,5 +69,8 @@ bool DriveUntilPitchRate::IsFinished() {
       finished = pitchRate <= m_pitchRateGoal;
       break;
   }
+  // if (finished) {
+  //   std::printf("---> pitch rate: %0.2f\n", pitchRate.to<double>());
+  // }
   return finished;
 }

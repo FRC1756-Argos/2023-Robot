@@ -25,7 +25,7 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
                           m_approachAngle,
                           0.2,
                           0,
-                          thresholds::robotClimbPitch * m_initialPitchSign,
+                          10_deg * m_initialPitchSign,
                           m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
                           4_s}
               .ToPtr()
@@ -34,7 +34,7 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
                                   m_approachAngle,
                                   0.2,
                                   0.2,
-                                  11_deg * m_initialPitchSign,
+                                  9_deg * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                   2_s}
                       .ToPtr())
@@ -42,7 +42,7 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
                   // Final Approach to center
                   DriveUntilPitchRate{m_pDrive,
                                       m_approachAngle,
-                                      0.15,
+                                      0.08,
                                       0.2,
                                       thresholds::robotTippingPitchRate * m_initialPitchSign,
                                       m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,

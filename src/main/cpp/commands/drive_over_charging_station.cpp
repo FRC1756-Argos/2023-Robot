@@ -35,7 +35,7 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                   m_approachAngle,
                                   0.3,
                                   0.2,
-                                  11_deg * m_initialPitchSign,
+                                  9_deg * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                   2_s}
                       .ToPtr())
@@ -50,20 +50,20 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                       2_s}
                       .ToPtr())
               .AndThen(
-                  DriveUntilPitch{m_pDrive,
-                                  m_approachAngle,
-                                  0.3,
-                                  0.3,
-                                  thresholds::robotClimbPitch * m_initialPitchSign * -1,
-                                  m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
-                                  2_s}
+                  DriveUntilPitchRate{m_pDrive,
+                                      m_approachAngle,
+                                      0.3,
+                                      0.3,
+                                      0_deg_per_s,
+                                      m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
+                                      2_s}
                       .ToPtr())
               .AndThen(
                   DriveUntilPitch{m_pDrive,
                                   m_approachAngle,
                                   0.3,
                                   0.3,
-                                  thresholds::robotHitChargingStationPitch * m_initialPitchSign * -1,
+                                  thresholds::robotLeftChargingStationPitch * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
                                   2_s}
                       .ToPtr())
