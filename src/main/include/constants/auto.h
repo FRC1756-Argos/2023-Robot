@@ -30,6 +30,21 @@ namespace timeouts {
   /// @todo add max time the robot should take to level the charge station
 }  // namespace timeouts
 
+namespace place_positions {
+  namespace blue_alliance {
+    constexpr auto loadingStationCube3d =
+        field_points::blue_alliance::inner_grid::middleRowMiddle.m_position +
+        frc::Translation3d{
+            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
+    constexpr auto loadingStationCube = frc::Pose2d{{place_positions::blue_alliance::loadingStationCube3d.X(),
+                                                     place_positions::blue_alliance::loadingStationCube3d.Y()},
+                                                    180_deg};
+  }  // namespace blue_alliance
+  namespace red_alliance {
+    static const auto loadingStationCube = utils::ReflectFieldPoint(place_positions::blue_alliance::loadingStationCube);
+  }  // namespace red_alliance
+}  // namespace place_positions
+
 namespace starting_positions {
   namespace blue_alliance {
     constexpr auto loadingStationCone3d =
