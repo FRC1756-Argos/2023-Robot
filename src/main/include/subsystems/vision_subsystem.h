@@ -13,12 +13,16 @@
 #include "networktables/NetworkTableEntry.h"
 #include "networktables/NetworkTableInstance.h"
 #include "networktables/NetworkTableValue.h"
+#include "swerve_drive_subsystem.h"
 
 class LimelightTarget {
  private:
   frc::Pose3d m_robotPose;              ///< 3d pose of robot relative to field center
   frc::Pose3d m_robotPoseWPI;           ///< 3d pose of robot relative to WPI reference for active alliance
+  frc::Pose3d m_robotPoseTagSpace;      ///< 3d pose of robot relative to primary april tag (biggest?)
   bool m_hasTargets;                    ///< True if the camera has a target it can read
+  units::degree_t m_pitch;              ///< Pitch of target relative to camera -24.85 to 24.85 degrees
+  units::degree_t m_yaw;                ///< Yaw of target relative to camera -31.65 to 31.65 degrees
   units::millisecond_t m_totalLatency;  ///< Total latency
 
  public:
@@ -31,7 +35,10 @@ class LimelightTarget {
   struct tValues {
     frc::Pose3d robotPose;              ///< @copydoc LimelightTarget::m_robotPose
     frc::Pose3d robotPoseWPI;           ///< @copydoc LimelightTarget::m_robotPoseWPI
+    frc::Pose3d robotPoseTagSpace;      ///< @copydoc LimelightTarget::m_robotPoseTagSpace
     bool hasTargets;                    ///< @copydoc LimelightTarget::m_hasTargets
+    units::degree_t m_pitch;            ///< @copydoc LimelightTarget::m_pitch
+    units::degree_t m_yaw;              ///< @copydoc LimelightTarget::m_yaw
     units::millisecond_t totalLatency;  ///< @copydoc LimelightTarget::m_totalLatency
   };
 
@@ -78,7 +85,7 @@ class CameraInterface {
 
 class VisionSubsystem : public frc2::SubsystemBase {
  public:
-  VisionSubsystem();
+  VisionSubsystem(const argos_lib::RobotInstance instance, SwerveDriveSubsystem* pDriveSubsystem);
 
   /**
    * @brief Get the offset to the center of the target
@@ -89,16 +96,37 @@ class VisionSubsystem : public frc2::SubsystemBase {
   std::optional<units::degree_t> GetOffsetToTarget(LimelightTarget::tValues target);
 
   /**
-   * @brief Get the pitch and yaw of target
+   * @brief Get the robot poses and latencies
    *
    * @return LimelightTarget::tValues
    */
   LimelightTarget::tValues GetCameraTargetValues();
 
   /**
+   * @brief Get the old robot poses and latencies
+   *
+   * @return LimelightTarget::tValues
+   */
+  LimelightTarget::tValues m_oldTargetValues;
+
+  /**
+   * @brief Get the current offset to the retroreflective tape
+   *
+   * @return units::degree_t
+   */
+  std::optional<units::degree_t> GetHorizontalOffsetToTarget();
+
+  void SetReflectiveVisionMode(bool mode);
+
+  bool AimToPlaceCone();
+
+  /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
   void Periodic() override;
+
+  /// @brief it disables (duh)
+  void Disable();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be
@@ -107,4 +135,5 @@ class VisionSubsystem : public frc2::SubsystemBase {
 
   argos_lib::RobotInstance
       m_instance;  ///< Contains either the competition bot or practice bot. Differentiates between the two
+  SwerveDriveSubsystem* m_pDriveSubsystem;  ///< Pointer to drivetrain for reading some odometry
 };

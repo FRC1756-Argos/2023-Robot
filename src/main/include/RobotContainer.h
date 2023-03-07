@@ -5,14 +5,20 @@
 #pragma once
 
 #include <argos_lib/config/config_types.h>
+#include <argos_lib/general/generic_debouncer.h>
 #include <argos_lib/subsystems/swappable_controllers_subsystem.h>
 #include <commands/bashguard_homing_command.h>
+#include <commands/drive_to_position.h>
 #include <commands/home_arm_extension_command.h>
 #include <commands/score_cone_command.h>
+#include <frc/filter/SlewRateLimiter.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/button/CommandXboxController.h>
 
 #include "Constants.h"
+#include "commands/autonomous/autonomous_balance.h"
+#include "commands/autonomous/autonomous_drive_forward.h"
+#include "commands/autonomous/autonomous_loading_station_2_cone.h"
 #include "commands/autonomous/autonomous_nothing.h"
 #include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
@@ -20,6 +26,7 @@
 #include "subsystems/lifter_subsystem.h"
 #include "subsystems/simple_led_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
+#include "subsystems/vision_subsystem.h"
 #include "utils/auto_selector.h"
 
 /**
@@ -37,6 +44,12 @@ class RobotContainer {
 
   /// @brief Called once when robot is disabled
   void Disable();
+
+  /// @brief Called once when robot is enabled
+  void Enable();
+
+  /// @brief Called when the alliance is changed
+  void AllianceChanged();
 
  private:
   // Interpolation of controller inputs. Used for making the inputs non-linear, allowing finer control of how the robot responds to the joystick.
@@ -64,12 +77,15 @@ class RobotContainer {
   IntakeSubsystem m_intake;
   BashGuardSubsystem m_bash;
   SimpleLedSubsystem m_ledSubSystem;
+  VisionSubsystem m_visionSubSystem;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
-  BashGuardHomingCommand m_bashGuardHomingCommand;
   ScoreConeCommand m_scoreConeCommand;
 
   // Autonomous
   AutonomousNothing m_autoNothing;
+  AutonomousDriveForward m_autoDriveForward;
+  AutonomousBalance m_autoBalance;
+  AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
 
   AutoSelector m_autoSelector;
 
@@ -78,4 +94,6 @@ class RobotContainer {
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 
   nt::GenericEntry* p_wristSetpoint;
+  frc::SlewRateLimiter<units::scalar> m_nudgeRate;
+  argos_lib::GenericDebouncer<AlignLedStatus> m_alignLedDebouncer;
 };

@@ -16,36 +16,60 @@ ScoreConeCommand::ScoreConeCommand(LifterSubsystem& lifter, BashGuardSubsystem& 
     : m_lifter{lifter}
     , m_intake{intake}
     , m_bash{bash}
-    , m_retractIntake{frc2::InstantCommand{[this]() { m_intake.EjectCone(); }, {&m_intake}}}
+    , m_retractIntake{frc2::InstantCommand{[&intake]() { intake.EjectCone(); }, {&intake}}}
     , m_allCommands{frc2::InstantCommand{[]() {}, {}}} {}
 
 // Called when the command is initially scheduled.
 void ScoreConeCommand::Initialize() {
-  auto gpScore = SetArmPoseCommand{m_lifter,
-                                   m_bash,
-                                   GetRelativePose(m_lifter.GetArmPose(WristPosition::Unknown), -10_in, -10_in),
+  m_lifter.ResetPathFaults();
+  auto gpScore = SetArmPoseCommand{&m_lifter,
+                                   &m_bash,
+                                   GetRelativePose(m_lifter.GetArmPose(), -6_in, -8_in),
                                    BashGuardPosition::Retracted,
                                    WristPosition::Unknown,
                                    PathType::concaveUp,
-                                   speeds::armKinematicSpeeds::effectorVelocity,
+                                   30_ips,
                                    speeds::armKinematicSpeeds::effectorAcceleration};
+  auto safetyRaise = SetArmPoseCommand{&m_lifter,
+                                       &m_bash,
+                                       GetRelativePose(m_lifter.GetArmPose(), -6_in, 0_in),
+                                       BashGuardPosition::Retracted,
+                                       WristPosition::Unknown,
+                                       PathType::unmodified,
+                                       30_ips,
+                                       speeds::armKinematicSpeeds::effectorAcceleration};
 
-  m_allCommands =
-      frc2::ParallelCommandGroup(gpScore, frc2::SequentialCommandGroup(frc2::WaitCommand(500_ms), m_retractIntake))
-          .ToPtr();
+  if (m_lifter.GetArmPose().Y() > 20_in) {
+    m_allCommands = frc2::ParallelCommandGroup(frc2::SequentialCommandGroup(gpScore /*, safetyRaise*/),
+                                               frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms), m_retractIntake))
+                        .ToPtr();
+  } else {
+    m_allCommands =
+        frc2::ParallelCommandGroup(frc2::InstantCommand{[this]() { m_intake.EjectConeForReal(); }, {&m_intake}},
+                                   frc2::WaitCommand(750_ms))
+            .ToPtr();
+  }
   // Initialize all commands
-  m_allCommands.get()->Initialize();
+  m_allCommands.Schedule();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void ScoreConeCommand::Execute() {
-  m_allCommands.get()->Execute();
+  if (m_lifter.IsFatalPathFault()) {
+    Cancel();
+    return;
+  }
+  if (!m_allCommands.IsScheduled()) {
+    Cancel();
+    return;
+  }
 }
 
 // Called once the command ends or is interrupted.
 void ScoreConeCommand::End(bool interrupted) {
-  // When command is done, stop the intake reverseing
-  m_allCommands.get()->End(interrupted);
+  if (interrupted) {
+    m_allCommands.Cancel();
+  }
   m_intake.IntakeStop();
 }
 

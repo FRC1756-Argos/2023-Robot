@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "autonomous_command.h"
+#include "commands/autonomous/autonomous_command.h"
 
 class AutonomousNothing
     : public frc2::CommandHelper<frc2::CommandBase, AutonomousNothing>

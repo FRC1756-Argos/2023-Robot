@@ -6,6 +6,7 @@
 
 #include <frc/PneumaticsModuleType.h>
 #include <units/length.h>
+#include <units/time.h>
 #include <units/velocity.h>
 
 #include <string>
@@ -18,15 +19,17 @@
 #include "networktables/NetworkTable.h"
 #include "networktables/NetworkTableInstance.h"
 
-namespace thresholds {}  // namespace thresholds
-
 namespace speeds {
   namespace drive {
+    constexpr double aimBotMaxBias = 1.0;
+    constexpr double aimBotThresh = 0.1;
     constexpr units::velocity::feet_per_second_t maxAngular = 12_fps;
   }  // namespace drive
   namespace armKinematicSpeeds {
-    constexpr auto effectorVelocity = 90_ips;
-    constexpr auto effectorAcceleration = 80_ips2;
+    constexpr auto effectorVelocity = 60_ips;
+    constexpr auto effectorAcceleration = 45_ips2;
+    constexpr auto effectorFastVelocity = 80_ips;
+    constexpr auto effectorFastAcceleration = 60_ips2;
   }  // namespace armKinematicSpeeds
 }  // namespace speeds
 
@@ -61,3 +64,20 @@ namespace networkTables {
     }  // namespace keys
   }    // namespace swerveHomes
 }  // namespace networkTables
+
+namespace leds {
+  // Length of request animation in seconds
+  constexpr units::time::second_t requestLen = 2_s;
+}  // namespace leds
+namespace camera {
+  constexpr char reflectivePipeline = 1;
+  constexpr char aprilTagPipeline = 0;
+  constexpr int horizontalPixelResolution = 320;
+  constexpr int verticalPixelResolution = 240;
+  constexpr auto horizontalAngleResolution = 63.3_deg;
+  constexpr auto halfhorizontalAngleResolution = horizontalAngleResolution / 2;
+  constexpr auto verticalAngleResolution = 49.7_deg;
+}  // namespace camera
+
+/// @brief Designate the threshold approach direction
+enum class ApproachDirection { Increasing, Decreasing };

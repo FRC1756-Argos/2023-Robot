@@ -5,6 +5,7 @@
 #pragma once
 
 #include <frc/ADIS16448_IMU.h>
+#include <frc/Timer.h>
 #include <frc/controller/HolonomicDriveController.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
@@ -19,6 +20,8 @@
 #include "argos_lib/general/nt_motor_pid_tuner.h"
 #include "argos_lib/homing/fs_homing.h"
 #include "ctre/Phoenix.h"
+#include "frc/StateSpaceUtil.h"
+#include "frc/estimator/SwerveDrivePoseEstimator.h"
 #include "utils/swerve_trapezoidal_profile.h"
 
 class SwerveModule {
@@ -70,7 +73,18 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    * @param sideVelocity Percent speed perpendicular to the robots front.  Range [-1.0, 1.0] where positive 1.0 is full speed left
    * @param rotVelocity Percent speed of rotation of the chassis.  Range [-1.0, 1.0] where positive 1.0 is full speed counterclockwise
    */
-  void SwerveDrive(const double& fwVelocity, const double& sideVelocity, const double& rotVelocity);
+  void SwerveDrive(const double fwVelocity, const double sideVelocity, const double rotVelocity);
+
+  /// @brief Same as polar swerve drive function, but also takes in a rotational velocity to apply ONLY USE IN FIELD-CENTRIC
+  /// @param velAngle Angle of velocity vector, [0, 360] with 0 degrees being field-centric home
+  /// @param velocity Magnitude of velocity on [0, 1] to apply
+  /// @param rotVelocity Percent speed of rotation of the chassis.  Range [-1.0, 1.0] where positive 1.0 is full speed counterclockwise
+  void SwerveDrive(const units::degree_t& velAngle, const double& velocity, const double& rotVelocity);
+
+  /// @brief Takes in speeds as a polar vector, and calculates the forward and side velocity to apply ONLY USE IN FIELD-CENTRIC
+  /// @param velAngle Angle of velocity vector, [0, 360] with 0 degrees being field-centric home
+  /// @param velocity Magnitude of velocity on [0, 1] to apply
+  void SwerveDrive(const units::degree_t& velAngle, const double& velocity);
 
   /**
    * @brief Stop all motors
@@ -102,14 +116,16 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   frc::Rotation2d GetContinuousOdometryAngle();
 
+  frc::Rotation2d GetContinuousPoseEstAngle();
+
   frc::Pose2d GetContinuousOdometry();
 
   /**
-   * @brief Reads module states & gyro, updates odometry, and returns latest pose estimate
+   * @brief Reads module states & gyro, updates pose estimator, and returns latest pose estimate
    *
    * @return Estimate of robot pose
    */
-  frc::Pose2d UpdateOdometry();
+  frc::Pose2d UpdateEstimatedPose();
 
   /**
    * @brief Get the field-centric angle of the robot based on gyro and saved reference orientation
@@ -124,7 +140,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    *
    * @return Latest pose
    */
-  frc::Pose2d GetPoseEstimate();
+  frc::Pose2d GetPoseEstimate(const frc::Pose2d& robotPose, const units::millisecond_t& latency);
 
   void SetControlMode(SwerveDriveSubsystem::DriveControlMode controlMode);
 
@@ -181,12 +197,40 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   bool ProfileIsComplete() const;
 
   /**
+   * @brief Check if drivetrain is following a profile
+   *
+   * @return true when robot is following profile
+   */
+  bool IsFollowingProfile() const;
+
+  /**
    * @brief Get the robot velocity in chassis frame (x toward intake, y toward left) based on
    *        GetCurrentModuleStates() output
    *
    * @return frc::ChassisSpeeds Velocity based on module states
    */
   frc::ChassisSpeeds GetChassisVelocity();
+
+  /**
+   * @brief Put the robot wheels in an x shape where it locks the movement of it
+   */
+  void LockWheels();
+
+  bool GetManualOverride();
+
+  /**
+   * @brief Get the robot pitch as determined by the pigeon IMU
+   *
+   * @return pitch in unit degrees
+   */
+  units::degree_t GetRobotPitch() const { return units::degree_t{m_pigeonIMU.GetRoll()}; }
+
+  /**
+   * @brief Get the rate of robot pitch
+   *
+   * @return pitch rate in unit degrees per second
+   */
+  units::degrees_per_second_t GetRobotPitchRate();
 
  private:
   argos_lib::RobotInstance m_instance;
@@ -220,11 +264,14 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   units::degree_t m_prevOdometryAngle;         ///< Last odometry angle used for continuous calculations
   units::degree_t m_continuousOdometryOffset;  ///< Offset to convert [-180,180] odometry angle to continuous angle
 
+  frc::SwerveDrivePoseEstimator<4> m_poseEstimator;  ///< accounts vision-based measurements for odometry
+
   // std::FILE SYSTEM HOMING STORAGE
   argos_lib::SwerveFSHomingStorage m_fsStorage;  ///< Roborio filesystem access for homes
 
   bool m_followingProfile;  ///< True when an incomplete drive profile is being run
   bool m_profileComplete;   ///< True once a drive profile has been completed
+  bool m_manualOverride;
   std::unique_ptr<SwerveTrapezoidalProfileSegment> m_pActiveSwerveProfile;      ///< Profile to execute
   std::chrono::time_point<std::chrono::steady_clock> m_swerveProfileStartTime;  ///< Time when active profile began
   frc2::PIDController m_linearPID;  ///< Correction parameters for x/y error when following drive profile

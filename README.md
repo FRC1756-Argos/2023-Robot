@@ -6,6 +6,27 @@ Robot code for 2023 FRC season
 
 ## Key Features
 
+### LED Color Codes
+
+| Color | Pattern | Strips | Meaning | Trigger |
+| ----- | ------- | ------ | ------- | ------- |
+| Red/Blue | Solid | All | Robot disabled; indicates alliance received from DS | Robot disabled |
+| Red/Blue | Uniform fade in/out | All | Teleop enabled; indicates alliance received from DS | Robot enabled in teleop mode |
+| Red/Blue | Fade sweeping from front to back | All | Autonomous enabled; indicates alliance received from DS | Robot enabled in autonomous mode |
+| Cone Yellow/Magenta | Solid | Top 10 LEDs of each strip | Indicates game piece selected on operator control box for intake and placement positions | Operator flips game piece switch |
+| Cone Yellow/Magenta | Flash | All | Request game piece | Operator controller D-pad up/down |
+| Green | Flash | All | Game piece intake | Game piece detected in intake while driver is intaking |
+| Green | Solid | Front left & right | Vision alignment successful | Vision alignment activated and cone node is detected in correct position |
+| Cat Yellow | Flash | Front left/right | Vision alignment adjusting; flashes in direction of adjustment | Vision alignment activated and cone node is detected at lateral offset from desired position |
+| Red | Solid | Front left & right | Vision alignment no target | Vision alignment activated and no cone node is detected |
+| :fire: | :fire: | All | :fire: :fire: :fire: | Operator control box missile switch |
+
+### Controller Vibration Feedback
+
+| Pattern | Controller | Meaning |
+| ------- | ---------- | ------- |
+| Continuous 100% | Both | Swapping controllers activated.  Swap occurs after vibration ends |
+| 500 ms pulse | Driver | Game piece detected in intake while driver is intaking |
 
 ## FTP
 
@@ -108,16 +129,16 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Right JS Y      | Unused |
 | DPad Up         | Unused |
 | DPad Right      | Unused |
-| DPad Down       | Unused |
+| DPad Down       | Locks Wheels (in a cool x pattern) |
 | DPad Left       | Unused |
 | A               | Home Swerve (hold with <kbd>B</kbd> and <kbd>X</kbd>) |
 | B               | Home Swerve (hold with <kbd>A</kbd> and <kbd>X</kbd>) |
 | X               | Home Swerve (hold with <kbd>A</kbd> and <kbd>B</kbd>) |
 | Y               | Field Home (hold) |
-| LB              | Cube Intake |
-| RB              | Hold For Robot Centric |
-| LT              | Cone Eject |
-| RT              | Cone Intake |
+| LB              | Unused |
+| RB              | Cone/Cube Intake (game piece selected by operator control box switch) |
+| LT              | Enable vision alignment |
+| RT              | Cone/Cube Score (game piece selected by operator control box switch) |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |
@@ -134,12 +155,12 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | B               | Home Shoulder (hold with <kbd>A</kbd>) |
 | X               | Home Wrist (hold with <kbd>Y</kbd>) |
 | Y               | Home Wrist (hold with <kbd>X</kbd>) |
-| DPad Up         | Unused |
+| DPad Up         | Request cone |
 | DPad Right      | Unused |
-| DPad Down       | Unused |
+| DPad Down       | Request cube |
 | DPad Left       | Unused |
-| LB              | Score Cone |
-| RB              | Unused |
+| LB              | Intake Reverse |
+| RB              | Intake Forward |
 | LT              | Retract bash guard |
 | RT              | Extend bash guard |
 | Back            | Swap (hold with <kbd>Start</kbd>) |
@@ -149,14 +170,31 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 
 ## Software Checkout
 
+> :warning: **Warning:** Due to a bug with wrist homing ([#136](https://github.com/FRC1756-Argos/2023-Robot/issues/136)) robot must start up with wrist at 0&deg; orientation (wheels up, bar down).
+
+### Pits
+- Soft limit tests on extension, bash, shoulder
+- Pick up & Place cone, go to High, Medium, Low
+- Repeat with cube
+- Bash guard deploys
+- Field Centric Home
+- Robot drives forward / left / back / right
+- Robot turns as well
+
+### Pits - Extended
+- Camera is sending data
+- All fuses are in and secure
+- No obvious errors in log or events list
+- Check CAN devices should have: (23)
+
 ## Software Versions
 
 We're using the following dependencies:
 
- * [CTRE Phoenix 5.30.3](https://github.com/CrossTheRoadElec/Phoenix-Releases/releases/tag/v5.30.3)
- * [Playing With Fusion 2023.00.17](https://www.playingwithfusion.com/docview.php?docid=1205&catid=9012)
- * [REVLib 2023.1.2](https://docs.revrobotics.com/sparkmax/software-resources/spark-max-api-information#changelog)
- * [WPILib 2023.1.1](https://github.com/wpilibsuite/allwpilib/releases/tag/v2023.1.1)
+ * [CTRE Phoenix 5.30.4](https://github.com/CrossTheRoadElec/Phoenix-Releases/releases/tag/v5.30.4)
+ * [Playing With Fusion 2023.01.17](https://www.playingwithfusion.com/docview.php?docid=1205&catid=9012)
+ * [REVLib 2023.1.3](https://docs.revrobotics.com/sparkmax/software-resources/spark-max-api-information#changelog)
+ * [WPILib 2023.4.2](https://github.com/wpilibsuite/allwpilib/releases/tag/v2023.4.2)
 
 ## Special Thanks
 

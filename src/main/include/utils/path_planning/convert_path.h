@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include <frc/trajectory/TrapezoidProfile.h>
+
+#include <algorithm>
+#include <numeric>
 #include <vector>
 
 #include "subsystems/lifter_subsystem.h"
@@ -18,8 +22,7 @@ namespace path_planning {
   [[nodiscard]] CompositeMPPath GenerateCompositeMPPath(ArmMPPath generalPath,
                                                         const BashGuardMPPath& bashGuardPath,
                                                         const ArmPathPoint& shoulderFulcrum,
-                                                        const LifterSubsystem& lifter,
-                                                        const WristPosition wristPosition);
+                                                        LifterSubsystem* lifter);
   [[nodiscard]] BashGuardMPPath GenerateProfiledBashGuard(const BashGuardPoint& startPoint,
                                                           const BashGuardPoint& endPoint,
                                                           const PathDynamicsConstraints& constraints,
@@ -28,6 +31,50 @@ namespace path_planning {
                                                const PathDynamicsConstraints& constraints,
                                                const Polygon& avoidancePolygon,
                                                units::millisecond_t resolution = 20_ms);
+
+  [[nodiscard]] std::vector<units::inch_t> GenerateSegmentLengths(const path_planning::ArmPath& path);
+
+  template <typename SegmentIt, typename PathIt>
+  [[nodiscard]] std::vector<frc::TrapezoidProfile<units::inch>> GenerateSegmentProfiles(
+      SegmentIt segmentLengthsBegin,
+      SegmentIt segmentLengthsEnd,
+      PathIt pathBegin,
+      PathIt pathEnd,
+      const PathDynamicsConstraints& constraints) {
+    auto totalPathLength = std::accumulate(
+        segmentLengthsBegin, segmentLengthsEnd, 0_in, [](units::inch_t sum, const units::inch_t& segmentLength) {
+          return sum + segmentLength;
+        });
+
+    // Transition velocities cannot exceed max total velocity over path
+    auto minPathTime = units::math::sqrt(2 * totalPathLength / constraints.maxAcceleration);
+    auto maxVel = units::math::min(constraints.maxVelocity, minPathTime / 2 * constraints.maxAcceleration);
+
+    std::vector<frc::TrapezoidProfile<units::inch>> segmentProfiles;
+    segmentProfiles.reserve(std::distance(segmentLengthsBegin, segmentLengthsEnd));
+    auto lastVelocity = 0_ips;
+    path_planning::ArmPath path{pathBegin, pathEnd};
+    size_t segmentIndex = 0;
+    while (segmentLengthsBegin != segmentLengthsEnd) {
+      auto cuspAngle = CalculateCuspAngle(path, segmentIndex);
+      auto transitionSpeed = std::min(
+          maxVel, constraints.maxVelocity * std::max(0.25, ((-units::math::cos(cuspAngle) + 1) / 2).to<double>()));
+      segmentProfiles.emplace_back(
+          frc::TrapezoidProfile<units::inch>::Constraints{constraints.maxVelocity, constraints.maxAcceleration},
+          frc::TrapezoidProfile<units::inch>::State{*segmentLengthsBegin, transitionSpeed},
+          frc::TrapezoidProfile<units::inch>::State{0_in, lastVelocity});
+      lastVelocity = segmentProfiles.back().Calculate(segmentProfiles.back().TotalTime()).velocity;
+      ++segmentLengthsBegin;
+      ++segmentIndex;
+    }
+
+    return segmentProfiles;
+  }
+
+  [[nodiscard]] std::vector<frc::TrapezoidProfile<units::inch>> GenerateContinuousSegmentProfiles(
+      const std::vector<units::inch_t>& segmentLengths,
+      const path_planning::ArmPath& path,
+      const PathDynamicsConstraints& constraints);
 
   template <typename PositionType, typename VelocityType>
   [[nodiscard]] std::vector<GenericMPPathPoint<PositionType, VelocityType>> PadProfile(

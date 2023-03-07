@@ -27,7 +27,7 @@ namespace controlLoop {
         constexpr static double allowableError = 0.0;
       };  // namespace drive
       struct linear_follower {
-        constexpr static double kP = 8.0;
+        constexpr static double kP = 7.5;
         constexpr static double kI = 0.0;
         constexpr static double kD = 0.0;
       };  // namespace linear_follower
@@ -45,19 +45,19 @@ namespace controlLoop {
         constexpr static double kI = 0;
         constexpr static double kD = 0;
         constexpr static double kF = 0.3;
-        constexpr static double iZone = 0;
-        constexpr static double allowableError = 0;
+        constexpr static double iZone = 500;
+        constexpr static double allowableError = 75;
       };
       struct shoulder {
-        constexpr static double kP = 5.0;
-        constexpr static double kI = 0;
-        constexpr static double kD = 0;
-        constexpr static double kF = 20.0;
-        constexpr static double iZone = 0;
-        constexpr static double allowableError = 15;
+        constexpr static double kP = 0.07;
+        constexpr static double kI = 0.0001;
+        constexpr static double kD = 0.002;
+        constexpr static double kF = 0.053;
+        constexpr static double iZone = 1000;
+        constexpr static double allowableError = 0;
       };
       struct wrist {
-        constexpr static double kP = 3.0;
+        constexpr static double kP = 2.6;
         constexpr static double kI = 0;
         constexpr static double kD = 1;
         constexpr static double kF = 0;
