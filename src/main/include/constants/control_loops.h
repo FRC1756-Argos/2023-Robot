@@ -32,7 +32,7 @@ namespace controlLoop {
         constexpr static double kD = 0.0;
       };  // namespace linear_follower
       struct rotational_follower {
-        constexpr static double kP = 8.0;
+        constexpr static double kP = 7.0;
         constexpr static double kI = 0.0;
         constexpr static double kD = 0.0;
         constexpr static auto angularVelocity = units::degrees_per_second_t{360};
