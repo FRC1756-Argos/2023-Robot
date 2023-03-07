@@ -21,6 +21,7 @@
 #include "commands/autonomous/autonomous_loading_station_2_cone.h"
 #include "commands/autonomous/autonomous_loading_station_cone_cube_score.h"
 #include "commands/autonomous/autonomous_nothing.h"
+#include "commands/autonomous/autonomous_place_exit.h"
 #include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
@@ -88,6 +89,7 @@ class RobotContainer {
   AutonomousBalance m_autoBalance;
   AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
   AutonomousLoadingStationConeCubeScore m_autoConeCubeScore;
+  AutonomousPlaceExit m_autoPlaceExit;
 
   AutoSelector m_autoSelector;
 
