@@ -58,7 +58,13 @@ RobotContainer::RobotContainer()
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
-    , m_autoSelector{{&m_autoNothing, &m_autoDriveForward, &m_autoBalance, &m_autoLoadingStation2Cone}, &m_autoNothing}
+    , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoSelector{{&m_autoNothing,
+                      &m_autoDriveForward,
+                      &m_autoBalance,
+                      &m_autoLoadingStation2Cone,
+                      &m_autoPlaceExit},
+                     &m_autoNothing}
     , m_nudgeRate{1 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
