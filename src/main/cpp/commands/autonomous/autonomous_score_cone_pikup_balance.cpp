@@ -56,7 +56,9 @@ void AutonomousScoreConePickupBalance::Initialize() {
                                     interimWaypoint,
                                     interimWaypoint.Rotation().Degrees(),
                                     path_constraints::translation::loadingStationBackOut,
-                                    path_constraints::rotation::loadingStationBackOut}
+                                    path_constraints::rotation::loadingStationBackOut,
+                                    0_fps,
+                                    path_constraints::translation::loadingStationBackOut.maxVelocity}
                         .ToPtr()
                         .AndThen(DriveToPosition{&m_drive,
                                                  interimWaypoint,
@@ -64,7 +66,9 @@ void AutonomousScoreConePickupBalance::Initialize() {
                                                  pickupPosition,
                                                  pickupPosition.Rotation().Degrees(),
                                                  path_constraints::translation::loadingStationGridToGp0,
-                                                 path_constraints::rotation::loadingStationGridToGp0}
+                                                 path_constraints::rotation::loadingStationGridToGp0,
+                                                 path_constraints::translation::loadingStationBackOut.maxVelocity,
+                                                 0_fps}
                                      .ToPtr()))
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bashGuard,
@@ -96,10 +100,10 @@ void AutonomousScoreConePickupBalance::Initialize() {
                         .ToPtr()
                         .AlongWith(SetArmPoseCommand{&m_lifter,
                                                      &m_bashGuard,
-                                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                     ScoringPosition{ScoringColumn::invalid, ScoringRow::low},
                                                      []() { return false; },
                                                      []() { return false; },
-                                                     PathType::concaveDown,
+                                                     PathType::unmodified,
                                                      speeds::armKinematicSpeeds::effectorFastVelocity,
                                                      speeds::armKinematicSpeeds::effectorFastAcceleration}
                                        .ToPtr())
