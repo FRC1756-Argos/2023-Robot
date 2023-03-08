@@ -22,7 +22,7 @@
 #include "commands/autonomous/autonomous_loading_station_cone_cube_score.h"
 #include "commands/autonomous/autonomous_nothing.h"
 #include "commands/autonomous/autonomous_place_exit.h"
-#include "commands/autonomous/autonomous_score_cone_pikup_balance.h"
+#include "commands/autonomous/autonomous_score_cone_pickup_balance.h"
 #include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"

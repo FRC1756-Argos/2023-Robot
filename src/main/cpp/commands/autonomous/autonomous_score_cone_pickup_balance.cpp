@@ -2,7 +2,7 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
-#include "commands/autonomous/autonomous_score_cone_pikup_balance.h"
+#include "commands/autonomous/autonomous_score_cone_pickup_balance.h"
 
 #include <constants/auto.h>
 #include <frc/DriverStation.h>
