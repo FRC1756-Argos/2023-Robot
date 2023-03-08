@@ -54,10 +54,20 @@ namespace starting_positions {
     constexpr auto loadingStationCone = frc::Pose2d{{starting_positions::blue_alliance::loadingStationCone3d.X(),
                                                      starting_positions::blue_alliance::loadingStationCone3d.Y()},
                                                     180_deg};
+
+    constexpr auto cableProtectorCone3d =
+        field_points::blue_alliance::outer_grid::topRowRight.m_position +
+        frc::Translation3d{
+            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
+    constexpr auto cableProtectorCone = frc::Pose2d{{starting_positions::blue_alliance::cableProtectorCone3d.X(),
+                                                     starting_positions::blue_alliance::cableProtectorCone3d.Y()},
+                                                    180_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto loadingStationCone =
         utils::ReflectFieldPoint(starting_positions::blue_alliance::loadingStationCone);
+    static const auto cableProtectorCone =
+        utils::ReflectFieldPoint(starting_positions::blue_alliance::cableProtectorCone);
   }  // namespace red_alliance
 }  // namespace starting_positions
 
@@ -67,10 +77,16 @@ namespace interim_waypoints {
         frc::Pose2d{{starting_positions::blue_alliance::loadingStationCone.X() + 90_in,
                      starting_positions::blue_alliance::loadingStationCone.Y()},
                     starting_positions::blue_alliance::loadingStationCone.Rotation()};
+    constexpr auto backAwayFromCableProtectorCone =
+        frc::Pose2d{{starting_positions::blue_alliance::cableProtectorCone.X() + 110_in,
+                     starting_positions::blue_alliance::cableProtectorCone.Y() + 12_in},
+                    starting_positions::blue_alliance::cableProtectorCone.Rotation()};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto backAwayFromLoadingStationCone =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCone);
+    static const auto backAwayFromCableProtectorCone =
+        utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromCableProtectorCone);
   }  // namespace red_alliance
 }  // namespace interim_waypoints
 
@@ -79,12 +95,19 @@ namespace game_piece_pickup {
     constexpr auto gamePiece0_3d =
         field_points::blue_alliance::game_pieces::gp_0 -
         frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
+    constexpr auto gamePiece3_3d =
+        field_points::blue_alliance::game_pieces::gp_3 -
+        frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
     constexpr auto gamePiece0 = frc::Pose2d{
         {game_piece_pickup::blue_alliance::gamePiece0_3d.X(), game_piece_pickup::blue_alliance::gamePiece0_3d.Y()},
+        0_deg};
+    constexpr auto gamePiece3 = frc::Pose2d{
+        {game_piece_pickup::blue_alliance::gamePiece3_3d.X(), game_piece_pickup::blue_alliance::gamePiece3_3d.Y()},
         0_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto gamePiece0 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece0);
+    static const auto gamePiece3 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece3);
   }  // namespace red_alliance
 }  // namespace game_piece_pickup
 
@@ -94,6 +117,11 @@ namespace path_constraints {
     static const auto loadingStationGridToGp0 = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 8_fps_sq};
     static const auto gp0ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
     static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
+
+    static const auto cableProtectorBackOut = frc::TrapezoidProfile<units::inches>::Constraints{3.5_fps, 6.5_fps_sq};
+    static const auto cableProtectorGridToGp3 = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 6_fps_sq};
+    static const auto gp3ToScore = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 6_fps_sq};
+    static const auto cableProtectorPullIn = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 6_fps_sq};
   }  // namespace translation
   namespace rotation {
     static const auto loadingStationBackOut =
