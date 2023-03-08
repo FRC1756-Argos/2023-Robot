@@ -58,7 +58,7 @@ void AutonomousScoreConePickupBalance::Initialize() {
                                     path_constraints::translation::loadingStationBackOut,
                                     path_constraints::rotation::loadingStationBackOut,
                                     0_fps,
-                                    path_constraints::translation::loadingStationBackOut.maxVelocity}
+                                    path_constraints::translation::loadingStationGridToGp0.maxVelocity}
                         .ToPtr()
                         .AndThen(DriveToPosition{&m_drive,
                                                  interimWaypoint,
@@ -100,7 +100,7 @@ void AutonomousScoreConePickupBalance::Initialize() {
                         .ToPtr()
                         .AlongWith(SetArmPoseCommand{&m_lifter,
                                                      &m_bashGuard,
-                                                     ScoringPosition{ScoringColumn::invalid, ScoringRow::low},
+                                                     ScoringPosition{ScoringColumn::leftGrid_leftCone, ScoringRow::low},
                                                      []() { return false; },
                                                      []() { return false; },
                                                      PathType::unmodified,
