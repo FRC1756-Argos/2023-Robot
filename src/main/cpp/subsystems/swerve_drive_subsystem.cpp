@@ -247,46 +247,46 @@ void SwerveDriveSubsystem::SwerveDrive(const double fwVelocity, const double sid
     const auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                    m_swerveProfileStartTime);
     // frc::SmartDashboard::PutNumber("(SwerveFollower) Elapsed Time", elapsedTime.count());
-    if (!m_pActiveSwerveProfile->IsFinished(elapsedTime)) {
-      desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
+    desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
 
-      const auto controllerChassisSpeeds = m_followerController.Calculate(
-          m_poseEstimator.GetEstimatedPosition(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());
-      moduleStates = m_swerveDriveKinematics.ToSwerveModuleStates(controllerChassisSpeeds);
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired X",
-      //                                units::inch_t{desiredProfileState.pose.X()}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Y",
-      //                                units::inch_t{desiredProfileState.pose.Y()}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Angle",
-      //                                desiredProfileState.pose.Rotation().Degrees().to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Curvature",
-      //                                units::unit_t<units::compound_unit<units::degrees, units::inverse<units::feet>>>{
-      //                                    desiredProfileState.curvature}
-      //                                    .to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) End Angle", m_pActiveSwerveProfile->GetEndAngle().to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Vel",
-      //                                units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Current X",
-      //                                units::inch_t{GetContinuousOdometry().X()}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Y",
-      //                                units::inch_t{GetContinuousOdometry().Y()}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Angle",
-      //                                GetContinuousOdometry().Rotation().Degrees().to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Vx",
-      //                                units::feet_per_second_t{controllerChassisSpeeds.vx}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Vy",
-      //                                units::feet_per_second_t{controllerChassisSpeeds.vy}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Omega",
-      //                                units::degrees_per_second_t{controllerChassisSpeeds.omega}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Vel",
-      //                                units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentXFollowerCommand",
-      //                                m_followerController.getXController().GetSetpoint());
-      // frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentYFollowerCommand",
-      //                                m_followerController.getYController().GetSetpoint());
-    } else {
+    const auto controllerChassisSpeeds = m_followerController.Calculate(
+        m_poseEstimator.GetEstimatedPosition(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());
+    moduleStates = m_swerveDriveKinematics.ToSwerveModuleStates(controllerChassisSpeeds);
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired X",
+    //                                units::inch_t{desiredProfileState.pose.X()}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Y",
+    //                                units::inch_t{desiredProfileState.pose.Y()}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Angle",
+    //                                desiredProfileState.pose.Rotation().Degrees().to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Curvature",
+    //                                units::unit_t<units::compound_unit<units::degrees, units::inverse<units::feet>>>{
+    //                                    desiredProfileState.curvature}
+    //                                    .to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) End Angle", m_pActiveSwerveProfile->GetEndAngle().to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Desired Vel",
+    //                                units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Current X",
+    //                                units::inch_t{GetContinuousOdometry().X()}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Y",
+    //                                units::inch_t{GetContinuousOdometry().Y()}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Angle",
+    //                                GetContinuousOdometry().Rotation().Degrees().to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Vx",
+    //                                units::feet_per_second_t{controllerChassisSpeeds.vx}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Vy",
+    //                                units::feet_per_second_t{controllerChassisSpeeds.vy}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Controller Omega",
+    //                                units::degrees_per_second_t{controllerChassisSpeeds.omega}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) Current Vel",
+    //                                units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentXFollowerCommand",
+    //                                m_followerController.getXController().GetSetpoint());
+    // frc::SmartDashboard::PutNumber("(SwerveFollower) CurrentYFollowerCommand",
+    //                                m_followerController.getYController().GetSetpoint());
+
+    if (m_pActiveSwerveProfile->IsFinished(elapsedTime)) {
       // Finished profile
-      m_followingProfile = false;
+      m_followingProfile = true;
       m_profileComplete = true;
       // frc::SmartDashboard::PutBoolean("(SwerveFollower) ProfileIsFinished", true);
     }
