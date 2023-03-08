@@ -155,7 +155,7 @@ void AutonomousLoadingStationConeCubeScore::Execute() {
 // Called once the command ends or is interrupted.
 void AutonomousLoadingStationConeCubeScore::End(bool interrupted) {
   if (interrupted) {
-    m_allCommands.get()->Execute();
+    m_allCommands.get()->End(interrupted);
   }
 }
 

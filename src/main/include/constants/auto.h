@@ -63,14 +63,28 @@ namespace starting_positions {
 
 namespace interim_waypoints {
   namespace blue_alliance {
+
+    namespace fudges {
+      constexpr auto stationStageFudge = 10_in;
+    }  // namespace fudges
+
     constexpr auto backAwayFromLoadingStationCone =
         frc::Pose2d{{starting_positions::blue_alliance::loadingStationCone.X() + 90_in,
                      starting_positions::blue_alliance::loadingStationCone.Y()},
                     starting_positions::blue_alliance::loadingStationCone.Rotation()};
+
+    // Cetner of robot when staging for dock, outside of the community
+    constexpr auto chargingStationStage =
+        frc::Pose2d{{field_points::charge_station::outerEdgeX + measure_up::chassis::length / 2 +
+                         measure_up::bumperExtension + fudges::stationStageFudge,
+                     field_points::blue_alliance::charge_station::chargeStationCenter.Y()},
+                    180_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto backAwayFromLoadingStationCone =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCone);
+    static const auto chargingStationStage =
+        utils::ReflectFieldPoint(interim_waypoints::blue_alliance::chargingStationStage);
   }  // namespace red_alliance
 }  // namespace interim_waypoints
 
@@ -91,12 +105,15 @@ namespace game_piece_pickup {
 namespace path_constraints {
   namespace translation {
     static const auto loadingStationBackOut = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 8_fps_sq};
+    static const auto stageChargeStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 8_fps_sq};
     static const auto loadingStationGridToGp0 = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 8_fps_sq};
     static const auto gp0ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
     static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
   }  // namespace translation
   namespace rotation {
     static const auto loadingStationBackOut =
+        frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
+    static const auto stageChargeStationPullIn =
         frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
     static const auto loadingStationGridToGp0 =
         frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
