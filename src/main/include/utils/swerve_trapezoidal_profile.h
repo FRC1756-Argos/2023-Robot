@@ -22,12 +22,16 @@ class SwerveTrapezoidalProfileSegment {
                                   const units::degree_t initialAngle,
                                   const frc::Translation2d relativeTranslation,
                                   const units::degree_t relativeRotation,
-                                  const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints);
+                                  const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
+                                  const units::feet_per_second_t initialVelocity = 0_fps,
+                                  const units::feet_per_second_t finalVelocity = 0_fps);
   SwerveTrapezoidalProfileSegment(const frc::Pose2d initialPosition,
                                   const units::degree_t initialAngle,
                                   const frc::Pose2d finalPosition,
                                   const units::degree_t finalAngle,
-                                  const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints);
+                                  const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
+                                  const units::feet_per_second_t initialVelocity = 0_fps,
+                                  const units::feet_per_second_t finalVelocity = 0_fps);
   SwerveTrapezoidalProfileSegment(const SwerveTrapezoidalProfileSegment& other) = default;
   SwerveTrapezoidalProfileSegment(SwerveTrapezoidalProfileSegment&& other) = default;
 

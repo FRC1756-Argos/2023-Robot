@@ -7,6 +7,8 @@
 #include <frc/geometry/Pose2d.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
+#include <units/angle.h>
+#include <units/velocity.h>
 
 #include <memory>
 
@@ -20,7 +22,9 @@ class DriveToPosition : public frc2::CommandHelper<frc2::CommandBase, DriveToPos
                   const frc::Pose2d destination,
                   const units::degree_t destAngle,
                   const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
-                  const frc::TrapezoidProfile<units::degrees>::Constraints rotationalConstraints);
+                  const frc::TrapezoidProfile<units::degrees>::Constraints rotationalConstraints,
+                  const units::feet_per_second_t initialVelocity = 0_fps,
+                  const units::feet_per_second_t finalVelocity = 0_fps);
 
   void Initialize() override;
 
@@ -38,4 +42,6 @@ class DriveToPosition : public frc2::CommandHelper<frc2::CommandBase, DriveToPos
   const units::degree_t m_destAngle;
   const frc::TrapezoidProfile<units::inches>::Constraints m_linearConstraints;
   const frc::TrapezoidProfile<units::degrees>::Constraints m_rotationalConstraints;
+  const units::feet_per_second_t m_initialVelocity;
+  const units::feet_per_second_t m_finalVelocity;
 };

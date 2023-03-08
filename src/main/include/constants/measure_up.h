@@ -33,7 +33,7 @@ namespace measure_up {
     constexpr auto fulcrumPosition = frc::Translation2d{-12_in, 50_in};
     namespace arm_extension {
       constexpr auto homeExtension = 37.50_in;
-      constexpr auto maxExtension = 72.00_in;
+      constexpr auto maxExtension = 68.00_in;
       constexpr auto minExtension = 38.00_in;
 
     }  // namespace arm_extension
