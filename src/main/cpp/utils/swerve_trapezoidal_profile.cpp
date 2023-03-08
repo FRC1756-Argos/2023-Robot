@@ -17,17 +17,22 @@ SwerveTrapezoidalProfileSegment::SwerveTrapezoidalProfileSegment(
     const units::degree_t initialAngle,
     const frc::Translation2d relativeTranslation,
     const units::degree_t relativeRotation,
-    const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints)
+    const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
+    const units::feet_per_second_t initialVelocity,
+    const units::feet_per_second_t finalVelocity)
     : m_initialPosition{initialPosition}
     , m_initialAngle{initialAngle}
     , m_relativeTranslation{relativeTranslation}
     , m_relativeRotation{relativeRotation}
-    , m_linearProfile{linearConstraints, frc::TrapezoidProfile<units::inches>::State{relativeTranslation.Norm(), 0_mps}}
+    , m_linearProfile{linearConstraints,
+                      frc::TrapezoidProfile<units::inches>::State{relativeTranslation.Norm(), finalVelocity},
+                      frc::TrapezoidProfile<units::inches>::State{0_m, initialVelocity}}
     , m_motionAngle{units::math::atan2(m_relativeTranslation.Y(), m_relativeTranslation.X())} {
   frc::Pose2d finalPose{m_initialPosition.Translation() + m_relativeTranslation,
                         m_initialPosition.Rotation() + frc::Rotation2d{m_relativeRotation}};
   m_odometryOffsetAngle =
       GetContinuousOffset(m_initialAngle, m_initialPosition, m_initialAngle + m_relativeRotation, finalPose);
+
   frc::SmartDashboard::PutNumber("(SwerveFollower) Relative X", units::inch_t{m_relativeTranslation.X()}.to<double>());
   frc::SmartDashboard::PutNumber("(SwerveFollower) Relative Y", units::inch_t{m_relativeTranslation.Y()}.to<double>());
 }
@@ -37,12 +42,16 @@ SwerveTrapezoidalProfileSegment::SwerveTrapezoidalProfileSegment(
     const units::degree_t initialAngle,
     const frc::Pose2d finalPosition,
     const units::degree_t finalAngle,
-    const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints)
+    const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
+    const units::feet_per_second_t initialVelocity,
+    const units::feet_per_second_t finalVelocity)
     : SwerveTrapezoidalProfileSegment(initialPosition,
                                       initialAngle,
                                       finalPosition.Translation() - initialPosition.Translation(),
                                       finalAngle - initialAngle,
-                                      linearConstraints) {
+                                      linearConstraints,
+                                      initialVelocity,
+                                      finalVelocity) {
   frc::SmartDashboard::PutNumber("(TrapezoidalProfile) Initial Position X",
                                  units::inch_t{initialPosition.X()}.to<double>());
   frc::SmartDashboard::PutNumber("(TrapezoidalProfile) Initial Position Y",

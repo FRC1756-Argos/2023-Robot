@@ -60,7 +60,9 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                     interimWaypoint,
                                     interimWaypoint.Rotation().Degrees(),
                                     path_constraints::translation::loadingStationBackOut,
-                                    path_constraints::rotation::loadingStationBackOut}
+                                    path_constraints::rotation::loadingStationBackOut,
+                                    0_fps,
+                                    path_constraints::translation::loadingStationGridToGp0.maxVelocity}
                         .ToPtr()
                         .AndThen(DriveToPosition{&m_drive,
                                                  interimWaypoint,
@@ -68,11 +70,13 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                  pickupPosition,
                                                  pickupPosition.Rotation().Degrees(),
                                                  path_constraints::translation::loadingStationGridToGp0,
-                                                 path_constraints::rotation::loadingStationGridToGp0}
+                                                 path_constraints::rotation::loadingStationGridToGp0,
+                                                 path_constraints::translation::loadingStationBackOut.maxVelocity,
+                                                 0_fps}
                                      .ToPtr()))
                        .AlongWith((SetArmPoseCommand{&m_lifter,
                                                      &m_bashGuard,
-                                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                     ScoringPosition{ScoringColumn::leftGrid_leftCone, ScoringRow::low},
                                                      []() { return false; },
                                                      []() { return false; },
                                                      PathType::concaveDown,
@@ -96,7 +100,9 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                    interimWaypoint,
                                    interimWaypoint.Rotation().Degrees(),
                                    path_constraints::translation::gp0ToScore,
-                                   path_constraints::rotation::gp0ToScore}
+                                   path_constraints::rotation::gp0ToScore,
+                                   0_fps,
+                                   path_constraints::translation::loadingStationPullIn.maxVelocity}
                        .ToPtr()
                        .AndThen(DriveToPosition{&m_drive,
                                                 interimWaypoint,
@@ -104,7 +110,9 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                 startingPosition,
                                                 startingPosition.Rotation().Degrees(),
                                                 path_constraints::translation::loadingStationPullIn,
-                                                path_constraints::rotation::loadingStationPullIn}
+                                                path_constraints::rotation::loadingStationPullIn,
+                                                path_constraints::translation::gp0ToScore.maxVelocity,
+                                                0_fps}
                                     .ToPtr())
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bashGuard,
@@ -124,7 +132,9 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                     interimWaypoint,
                                     interimWaypoint.Rotation().Degrees(),
                                     path_constraints::translation::loadingStationBackOut,
-                                    path_constraints::rotation::loadingStationBackOut}
+                                    path_constraints::rotation::loadingStationBackOut,
+                                    0_fps,
+                                    path_constraints::translation::loadingStationGridToGp0.maxVelocity}
                         .ToPtr()
                         .AndThen(DriveToPosition{&m_drive,
                                                  interimWaypoint,
@@ -132,7 +142,9 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                                  pickupPosition,
                                                  pickupPosition.Rotation().Degrees(),
                                                  path_constraints::translation::loadingStationGridToGp0,
-                                                 path_constraints::rotation::loadingStationGridToGp0}
+                                                 path_constraints::rotation::loadingStationGridToGp0,
+                                                 path_constraints::translation::loadingStationBackOut.maxVelocity,
+                                                 0_fps}
                                      .ToPtr()))
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bashGuard,
