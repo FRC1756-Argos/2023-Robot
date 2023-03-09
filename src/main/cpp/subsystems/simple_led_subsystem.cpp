@@ -42,6 +42,10 @@ void SimpleLedSubsystem::Disable() {
   }
 }
 
+void SimpleLedSubsystem::SetLedsConnectedBrightness(bool connected) {
+  m_CANdle.ConfigBrightnessScalar(connected ? 1.0 : 0.3);
+}
+
 void SimpleLedSubsystem::SetDisableAnimation(std::function<void()> animationFunction) {
   m_disableUpdateFunction = animationFunction;
 }

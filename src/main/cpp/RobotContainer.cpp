@@ -584,6 +584,10 @@ void RobotContainer::AllianceChanged() {
   m_ledSubSystem.SetDisableAnimation([this]() { m_ledSubSystem.SetAllGroupsAllianceColor(false, false); });
 }
 
+void RobotContainer::SetLedsConnectedBrightness(bool connected) {
+  m_ledSubSystem.SetLedsConnectedBrightness(connected);
+}
+
 frc2::Command* RobotContainer::GetAutonomousCommand() {
   return m_autoSelector.GetSelectedCommand();
 }

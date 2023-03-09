@@ -54,6 +54,8 @@ class RobotContainer {
   /// @brief Called when the alliance is changed
   void AllianceChanged();
 
+  void SetLedsConnectedBrightness(bool connected);
+
  private:
   // Interpolation of controller inputs. Used for making the inputs non-linear, allowing finer control of how the robot responds to the joystick.
   argos_lib::InterpolationMap<decltype(controllerMap::driveSpeed.front().inVal), controllerMap::driveSpeed.size()>
