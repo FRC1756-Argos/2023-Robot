@@ -32,8 +32,8 @@ namespace scoring_positions {
     constexpr static SetpointPosition coneMid(frc::Translation2d(36.5_in, 44.5_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneMid_wristInverted(frc::Translation2d(33_in, 44.5_in),
                                                             BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneHigh(frc::Translation2d(51.5_in, 54_in), BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(50.5_in, 54_in),
+    constexpr static SetpointPosition coneHigh(frc::Translation2d(51.5_in, 54.5_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(51_in, 54_in),
                                                              BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow(frc::Translation2d(20.5_in, 23_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow_wristInverted(frc::Translation2d(20.5_in, 23_in),
