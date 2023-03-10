@@ -272,6 +272,16 @@ RobotContainer::RobotContainer()
 
   m_bash.SetDefaultCommand(frc2::RunCommand(
       [this] {
+        // REMOVEME debugging
+        frc::SmartDashboard::PutNumber("BashDebug/BashGuardSubsystem/Current Extension (inches)",
+                                       m_bash.GetBashGuardExtension().to<double>());
+        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Home Failed? (m_bashHomeFailed)",
+                                        m_bash.GetHomeFailed());
+        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Actually Homed ? (m_bashGuardHomed)",
+                                        m_bash.GetRawBashHomed());
+        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Homed ? (m_bashGuardHomed || m_bashHomeFailed)",
+                                        m_bash.IsBashGuardHomed());
+        // ! end debuug
         double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
                                argos_lib::XboxController::JoystickHand::kLeftHand))) ?
                                -1 * m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
@@ -490,10 +500,7 @@ void RobotContainer::ConfigureBindings() {
 
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
-  startupBashGuardHomeTrigger.OnTrue(
-      frc2::SequentialCommandGroup(BashGuardHomingCommand(m_bash),
-                                   frc2::InstantCommand([this]() { m_bash.SetExtensionLength(2_in); }))
-          .ToPtr());
+  startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
   frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);
@@ -514,7 +521,7 @@ void RobotContainer::ConfigureBindings() {
       .OnTrue(SetArmPoseCommand(
                   &m_lifter,
                   &m_bash,
-                  ScoringPosition{.column = ScoringColumn::stow},
+                  []() { return ScoringPosition{.column = ScoringColumn::stow}; },
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
                   PathType::concaveDown)

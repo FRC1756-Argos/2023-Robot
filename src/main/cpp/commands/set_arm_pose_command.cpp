@@ -31,6 +31,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
     , m_latestScoringPosition{}
+    , m_lastInversion{false}
     , m_pathType{pathType}
     , m_endingWristPosition{WristPosition::Unknown}
     , m_hasShoulderMotion{false}
@@ -62,6 +63,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
     , m_latestScoringPosition{scoringPosition}
+    , m_lastInversion{false}
     , m_pathType{pathType}
     , m_endingWristPosition{WristPosition::Unknown}
     , m_hasShoulderMotion{false}
@@ -103,6 +105,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{isTuneable}
     , m_latestScoringPosition{}
+    , m_lastInversion{false}
     , m_pathType{pathType}
     , m_endingWristPosition{desiredWristPosition}
     , m_hasShoulderMotion{false}
@@ -132,12 +135,23 @@ void SetArmPoseCommand::Initialize() {
 
   bool bashGuardEnable = !bashGuardDisabled && m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
 
+  // set latest scoring position if we are using callback
+  if (m_scoringPositionCb) {
+    m_latestScoringPosition = m_scoringPositionCb.value()();
+  }
+
   switch (m_latestScoringPosition.column) {
     case ScoringColumn::coneIntake:
     case ScoringColumn::cubeIntake:
       m_endingWristPosition = WristPosition::RollersUp;
       break;
     case ScoringColumn::stow:
+      if (m_scoringPositionCb) {
+        m_endingWristPosition = WristPosition::RollersUp;
+      } else {
+        m_endingWristPosition = WristPosition::Unknown;
+      }
+      break;
     case ScoringColumn::invalid:
       m_endingWristPosition = WristPosition::Unknown;
       break;
@@ -326,6 +340,16 @@ void SetArmPoseCommand::Execute() {
   }
   if (m_scoringPositionCb) {
     auto updatedScoringPosition = m_scoringPositionCb.value()();
+    if (m_placeGamePieceInvertedCb) {
+      auto updatedGamePieceInverted = m_placeGamePieceInvertedCb.value()();
+      auto inversionChanged = updatedGamePieceInverted != m_lastInversion;
+      m_lastInversion = updatedGamePieceInverted;
+      if (inversionChanged && (m_latestScoringPosition.column != ScoringColumn::coneIntake &&
+                               m_latestScoringPosition.column != ScoringColumn::cubeIntake &&
+                               m_latestScoringPosition.column != ScoringColumn::stow)) {
+        m_endingWristPosition = updatedGamePieceInverted ? WristPosition::RollersDown : WristPosition::RollersUp;
+      }
+    }
     if (updatedScoringPosition != m_latestScoringPosition) {
       m_lifter->StopMotionProfile();
       m_bashGuard->StopMotionProfile();

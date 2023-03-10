@@ -71,6 +71,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   bool m_isTunable;
 
   ScoringPosition m_latestScoringPosition;
+  bool m_lastInversion;
   PathType m_pathType;
   WristPosition m_endingWristPosition;
 

@@ -31,6 +31,10 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   /// @warning If homing failed, this could still return true
   bool IsBashGuardHomed();
 
+  // REMOVEME debugging
+  bool GetRawBashHomed() { return m_bashGuardHomed; }
+  // ! end debug
+
   bool IsBashGuardManualOverride();
 
   void SetBashGuardManualOverride(bool overrideState);
@@ -63,10 +67,10 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
   WPI_TalonFX m_bashGuard;
+  argos_lib::NTMotorPIDTuner m_bashTuner;
   bool m_bashGuardManualOverride;
   bool m_bashGuardHomed;
   bool m_bashHomeFailed;
-  argos_lib::NTMotorPIDTuner m_bashTuner;
 
   ctre::phoenix::motion::BufferedTrajectoryPointStream m_bashStream;
 
