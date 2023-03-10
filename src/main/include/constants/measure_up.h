@@ -65,10 +65,10 @@ namespace measure_up {
     }  // namespace effector
   }    // namespace lifter
   namespace bash {
-    constexpr auto homeExtension = 2_in;
-    constexpr auto retractedExtension = 2.75_in;
+    constexpr auto homeExtension = 4.25_in;
+    constexpr auto retractedExtension = 4.5_in;
     constexpr auto deployedExtension = 24.5_in;
-    constexpr auto minExtension = 2.25_in;
+    constexpr auto minExtension = 4.5_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
   // namespace wrist {

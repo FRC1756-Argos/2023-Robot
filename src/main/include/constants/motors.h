@@ -182,10 +182,7 @@ namespace motorConfig {
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
         constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
-        constexpr static auto remoteFilter0_addr = address::comp_bot::encoders::wristEncoder;
-        constexpr static auto remoteFilter0_type =
-            ctre::phoenix::motorcontrol::RemoteSensorSource::RemoteSensorSource_CANCoder;
-        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::RemoteSensor0;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::IntegratedSensor;
         constexpr static auto pid0_kP = controlLoop::comp_bot::lifter::wrist::kP;
         constexpr static auto pid0_kI = controlLoop::comp_bot::lifter::wrist::kI;
         constexpr static auto pid0_kD = controlLoop::comp_bot::lifter::wrist::kD;

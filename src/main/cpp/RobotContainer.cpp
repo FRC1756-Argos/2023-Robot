@@ -171,6 +171,7 @@ RobotContainer::RobotContainer()
                     m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::colors::kReallyRed, false);
                   },
                   100_ms);
+
               break;
             case AlignLedStatus::Aligned:
               m_ledSubSystem.TemporaryAnimate(
@@ -490,9 +491,8 @@ void RobotContainer::ConfigureBindings() {
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
   startupBashGuardHomeTrigger.OnTrue(
-      frc2::SequentialCommandGroup(BashGuardHomingCommand(m_bash), frc2::InstantCommand([this]() {
-                                     m_bash.SetExtensionLength(measure_up::bash::retractedExtension);
-                                   }))
+      frc2::SequentialCommandGroup(BashGuardHomingCommand(m_bash),
+                                   frc2::InstantCommand([this]() { m_bash.SetExtensionLength(2_in); }))
           .ToPtr());
 
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);

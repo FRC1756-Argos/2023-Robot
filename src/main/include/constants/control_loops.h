@@ -57,7 +57,7 @@ namespace controlLoop {
         constexpr static double allowableError = 0;
       };
       struct wrist {
-        constexpr static double kP = 2.6;
+        constexpr static double kP = 1.0;
         constexpr static double kI = 0;
         constexpr static double kD = 1;
         constexpr static double kF = 0;

@@ -28,6 +28,7 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
 
   void UpdateBashGuardHome();
 
+  /// @warning If homing failed, this could still return true
   bool IsBashGuardHomed();
 
   bool IsBashGuardManualOverride();
@@ -39,6 +40,10 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   bool IsBashGuardMoving();
 
   bool IsBashGuardMPComplete();
+
+  void SetHomeFailed(bool failed);
+
+  bool GetHomeFailed();
 
   ctre::phoenix::motion::BufferedTrajectoryPointStream& GetMPStream();
 
@@ -60,6 +65,7 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   WPI_TalonFX m_bashGuard;
   bool m_bashGuardManualOverride;
   bool m_bashGuardHomed;
+  bool m_bashHomeFailed;
   argos_lib::NTMotorPIDTuner m_bashTuner;
 
   ctre::phoenix::motion::BufferedTrajectoryPointStream m_bashStream;

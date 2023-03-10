@@ -21,7 +21,7 @@ void BashGuardHomingCommand::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void BashGuardHomingCommand::Execute() {
-  if (m_bashGuardSubsytem.IsBashGuardManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 4.0s) {
+  if (m_bashGuardSubsytem.IsBashGuardManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 1.5s) {
     Cancel();
   } else {
     m_bashGuardSubsytem.SetExtensionSpeed(-0.1);
@@ -32,8 +32,11 @@ void BashGuardHomingCommand::Execute() {
 void BashGuardHomingCommand::End(bool interrupted) {
   if (!interrupted) {
     m_bashGuardSubsytem.UpdateBashGuardHome();
+    m_bashGuardSubsytem.SetHomeFailed(false);
+  } else {
+    m_bashGuardSubsytem.SetExtensionSpeed(0.0);
+    m_bashGuardSubsytem.SetHomeFailed(true);
   }
-  m_bashGuardSubsytem.SetExtensionSpeed(0.0);
 }
 
 // Returns true when the command should end.
