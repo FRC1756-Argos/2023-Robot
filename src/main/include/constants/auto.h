@@ -31,11 +31,15 @@ namespace timeouts {
 }  // namespace timeouts
 
 namespace place_positions {
+  // Fudge factor added 3/10/23 match Q44 by request of Bradley
+  auto constexpr cubeGrabFudge = 6_in;
   namespace blue_alliance {
     constexpr auto loadingStationCube3d =
         field_points::blue_alliance::inner_grid::middleRowMiddle.m_position +
-        frc::Translation3d{
-            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
+        frc::Translation3d{field_points::grids::gridDepth + measure_up::chassis::length / 2 +
+                               measure_up::bumperExtension + cubeGrabFudge,
+                           0_m,
+                           0_m};
     constexpr auto loadingStationCube = frc::Pose2d{{place_positions::blue_alliance::loadingStationCube3d.X(),
                                                      place_positions::blue_alliance::loadingStationCube3d.Y()},
                                                     180_deg};

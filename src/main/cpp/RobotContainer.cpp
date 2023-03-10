@@ -60,10 +60,12 @@ RobotContainer::RobotContainer()
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoSelector{{&m_autoNothing,
                       &m_autoDriveForward,
                       &m_autoPlaceExit,
+                      &m_autoCablePlaceExit,
                       &m_autoBalance,
                       &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
