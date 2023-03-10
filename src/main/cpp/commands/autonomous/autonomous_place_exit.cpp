@@ -41,7 +41,7 @@ AutonomousPlaceExit::AutonomousPlaceExit(SwerveDriveSubsystem& drive,
                                      .AlongWith(DriveToPosition{&m_drive,
                                                                 {0_m, 0_m, 180_deg},
                                                                 180_deg,
-                                                                {-2_m, 0_m, 180_deg},
+                                                                {2_m, 0_m, 180_deg},
                                                                 180_deg,
                                                                 frc::TrapezoidProfile<units::inches>::Constraints{
                                                                     10_fps, units::feet_per_second_squared_t{12}},
