@@ -24,7 +24,7 @@ AutonomousPlaceExit::AutonomousPlaceExit(SwerveDriveSubsystem& drive,
     , m_lifter{lifter}
     , m_leds{leds}
     , m_intake{intake}
-    , m_allCommands{(InitializeOdometryCommand{&m_drive, {0_m, 0_m, 0_deg}}.ToPtr())
+    , m_allCommands{(InitializeOdometryCommand{&m_drive, {0_m, 0_m, 180_deg}}.ToPtr())
                         .AndThen(PlaceConeCommand{&m_bashGuard,
                                                   &m_lifter,
                                                   &m_intake,

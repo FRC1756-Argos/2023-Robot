@@ -23,9 +23,6 @@ namespace scoring_positions {
   namespace lifter_extension_end {
     constexpr static units::inch_t robotPlacingOffsetX = measure_up::chassis::length / 2 + measure_up::bumperExtension;
 
-    constexpr static frc::Translation2d conePlacingOffset(-2_in, 7_in);
-    constexpr static frc::Translation2d cubePlacingOffset(-2_in, 4_in);
-
     constexpr static SetpointPosition coneLow(frc::Translation2d(24.5_in, 19_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneLow_wristInverted(frc::Translation2d(24.5_in, 19_in),
                                                             BashGuardPosition::Retracted);
