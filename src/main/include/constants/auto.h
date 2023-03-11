@@ -37,7 +37,7 @@ namespace place_positions {
         frc::Translation3d{
             field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
     constexpr auto loadingStationCube = frc::Pose2d{{place_positions::blue_alliance::loadingStationCube3d.X(),
-                                                     place_positions::blue_alliance::loadingStationCube3d.Y()},
+                                                     place_positions::blue_alliance::loadingStationCube3d.Y() - 6_in},
                                                     180_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
@@ -70,10 +70,10 @@ namespace interim_waypoints {
 
     constexpr auto backAwayFromLoadingStationCone =
         frc::Pose2d{{starting_positions::blue_alliance::loadingStationCone.X() + 90_in,
-                     starting_positions::blue_alliance::loadingStationCone.Y()},
+                     starting_positions::blue_alliance::loadingStationCone.Y() - 6_in},
                     starting_positions::blue_alliance::loadingStationCone.Rotation()};
 
-    // Cetner of robot when staging for dock, outside of the community
+    // Center of robot when staging for dock, outside of the community
     constexpr auto chargingStationStage =
         frc::Pose2d{{field_points::charge_station::outerEdgeX + measure_up::chassis::length / 2 +
                          measure_up::bumperExtension + fudges::stationStageFudge,

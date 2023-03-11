@@ -46,8 +46,8 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   argos_lib::RobotInstance m_robotInstance;
 
   /// @brief ToF sensor thingy
-  frc::TimeOfFlight m_intakeSensor1;
-  frc::TimeOfFlight m_intakeSensor2;
+  frc::TimeOfFlight m_coneIntakeSensor;
+  frc::TimeOfFlight m_cubeIntakeSensor;
   bool m_haveCone;
   bool m_haveCube;
 };
