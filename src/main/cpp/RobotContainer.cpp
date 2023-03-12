@@ -523,7 +523,9 @@ void RobotContainer::ConfigureBindings() {
       .OnTrue(SetArmPoseCommand(
                   &m_lifter,
                   &m_bash,
-                  []() { return ScoringPosition{.column = ScoringColumn::stow}; },
+                  []() {
+                    return ScoringPosition{.column = ScoringColumn::stow};
+                  },  // Function instead of constant value so we know this was commanded by button box
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
                   PathType::concaveDown)
