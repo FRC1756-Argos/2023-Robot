@@ -356,10 +356,11 @@ void RobotContainer::ConfigureBindings() {
   }});
 
   // LIFTER TRIGGERS
-  auto homeWrist = (frc2::Trigger{[this]() {
-    return m_controllers.OperatorController().GetDebouncedButton(
-        {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
-  }});
+  auto homeWrist = m_controllers.OperatorController().TriggerDebouncedAllOf(
+      {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
+
+  auto reinitializeWrist = m_controllers.OperatorController().TriggerDebounced(argos_lib::XboxController::Button::kY) &&
+                           !m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kX);
 
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
@@ -426,6 +427,7 @@ void RobotContainer::ConfigureBindings() {
 
   // WRIST HOME TRIGGER ACTIVATION
   homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {&m_lifter}).ToPtr());
+  reinitializeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.InitializeWristHomes(); }, {&m_lifter}).ToPtr());
   // SHOULDER HOME TRIGGER ACTIVATION
   homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(); }, {&m_lifter}).ToPtr());
 

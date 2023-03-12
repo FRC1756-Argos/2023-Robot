@@ -154,7 +154,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | A               | Home Shoulder (hold with <kbd>B</kbd>) |
 | B               | Home Shoulder (hold with <kbd>A</kbd>) |
 | X               | Home Wrist (hold with <kbd>Y</kbd>) |
-| Y               | Home Wrist (hold with <kbd>X</kbd>) |
+| Y               | Home Wrist (hold with <kbd>X</kbd>), reinitialize wrist from absolute position (hold alone) |
 | DPad Up         | Request cone |
 | DPad Right      | Unused |
 | DPad Down       | Request cube |
