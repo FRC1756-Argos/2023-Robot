@@ -23,6 +23,7 @@ SimpleLedSubsystem::SimpleLedSubsystem(argos_lib::RobotInstance instance)
                std::string(GetCANBus(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance))}
     , m_log{"SIMPLE_LED_SUBSYSTEM"}
     , m_enabled{false}
+    , m_hasBeenConnected{false}
     , m_disableUpdateFunction{[]() {}}
     , m_ledUpdateFunction{[]() {}}
     , m_restoreAnimationFunction{std::nullopt}
@@ -43,7 +44,10 @@ void SimpleLedSubsystem::Disable() {
 }
 
 void SimpleLedSubsystem::SetLedsConnectedBrightness(bool connected) {
-  m_CANdle.ConfigBrightnessScalar(connected ? 1.0 : 0.3);
+  m_CANdle.ConfigBrightnessScalar(connected ? 0.8 : 0.25);
+  if (connected) {
+    m_hasBeenConnected = true;
+  }
 }
 
 void SimpleLedSubsystem::SetDisableAnimation(std::function<void()> animationFunction) {
@@ -341,7 +345,9 @@ void SimpleLedSubsystem::SetAllGroupsLarson(argos_lib::ArgosColor color, bool re
 }
 
 argos_lib::ArgosColor SimpleLedSubsystem::GetAllianceColor() {
-  if (frc::DriverStation::GetAlliance() == frc::DriverStation::Alliance::kBlue) {
+  if (!m_hasBeenConnected) {
+    return argos_lib::gamma_corrected_colors::kCatYellow;
+  } else if (frc::DriverStation::GetAlliance() == frc::DriverStation::Alliance::kBlue) {
     return argos_lib::colors::kReallyBlue;
   } else {
     return argos_lib::colors::kReallyRed;
@@ -355,14 +361,7 @@ void SimpleLedSubsystem::SetAllGroupsAllianceColor(bool fade,
     m_ledUpdateFunction = [this, fade, tipColor]() { this->SetAllGroupsAllianceColor(fade, false, tipColor); };
   }
 
-  frc::DriverStation::Alliance allianceColor = frc::DriverStation::GetAlliance();
-  // If invalid, set all groups just off
-  auto color = argos_lib::colors::kOff;
-  if (allianceColor == frc::DriverStation::Alliance::kBlue) {
-    color = argos_lib::colors::kReallyBlue;
-  } else if (allianceColor == frc::DriverStation::Alliance::kRed) {
-    color = argos_lib::colors::kReallyRed;
-  }
+  auto color = GetAllianceColor();
   if (fade) {
     SetAllGroupsFade(color, false, tipColor);
   } else {

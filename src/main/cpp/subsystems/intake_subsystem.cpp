@@ -115,5 +115,5 @@ bool IntakeSubsystem::IsCubeDetected() {
 }
 
 bool IntakeSubsystem::IsGamePieceDetected() {
-  return m_intakeMotor.GetStatorCurrent() > 5.0;
+  return std::abs(m_intakeMotor.GetStatorCurrent()) > 10.0;
 }
