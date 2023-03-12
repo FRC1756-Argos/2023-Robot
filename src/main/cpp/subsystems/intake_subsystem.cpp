@@ -101,7 +101,7 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
 bool IntakeSubsystem::IsConeDetected() {
   units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_coneIntakeSensor.GetRange());
   if (GetIntakeDistance < 16_in) {
-    return true;
+    return IsGamePieceDetected();
   }
   return false;
 }
@@ -109,7 +109,11 @@ bool IntakeSubsystem::IsConeDetected() {
 bool IntakeSubsystem::IsCubeDetected() {
   units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_cubeIntakeSensor.GetRange());
   if (GetIntakeDistance < 16_in) {
-    return true;
+    return IsGamePieceDetected();
   }
   return false;
+}
+
+bool IntakeSubsystem::IsGamePieceDetected() {
+  return m_intakeMotor.GetStatorCurrent() > 5.0;
 }

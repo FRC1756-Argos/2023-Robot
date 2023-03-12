@@ -50,4 +50,6 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   frc::TimeOfFlight m_cubeIntakeSensor;
   bool m_haveCone;
   bool m_haveCube;
+
+  bool IsGamePieceDetected();
 };
