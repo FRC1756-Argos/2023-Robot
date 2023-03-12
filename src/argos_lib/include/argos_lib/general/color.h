@@ -45,7 +45,7 @@ namespace argos_lib {
     constexpr static ArgosColor kCubePurple = ArgosColor{130, 0, 130};
     constexpr static ArgosColor kConeYellow = ArgosColor{222, 178, 18};
     constexpr static ArgosColor kHotPink = ArgosColor{255, 105, 180};
-    constexpr static ArgosColor kCatYellow = ArgosColor{255, 195, 0};
+    constexpr static ArgosColor kCatYellow = ArgosColor{255, 163, 0};  // Pantone 137C
     constexpr static ArgosColor kPurple = ArgosColor{75, 0, 130};
   }  // namespace colors
 

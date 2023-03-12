@@ -116,7 +116,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   frc::Rotation2d GetContinuousOdometryAngle();
 
-  frc::Rotation2d GetContinuousPoseEstAngle();
+  frc::Rotation2d GetNearestSquareAngle();
 
   frc::Pose2d GetContinuousOdometry();
 

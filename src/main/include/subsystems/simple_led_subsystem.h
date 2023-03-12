@@ -87,6 +87,7 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   CANdle m_CANdle;
   argos_lib::ArgosLogger m_log;
   bool m_enabled;
+  bool m_hasBeenConnected;
 
   std::function<void()> m_disableUpdateFunction;
   std::function<void()> m_ledUpdateFunction;

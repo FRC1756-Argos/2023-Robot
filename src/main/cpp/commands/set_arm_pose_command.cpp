@@ -143,6 +143,9 @@ void SetArmPoseCommand::Initialize() {
   switch (m_latestScoringPosition.column) {
     case ScoringColumn::coneIntake:
     case ScoringColumn::cubeIntake:
+    case ScoringColumn::leftGrid_middleCube:
+    case ScoringColumn::middleGrid_middleCube:
+    case ScoringColumn::rightGrid_middleCube:
       m_endingWristPosition = WristPosition::RollersUp;
       break;
     case ScoringColumn::stow:
@@ -346,7 +349,10 @@ void SetArmPoseCommand::Execute() {
       m_lastInversion = updatedGamePieceInverted;
       if (inversionChanged && (m_latestScoringPosition.column != ScoringColumn::coneIntake &&
                                m_latestScoringPosition.column != ScoringColumn::cubeIntake &&
-                               m_latestScoringPosition.column != ScoringColumn::stow)) {
+                               m_latestScoringPosition.column != ScoringColumn::stow &&
+                               m_latestScoringPosition.column != ScoringColumn::leftGrid_middleCube &&
+                               m_latestScoringPosition.column != ScoringColumn::middleGrid_middleCube &&
+                               m_latestScoringPosition.column != ScoringColumn::rightGrid_middleCube)) {
         m_endingWristPosition = updatedGamePieceInverted ? WristPosition::RollersDown : WristPosition::RollersUp;
       }
     }

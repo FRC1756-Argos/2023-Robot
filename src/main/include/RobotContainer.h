@@ -104,6 +104,7 @@ class RobotContainer {
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 
   nt::GenericEntry* p_wristSetpoint;
-  frc::SlewRateLimiter<units::scalar> m_nudgeRate;
+  frc::SlewRateLimiter<units::scalar> m_lateralNudgeRate;
+  frc::SlewRateLimiter<units::scalar> m_rotationalNudgeRate;
   argos_lib::GenericDebouncer<AlignLedStatus> m_alignLedDebouncer;
 };
