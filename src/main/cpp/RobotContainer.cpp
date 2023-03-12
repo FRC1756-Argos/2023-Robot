@@ -71,7 +71,8 @@ RobotContainer::RobotContainer()
                       &m_autoConeCubeScore,
                       &m_autoScorePickupBalanceCone},
                      &m_autoNothing}
-    , m_nudgeRate{1 / 1_s}
+    , m_lateralNudgeRate{1 / 1_s}
+    , m_rotationalNudgeRate{1 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
@@ -96,6 +97,23 @@ RobotContainer::RobotContainer()
 
         // Read offset from vision subsystem
         std::optional<units::degree_t> visionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
+
+        // Rotate robot to square toward target
+        if (isAimBotEngaged) {
+          const auto robotYaw = m_swerveDrive.GetContinuousOdometryAngle().Degrees();
+          const auto nearestSquareAngle = m_swerveDrive.GetNearestSquareAngle().Degrees();
+          // Limit squaring to when robot is already close to aligned
+          if (units::math::abs(robotYaw - nearestSquareAngle) < 20_deg) {
+            deadbandRotSpeed -=
+                m_rotationalNudgeRate
+                    .Calculate(std::clamp((robotYaw - nearestSquareAngle).to<double>() * 0.01, -0.2, 0.2))
+                    .to<double>();
+          } else {
+            m_rotationalNudgeRate.Reset(0);
+          }
+        } else {
+          m_rotationalNudgeRate.Reset(0);
+        }
 
         // If aim bot is engaged and there is a degree error
         if (isAimBotEngaged && visionHorizontalOffset) {
@@ -135,7 +153,7 @@ RobotContainer::RobotContainer()
               units::math::abs<units::degree_t>(error / camera::halfhorizontalAngleResolution.to<double>())
                   .to<double>();
 
-          units::scalar_t filteredLateralBias_r = m_nudgeRate.Calculate(units::scalar_t(lateralBias_r));
+          units::scalar_t filteredLateralBias_r = m_lateralNudgeRate.Calculate(units::scalar_t(lateralBias_r));
 
           // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
           double lateralBias_x =
@@ -149,7 +167,7 @@ RobotContainer::RobotContainer()
 
           // frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
-          m_nudgeRate.Reset(0);
+          m_lateralNudgeRate.Reset(0);
           m_alignLedDebouncer.Reset(AlignLedStatus::NoTarget);
         }
 
