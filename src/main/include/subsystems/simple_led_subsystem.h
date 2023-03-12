@@ -29,6 +29,8 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   void Enable();
   void Disable();
 
+  void SetLedsConnectedBrightness(bool connected);
+
   void SetDisableAnimation(std::function<void()> animationFunction);
 
   /// @brief Sets group of leds to given color

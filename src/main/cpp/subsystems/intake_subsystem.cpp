@@ -16,21 +16,21 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
     : m_intakeMotor{GetCANAddr(
           address::comp_bot::intake::intakeMotor, address::comp_bot::intake::intakeMotor, instance)}
     , m_robotInstance{instance}
-    , m_intakeSensor1(instance == argos_lib::RobotInstance::Competition ?
-                          address::comp_bot::sensors::tofSensorIntake :
-                          address::practice_bot::sensors::tofSensorIntake)
-    , m_intakeSensor2(instance == argos_lib::RobotInstance::Competition ?
-                          address::comp_bot::sensors::tofSensorIntake2 :
-                          address::practice_bot::sensors::tofSensorIntake2)
+    , m_coneIntakeSensor(instance == argos_lib::RobotInstance::Competition ?
+                             address::comp_bot::sensors::tofConeIntake :
+                             address::practice_bot::sensors::tofConeIntake)
+    , m_cubeIntakeSensor(instance == argos_lib::RobotInstance::Competition ?
+                             address::comp_bot::sensors::tofCubeIntake :
+                             address::practice_bot::sensors::tofCubeIntake)
     , m_haveCone(false)
     , m_haveCube(false) {
   argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
                                              motorConfig::practice_bot::intake::intake>(
       m_intakeMotor, 100_ms, instance);
-  m_intakeSensor1.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
-  m_intakeSensor1.SetRangeOfInterest(8, 8, 12, 12);
-  m_intakeSensor2.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
-  m_intakeSensor2.SetRangeOfInterest(8, 8, 12, 12);
+  m_coneIntakeSensor.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
+  m_coneIntakeSensor.SetRangeOfInterest(8, 8, 12, 12);
+  m_cubeIntakeSensor.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
+  m_cubeIntakeSensor.SetRangeOfInterest(8, 8, 12, 12);
 }
 
 // This method will be called once per scheduler run
@@ -85,7 +85,7 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
     return std::nullopt;
   }
 
-  units::inch_t sensorDistance = units::make_unit<units::millimeter_t>(m_intakeSensor1.GetRange());
+  units::inch_t sensorDistance = units::make_unit<units::millimeter_t>(m_coneIntakeSensor.GetRange());
 
   // * useful for wrist positions
   // if (m_robotInstance == argos_lib::RobotInstance::Competition) {
@@ -99,7 +99,7 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
 }
 
 bool IntakeSubsystem::IsConeDetected() {
-  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor1.GetRange());
+  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_coneIntakeSensor.GetRange());
   if (GetIntakeDistance < 16_in) {
     return true;
   }
@@ -107,7 +107,7 @@ bool IntakeSubsystem::IsConeDetected() {
 }
 
 bool IntakeSubsystem::IsCubeDetected() {
-  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_intakeSensor2.GetRange());
+  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_cubeIntakeSensor.GetRange());
   if (GetIntakeDistance < 16_in) {
     return true;
   }

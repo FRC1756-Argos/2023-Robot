@@ -268,6 +268,7 @@ void LifterSubsystem::InitializeWristHomes() {
         argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
 
     m_wristEncoder.SetPosition(calcValue.to<double>());
+    m_wrist.SetSelectedSensorPosition(sensor_conversions::lifter::wrist::ToSensorUnit(calcValue));
 
     m_wristHomed = true;
 

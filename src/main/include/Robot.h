@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <argos_lib/general/debouncer.h>
 #include <frc/DriverStation.h>
 #include <frc/TimedRobot.h>
 #include <frc2/command/CommandPtr.h>
@@ -14,6 +15,7 @@
 
 class Robot : public frc::TimedRobot {
  public:
+  Robot();
   void RobotInit() override;
   void RobotPeriodic() override;
   void DisabledInit() override;
@@ -33,4 +35,5 @@ class Robot : public frc::TimedRobot {
   frc::DriverStation::Alliance m_lastAlliance;
 
   RobotContainer m_container;
+  argos_lib::Debouncer m_connectedToFieldDebouncer;
 };

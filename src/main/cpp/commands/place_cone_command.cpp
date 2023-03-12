@@ -65,7 +65,9 @@ void PlaceConeCommand::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool PlaceConeCommand::IsFinished() {
-  return m_allCommands.get()->IsFinished();
+  bool isFinished = m_allCommands.get()->IsFinished();
+  frc::SmartDashboard::PutBoolean("Place Cone Command Is Finished: ", isFinished);
+  return isFinished;
 }
 
 std::string PlaceConeCommand::GetName() const {

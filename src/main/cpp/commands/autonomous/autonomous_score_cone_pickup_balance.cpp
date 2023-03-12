@@ -58,7 +58,7 @@ void AutonomousScoreConePickupBalance::Initialize() {
                                     path_constraints::translation::loadingStationBackOut,
                                     path_constraints::rotation::loadingStationBackOut,
                                     0_fps,
-                                    path_constraints::translation::loadingStationGridToGp0.maxVelocity}
+                                    path_constraints::translation::loadingStationBackOut.maxVelocity}
                         .ToPtr()
                         .AndThen(DriveToPosition{&m_drive,
                                                  interimWaypoint,

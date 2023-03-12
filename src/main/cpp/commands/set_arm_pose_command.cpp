@@ -31,6 +31,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
     , m_latestScoringPosition{}
+    , m_lastInversion{false}
     , m_pathType{pathType}
     , m_endingWristPosition{WristPosition::Unknown}
     , m_hasShoulderMotion{false}
@@ -62,6 +63,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
     , m_latestScoringPosition{scoringPosition}
+    , m_lastInversion{false}
     , m_pathType{pathType}
     , m_endingWristPosition{WristPosition::Unknown}
     , m_hasShoulderMotion{false}
@@ -103,6 +105,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{isTuneable}
     , m_latestScoringPosition{}
+    , m_lastInversion{false}
     , m_pathType{pathType}
     , m_endingWristPosition{desiredWristPosition}
     , m_hasShoulderMotion{false}
@@ -121,14 +124,21 @@ void SetArmPoseCommand::Initialize() {
   m_hasExtensionMotion = false;
   m_hasBashGuardMotion = false;
 
-  if (!m_bashGuard->IsBashGuardHomed() || !m_lifter->IsArmExtensionHomed()) {
+  auto bashGuardDisabled = m_bashGuard->GetHomeFailed();
+
+  if ((!bashGuardDisabled && !m_bashGuard->IsBashGuardHomed()) || !m_lifter->IsArmExtensionHomed()) {
     Cancel();
     return;
   }
 
   m_lifter->ResetPathFaults();
 
-  bool bashGuardEnable = m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
+  bool bashGuardEnable = !bashGuardDisabled && m_bashGuardModeCb ? m_bashGuardModeCb.value()() : true;
+
+  // set latest scoring position if we are using callback
+  if (m_scoringPositionCb) {
+    m_latestScoringPosition = m_scoringPositionCb.value()();
+  }
 
   switch (m_latestScoringPosition.column) {
     case ScoringColumn::coneIntake:
@@ -136,6 +146,12 @@ void SetArmPoseCommand::Initialize() {
       m_endingWristPosition = WristPosition::RollersUp;
       break;
     case ScoringColumn::stow:
+      if (m_scoringPositionCb) {
+        m_endingWristPosition = WristPosition::RollersUp;
+      } else {
+        m_endingWristPosition = WristPosition::Unknown;
+      }
+      break;
     case ScoringColumn::invalid:
       m_endingWristPosition = WristPosition::Unknown;
       break;
@@ -248,22 +264,24 @@ void SetArmPoseCommand::Initialize() {
   auto compositePath = path_planning::GenerateCompositeMPPath(
       generalArmPath, bashGuardPath, path_planning::ArmPathPoint(measure_up::lifter::fulcrumPosition), m_lifter);
 
-  BufferedTrajectoryPointStream& bashGuardStream = m_bashGuard->GetMPStream();
-  bashGuardStream.Clear();
-  for (auto pointIt = compositePath.bashGuardPath.begin(); pointIt != compositePath.bashGuardPath.end(); ++pointIt) {
-    bashGuardStream.Write(
-        ctre::phoenix::motion::TrajectoryPoint(sensor_conversions::bashguard::ToSensorUnit(pointIt->position),
-                                               sensor_conversions::bashguard::ToSensorVelocity(pointIt->velocity),
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               pointIt == std::prev(compositePath.bashGuardPath.end()),
-                                               false,
-                                               pointIt->time.to<double>(),
-                                               false));
+  if (!bashGuardDisabled) {
+    BufferedTrajectoryPointStream& bashGuardStream = m_bashGuard->GetMPStream();
+    bashGuardStream.Clear();
+    for (auto pointIt = compositePath.bashGuardPath.begin(); pointIt != compositePath.bashGuardPath.end(); ++pointIt) {
+      bashGuardStream.Write(
+          ctre::phoenix::motion::TrajectoryPoint(sensor_conversions::bashguard::ToSensorUnit(pointIt->position),
+                                                 sensor_conversions::bashguard::ToSensorVelocity(pointIt->velocity),
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 pointIt == std::prev(compositePath.bashGuardPath.end()),
+                                                 false,
+                                                 pointIt->time.to<double>(),
+                                                 false));
+    }
   }
 
   BufferedTrajectoryPointStream& shoulderStream = m_lifter->GetShoulderMPStream();
@@ -307,7 +325,9 @@ void SetArmPoseCommand::Initialize() {
   m_hasShoulderMotion = compositePath.shoulderPath.size() > 0;
   m_hasExtensionMotion = compositePath.extensionPath.size() > 0;
 
-  m_bashGuard->StartMotionProfile(compositePath.bashGuardPath.size());
+  if (!bashGuardDisabled) {
+    m_bashGuard->StartMotionProfile(compositePath.bashGuardPath.size());
+  }
   m_lifter->StartMotionProfile(compositePath.shoulderPath.size(), compositePath.extensionPath.size(), 0);
 }
 
@@ -320,6 +340,16 @@ void SetArmPoseCommand::Execute() {
   }
   if (m_scoringPositionCb) {
     auto updatedScoringPosition = m_scoringPositionCb.value()();
+    if (m_placeGamePieceInvertedCb) {
+      auto updatedGamePieceInverted = m_placeGamePieceInvertedCb.value()();
+      auto inversionChanged = updatedGamePieceInverted != m_lastInversion;
+      m_lastInversion = updatedGamePieceInverted;
+      if (inversionChanged && (m_latestScoringPosition.column != ScoringColumn::coneIntake &&
+                               m_latestScoringPosition.column != ScoringColumn::cubeIntake &&
+                               m_latestScoringPosition.column != ScoringColumn::stow)) {
+        m_endingWristPosition = updatedGamePieceInverted ? WristPosition::RollersDown : WristPosition::RollersUp;
+      }
+    }
     if (updatedScoringPosition != m_latestScoringPosition) {
       m_lifter->StopMotionProfile();
       m_bashGuard->StopMotionProfile();
@@ -351,9 +381,11 @@ void SetArmPoseCommand::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool SetArmPoseCommand::IsFinished() {
-  return (!m_hasExtensionMotion || m_lifter->IsExtensionMPComplete()) &&
-         (!m_hasShoulderMotion || m_lifter->IsShoulderMPComplete()) &&
-         (!m_hasBashGuardMotion || m_bashGuard->IsBashGuardMPComplete());
+  bool isFinished = (!m_hasExtensionMotion || m_lifter->IsExtensionMPComplete()) &&
+                    (!m_hasShoulderMotion || m_lifter->IsShoulderMPComplete()) &&
+                    (!m_hasBashGuardMotion || m_bashGuard->IsBashGuardMPComplete());
+  frc::SmartDashboard::PutBoolean("Set Arm Pose Command Is Finished: ", isFinished);
+  return isFinished;
 }
 
 frc2::Command::InterruptionBehavior SetArmPoseCommand::GetInterruptionBehavior() const {

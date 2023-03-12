@@ -60,10 +60,12 @@ RobotContainer::RobotContainer()
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoSelector{{&m_autoNothing,
                       &m_autoDriveForward,
                       &m_autoPlaceExit,
+                      &m_autoCablePlaceExit,
                       &m_autoBalance,
                       &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
@@ -171,6 +173,7 @@ RobotContainer::RobotContainer()
                     m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::colors::kReallyRed, false);
                   },
                   100_ms);
+
               break;
             case AlignLedStatus::Aligned:
               m_ledSubSystem.TemporaryAnimate(
@@ -271,6 +274,16 @@ RobotContainer::RobotContainer()
 
   m_bash.SetDefaultCommand(frc2::RunCommand(
       [this] {
+        // REMOVEME debugging
+        frc::SmartDashboard::PutNumber("BashDebug/BashGuardSubsystem/Current Extension (inches)",
+                                       m_bash.GetBashGuardExtension().to<double>());
+        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Home Failed? (m_bashHomeFailed)",
+                                        m_bash.GetHomeFailed());
+        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Actually Homed ? (m_bashGuardHomed)",
+                                        m_bash.GetRawBashHomed());
+        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Homed ? (m_bashGuardHomed || m_bashHomeFailed)",
+                                        m_bash.IsBashGuardHomed());
+        // ! end debuug
         double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
                                argos_lib::XboxController::JoystickHand::kLeftHand))) ?
                                -1 * m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
@@ -489,11 +502,7 @@ void RobotContainer::ConfigureBindings() {
 
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
-  startupBashGuardHomeTrigger.OnTrue(
-      frc2::SequentialCommandGroup(BashGuardHomingCommand(m_bash), frc2::InstantCommand([this]() {
-                                     m_bash.SetExtensionLength(measure_up::bash::retractedExtension);
-                                   }))
-          .ToPtr());
+  startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
   frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);
@@ -514,7 +523,9 @@ void RobotContainer::ConfigureBindings() {
       .OnTrue(SetArmPoseCommand(
                   &m_lifter,
                   &m_bash,
-                  ScoringPosition{.column = ScoringColumn::stow},
+                  []() {
+                    return ScoringPosition{.column = ScoringColumn::stow};
+                  },  // Function instead of constant value so we know this was commanded by button box
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
                   PathType::concaveDown)
@@ -582,6 +593,10 @@ void RobotContainer::AllianceChanged() {
   // If disabled, set alliance colors
   m_ledSubSystem.SetAllGroupsAllianceColor(true, true, [this]() { return m_buttonBox.GetGamePiece(); });
   m_ledSubSystem.SetDisableAnimation([this]() { m_ledSubSystem.SetAllGroupsAllianceColor(false, false); });
+}
+
+void RobotContainer::SetLedsConnectedBrightness(bool connected) {
+  m_ledSubSystem.SetLedsConnectedBrightness(connected);
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {

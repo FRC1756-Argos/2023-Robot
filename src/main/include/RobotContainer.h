@@ -17,6 +17,7 @@
 
 #include "Constants.h"
 #include "commands/autonomous/autonomous_balance.h"
+#include "commands/autonomous/autonomous_cable_protector_place_exit.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
 #include "commands/autonomous/autonomous_loading_station_2_cone.h"
 #include "commands/autonomous/autonomous_loading_station_cone_cube_score.h"
@@ -53,6 +54,8 @@ class RobotContainer {
 
   /// @brief Called when the alliance is changed
   void AllianceChanged();
+
+  void SetLedsConnectedBrightness(bool connected);
 
  private:
   // Interpolation of controller inputs. Used for making the inputs non-linear, allowing finer control of how the robot responds to the joystick.
@@ -91,6 +94,7 @@ class RobotContainer {
   AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
   AutonomousLoadingStationConeCubeScore m_autoConeCubeScore;
   AutonomousPlaceExit m_autoPlaceExit;
+  AutonomousCableProtectorPlaceExit m_autoCablePlaceExit;
   AutonomousScoreConePickupBalance m_autoScorePickupBalanceCone;
 
   AutoSelector m_autoSelector;

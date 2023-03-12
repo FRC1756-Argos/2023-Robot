@@ -7,6 +7,8 @@
 #include <frc/DriverStation.h>
 #include <frc2/command/CommandScheduler.h>
 
+Robot::Robot() : TimedRobot{}, m_connectedToFieldDebouncer{{0_ms, 30_s}} {}
+
 void Robot::RobotInit() {
   m_lastAlliance = frc::DriverStation::GetAlliance();
 }
@@ -28,6 +30,9 @@ void Robot::RobotPeriodic() {
     m_container.AllianceChanged();
     m_lastAlliance = frc::DriverStation::GetAlliance();
   }
+
+  m_container.SetLedsConnectedBrightness(
+      m_connectedToFieldDebouncer(frc::DriverStation::IsFMSAttached() || frc::DriverStation::IsDSAttached()));
 }
 
 /**
