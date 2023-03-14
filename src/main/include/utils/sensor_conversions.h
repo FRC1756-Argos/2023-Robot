@@ -73,9 +73,9 @@ namespace sensor_conversions {
       }
     }  // namespace arm_extension
     namespace wrist {
-      constexpr double sensorUnitsPerRevolution = 2048;
-      constexpr double gearBoxReduction = 25;
-      constexpr double extraReduction = 60 / 20;
+      constexpr double sensorUnitsPerRevolution = 2048.0;
+      constexpr double gearBoxReduction = 25.0;
+      constexpr double extraReduction = 45.0 / 24.0;
       constexpr double sensorConversionFactor =
           360.0 / (sensorUnitsPerRevolution * gearBoxReduction *
                    extraReduction);  // Scalar for getting angle in degrees from encoder
