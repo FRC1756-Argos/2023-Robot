@@ -174,10 +174,10 @@ namespace motorConfig {
 
       // Currently just generic drive with remote sensor
       struct wrist {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
         constexpr static bool sensorPhase = true;
-        constexpr static double peakOutputForward = 0.7;
-        constexpr static double peakOutputReverse = -0.7;
+        constexpr static double peakOutputForward = 0.5;
+        constexpr static double peakOutputReverse = -0.5;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;

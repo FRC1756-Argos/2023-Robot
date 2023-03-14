@@ -85,7 +85,7 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
     return std::nullopt;
   }
 
-  units::inch_t sensorDistance = units::make_unit<units::millimeter_t>(m_coneIntakeSensor.GetRange());
+  // units::inch_t sensorDistance = units::make_unit<units::millimeter_t>(m_coneIntakeSensor.GetRange());
 
   // * useful for wrist positions
   // if (m_robotInstance == argos_lib::RobotInstance::Competition) {
@@ -93,9 +93,10 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
   // }
 
   // * removed 1.5 inch fudge
-  units::inch_t gamePieceDepth = (measure_up::lifter::wrist::wristWidth / 2) - (sensorDistance + cone::coneWidth / 2);
+  // units::inch_t gamePieceDepth = (measure_up::lifter::wrist::wristWidth / 2) - (sensorDistance + cone::coneWidth / 2);
 
-  return gamePieceDepth;
+  // return gamePieceDepth;
+  return 0_in;
 }
 
 bool IntakeSubsystem::IsConeDetected() {

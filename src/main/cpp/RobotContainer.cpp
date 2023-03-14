@@ -71,8 +71,8 @@ RobotContainer::RobotContainer()
                       &m_autoConeCubeScore,
                       &m_autoScorePickupBalanceCone},
                      &m_autoNothing}
-    , m_lateralNudgeRate{1 / 1_s}
-    , m_rotationalNudgeRate{1 / 1_s}
+    , m_lateralNudgeRate{6 / 1_s}
+    , m_rotationalNudgeRate{4 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
@@ -98,12 +98,15 @@ RobotContainer::RobotContainer()
         // Read offset from vision subsystem
         std::optional<units::degree_t> visionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
 
+        units::degree_t rotationalError = 0_deg;
+
         // Rotate robot to square toward target
         if (isAimBotEngaged) {
           const auto robotYaw = m_swerveDrive.GetContinuousOdometryAngle().Degrees();
           const auto nearestSquareAngle = m_swerveDrive.GetNearestSquareAngle().Degrees();
           // Limit squaring to when robot is already close to aligned
-          if (units::math::abs(robotYaw - nearestSquareAngle) < 20_deg) {
+          rotationalError = units::math::abs(robotYaw - nearestSquareAngle);
+          if (rotationalError < 30_deg) {
             deadbandRotSpeed -=
                 m_rotationalNudgeRate
                     .Calculate(std::clamp((robotYaw - nearestSquareAngle).to<double>() * 0.05, -0.2, 0.2))
@@ -116,7 +119,7 @@ RobotContainer::RobotContainer()
         }
 
         // If aim bot is engaged and there is a degree error
-        if (isAimBotEngaged && visionHorizontalOffset) {
+        if (isAimBotEngaged && visionHorizontalOffset && rotationalError < 3_deg) {
           std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
 
           if (gamePieceDepth) {
@@ -322,11 +325,12 @@ void RobotContainer::ConfigureBindings() {
   /* ———————————————————————— CONFIGURE DEBOUNCING ——————————————————————— */
 
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
+  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperLeft, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperRight, {50_ms, 0_ms});
-  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
+  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kRight, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
@@ -374,11 +378,13 @@ void RobotContainer::ConfigureBindings() {
   }});
 
   // LIFTER TRIGGERS
-  auto homeWrist = m_controllers.OperatorController().TriggerDebouncedAllOf(
-      {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
+  auto homeWrist = (frc2::Trigger{[this]() {
+    return m_controllers.OperatorController().GetDebouncedButton(
+        {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
+  }});
 
-  auto reinitializeWrist = m_controllers.OperatorController().TriggerDebounced(argos_lib::XboxController::Button::kY) &&
-                           !m_controllers.OperatorController().TriggerRaw(argos_lib::XboxController::Button::kX);
+  auto reinitializeWrist =
+      m_controllers.OperatorController().TriggerDebounced(argos_lib::XboxController::Button::kRight);
 
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
@@ -442,8 +448,8 @@ void RobotContainer::ConfigureBindings() {
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
   // WRIST HOME TRIGGER ACTIVATION
-  homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {&m_lifter}).ToPtr());
-  reinitializeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.InitializeWristHomes(); }, {&m_lifter}).ToPtr());
+  homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {}).ToPtr());
+  reinitializeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.InitializeWristHomes(); }, {}).ToPtr());
   // SHOULDER HOME TRIGGER ACTIVATION
   homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(); }, {&m_lifter}).ToPtr());
 
