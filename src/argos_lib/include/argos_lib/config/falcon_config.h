@@ -49,6 +49,9 @@ namespace argos_lib {
     HAS_MEMBER(supplyCurrentLimit)
     HAS_MEMBER(supplyCurrentThreshold)
     HAS_MEMBER(supplyCurrentThresholdTime)
+    HAS_MEMBER(statorCurrentLimit)
+    HAS_MEMBER(statorCurrentThreshold)
+    HAS_MEMBER(statorCurrentThresholdTime)
     HAS_MEMBER(voltCompSat)
     HAS_MEMBER(statusFrameMotorMode)
 
@@ -89,6 +92,9 @@ namespace argos_lib {
      *           - supplyCurrentLimit
      *           - supplyCurrentThreshold
      *           - supplyCurrentThresholdTime
+     *           - statorCurrentLimit
+     *           - statorCurrentThreshold
+     *           - statorCurrentThresholdTime
      *           - voltCompSat
      *           - statusFrameMotorMode
      * @param motorController Falcon object to configure
@@ -179,18 +185,37 @@ namespace argos_lib {
         config.supplyCurrLimit.enable = true;
         if constexpr (has_supplyCurrentLimit<T>{}) {
           constexpr units::ampere_t currentLimit = T::supplyCurrentLimit;
-          static_assert(currentLimit.to<double>() > 0, "Current limit must be positive");
+          static_assert(currentLimit.to<double>() > 0, "Supply current limit must be positive");
           config.supplyCurrLimit.currentLimit = currentLimit.to<double>();
         }
         if constexpr (has_supplyCurrentThreshold<T>{}) {
           constexpr units::ampere_t currentThreshold = T::supplyCurrentThreshold;
-          static_assert(currentThreshold.to<double>() > 0, "Current threshold must be positive");
+          static_assert(currentThreshold.to<double>() > 0, "Supply current threshold must be positive");
           config.supplyCurrLimit.triggerThresholdCurrent = currentThreshold.to<double>();
         }
         if constexpr (has_supplyCurrentThresholdTime<T>{}) {
           constexpr units::second_t currentThresholdTime = T::supplyCurrentThresholdTime;
-          static_assert(currentThresholdTime.to<double>() >= 0, "Current threshold time must be non-negative");
+          static_assert(currentThresholdTime.to<double>() >= 0, "Supply current threshold time must be non-negative");
           config.supplyCurrLimit.triggerThresholdTime = currentThresholdTime.to<double>();
+        }
+      }
+      if constexpr (has_statorCurrentLimit<T>{} || has_statorCurrentThreshold<T>{} ||
+                    has_statorCurrentThresholdTime<T>{}) {
+        config.statorCurrLimit.enable = true;
+        if constexpr (has_statorCurrentLimit<T>{}) {
+          constexpr units::ampere_t currentLimit = T::statorCurrentLimit;
+          static_assert(currentLimit.to<double>() > 0, "Stator current limit must be positive");
+          config.statorCurrLimit.currentLimit = currentLimit.to<double>();
+        }
+        if constexpr (has_statorCurrentThreshold<T>{}) {
+          constexpr units::ampere_t currentThreshold = T::statorCurrentThreshold;
+          static_assert(currentThreshold.to<double>() > 0, "Stator current threshold must be positive");
+          config.statorCurrLimit.triggerThresholdCurrent = currentThreshold.to<double>();
+        }
+        if constexpr (has_statorCurrentThresholdTime<T>{}) {
+          constexpr units::second_t currentThresholdTime = T::statorCurrentThresholdTime;
+          static_assert(currentThresholdTime.to<double>() >= 0, "Stator current threshold time must be non-negative");
+          config.statorCurrLimit.triggerThresholdTime = currentThresholdTime.to<double>();
         }
       }
       if constexpr (has_forwardLimit_source<T>{} || has_forwardLimit_deviceID<T>{} ||

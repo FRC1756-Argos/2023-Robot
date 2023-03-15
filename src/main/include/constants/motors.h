@@ -174,10 +174,10 @@ namespace motorConfig {
 
       // Currently just generic drive with remote sensor
       struct wrist {
-        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;
+        constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = true;
-        constexpr static double peakOutputForward = 0.5;
-        constexpr static double peakOutputReverse = -0.5;
+        constexpr static double peakOutputForward = 0.4;
+        constexpr static double peakOutputReverse = -0.4;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
@@ -189,6 +189,7 @@ namespace motorConfig {
         constexpr static auto pid0_kF = controlLoop::comp_bot::lifter::wrist::kF;
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::wrist::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::wrist::allowableError;
+        constexpr static auto statorCurrentLimit = 20_A;
       };
     }  // namespace lifter
     namespace intake {
