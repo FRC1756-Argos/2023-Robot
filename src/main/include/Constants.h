@@ -81,3 +81,14 @@ namespace camera {
 
 /// @brief Designate the threshold approach direction
 enum class ApproachDirection { Increasing, Decreasing };
+
+/// @brief This is a bad idea...
+namespace warning {
+  /// @brief Are you sure you want to change this?!?!
+  namespace nuclear {
+    /// @brief Turn back now!
+    namespace option {
+      constexpr bool wristEnabled = true;  ///< @warning Only set to false if wrist is broken beyond repair :(
+    }                                      // namespace option
+  }                                        // namespace nuclear
+}  // namespace warning

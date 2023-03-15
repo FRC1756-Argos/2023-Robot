@@ -159,11 +159,15 @@ void SetArmPoseCommand::Initialize() {
       m_endingWristPosition = WristPosition::Unknown;
       break;
     default:
-      if (m_placeGamePieceInvertedCb) {
-        m_endingWristPosition =
-            m_placeGamePieceInvertedCb.value()() ? WristPosition::RollersDown : WristPosition::RollersUp;
+      if constexpr (warning::nuclear::option::wristEnabled) {
+        if (m_placeGamePieceInvertedCb) {
+          m_endingWristPosition =
+              m_placeGamePieceInvertedCb.value()() ? WristPosition::RollersDown : WristPosition::RollersUp;
+        } else {
+          m_endingWristPosition = WristPosition::Unknown;
+        }
       } else {
-        m_endingWristPosition = WristPosition::Unknown;
+        m_endingWristPosition = WristPosition::RollersUp;
       }
       break;
   }
