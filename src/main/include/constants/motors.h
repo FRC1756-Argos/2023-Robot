@@ -189,7 +189,7 @@ namespace motorConfig {
         constexpr static auto pid0_kF = controlLoop::comp_bot::lifter::wrist::kF;
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::wrist::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::wrist::allowableError;
-        constexpr static auto statorCurrentLimit = 20_A;
+        constexpr static auto statorCurrentLimit = 10_A;
       };
     }  // namespace lifter
     namespace intake {
