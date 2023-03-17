@@ -19,6 +19,7 @@
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
+#include <frc2/command/WaitUntilCommand.h>
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
 
@@ -503,19 +504,28 @@ void RobotContainer::ConfigureBindings() {
                                      speeds::armKinematicSpeeds::effectorFastAcceleration))
           .ToPtr());
   (intakeConeTrigger || intakeCubeTrigger)
-      .OnFalse(frc2::ParallelCommandGroup(
-                   frc2::SequentialCommandGroup(frc2::WaitCommand(2000_ms),
-                                                frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
-                   SetArmPoseCommand(
-                       &m_lifter,
-                       &m_bash,
-                       ScoringPosition{.column = ScoringColumn::stow},
-                       [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                       []() { return false; },
-                       PathType::concaveDown,
-                       speeds::armKinematicSpeeds::effectorFastVelocity,
-                       speeds::armKinematicSpeeds::effectorFastAcceleration))
-                   .ToPtr());
+      .OnFalse(
+          (frc2::WaitCommand(2000_ms).ToPtr().AndThen(
+               frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr()))
+              .AlongWith(
+                  frc2::InstantCommand(
+                      [this] { m_lifter.SetArmExtension(measure_up::lifter::arm_extension::minExtension); },
+                      {&m_lifter})
+                      .ToPtr()
+                      .AndThen(frc2::WaitUntilCommand{[this] {
+                                 return units::math::abs(m_lifter.GetArmExtension() -
+                                                         measure_up::lifter::arm_extension::minExtension) < 0.5_in;
+                               }}.ToPtr())
+                      .AndThen(SetArmPoseCommand(
+                                   &m_lifter,
+                                   &m_bash,
+                                   []() {
+                                     return ScoringPosition{.column = ScoringColumn::stow};
+                                   },  // Function instead of constant value so we know this was commanded by button box
+                                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                   []() { return false; },
+                                   PathType::unmodified)
+                                   .ToPtr())));
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
   scoreConeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());

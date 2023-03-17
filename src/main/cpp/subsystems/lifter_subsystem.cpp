@@ -157,8 +157,8 @@ void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   extension = std::clamp<units::inch_t>(
       extension, measure_up::lifter::arm_extension::minExtension, measure_up::lifter::arm_extension::maxExtension);
 
-  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::arm_extension::ToSensorVelocity(20_ips));
-  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::arm_extension::ToSensorVelocity(20_ips));
+  m_armExtensionMotor.ConfigMotionAcceleration(sensor_conversions::lifter::arm_extension::ToSensorVelocity(120_ips));
+  m_armExtensionMotor.ConfigMotionCruiseVelocity(sensor_conversions::lifter::arm_extension::ToSensorVelocity(120_ips));
   m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::MotionMagic,
                           sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
 }
