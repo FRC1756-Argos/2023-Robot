@@ -17,6 +17,7 @@
 
 #include "Constants.h"
 #include "commands/autonomous/autonomous_balance.h"
+#include "commands/autonomous/autonomous_only_balance.h"
 #include "commands/autonomous/autonomous_cable_protector_place_exit.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
 #include "commands/autonomous/autonomous_loading_station_2_cone.h"
@@ -91,6 +92,7 @@ class RobotContainer {
   AutonomousNothing m_autoNothing;
   AutonomousDriveForward m_autoDriveForward;
   AutonomousBalance m_autoBalance;
+  AutonomousOnlyBalance m_autoOnlyBalance;
   AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
   AutonomousLoadingStationConeCubeScore m_autoConeCubeScore;
   AutonomousPlaceExit m_autoPlaceExit;

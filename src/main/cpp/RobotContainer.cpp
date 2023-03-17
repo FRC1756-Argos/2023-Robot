@@ -57,6 +57,7 @@ RobotContainer::RobotContainer()
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoOnlyBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
@@ -69,7 +70,8 @@ RobotContainer::RobotContainer()
                       &m_autoBalance,
                       &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
-                      &m_autoScorePickupBalanceCone},
+                      &m_autoScorePickupBalanceCone,
+                      &m_autoOnlyBalance},
                      &m_autoNothing}
     , m_lateralNudgeRate{6 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
@@ -502,7 +504,7 @@ void RobotContainer::ConfigureBindings() {
           .ToPtr());
   (intakeConeTrigger || intakeCubeTrigger)
       .OnFalse(frc2::ParallelCommandGroup(
-                   frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms),
+                   frc2::SequentialCommandGroup(frc2::WaitCommand(1500_ms),
                                                 frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
                    SetArmPoseCommand(
                        &m_lifter,

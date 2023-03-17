@@ -74,7 +74,7 @@ bool AutonomousBalance::IsFinished() {
 }
 
 std::string AutonomousBalance::GetName() const {
-  return "Balance";
+  return "Mobility Balance";
 }
 
 frc2::Command* AutonomousBalance::GetCommand() {
