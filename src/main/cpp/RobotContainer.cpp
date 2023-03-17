@@ -504,7 +504,7 @@ void RobotContainer::ConfigureBindings() {
           .ToPtr());
   (intakeConeTrigger || intakeCubeTrigger)
       .OnFalse(frc2::ParallelCommandGroup(
-                   frc2::SequentialCommandGroup(frc2::WaitCommand(1500_ms),
+                   frc2::SequentialCommandGroup(frc2::WaitCommand(2000_ms),
                                                 frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
                    SetArmPoseCommand(
                        &m_lifter,
