@@ -31,10 +31,6 @@ class BashGuardSubsystem : public frc2::SubsystemBase {
   /// @warning If homing failed, this could still return true
   bool IsBashGuardHomed();
 
-  // REMOVEME debugging
-  bool GetRawBashHomed() { return m_bashGuardHomed; }
-  // ! end debug
-
   bool IsBashGuardManualOverride();
 
   void SetBashGuardManualOverride(bool overrideState);

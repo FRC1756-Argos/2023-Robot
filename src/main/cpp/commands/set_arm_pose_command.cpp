@@ -159,11 +159,15 @@ void SetArmPoseCommand::Initialize() {
       m_endingWristPosition = WristPosition::Unknown;
       break;
     default:
-      if (m_placeGamePieceInvertedCb) {
-        m_endingWristPosition =
-            m_placeGamePieceInvertedCb.value()() ? WristPosition::RollersDown : WristPosition::RollersUp;
+      if constexpr (warning::nuclear::option::wristEnabled) {
+        if (m_placeGamePieceInvertedCb) {
+          m_endingWristPosition =
+              m_placeGamePieceInvertedCb.value()() ? WristPosition::RollersDown : WristPosition::RollersUp;
+        } else {
+          m_endingWristPosition = WristPosition::Unknown;
+        }
       } else {
-        m_endingWristPosition = WristPosition::Unknown;
+        m_endingWristPosition = WristPosition::RollersUp;
       }
       break;
   }
@@ -253,11 +257,10 @@ void SetArmPoseCommand::Initialize() {
   frc::SmartDashboard::PutNumber("lifter/DesiredX", units::inch_t(m_targetPose.X()).to<double>());
   frc::SmartDashboard::PutNumber("lifter/DesiredY", units::inch_t(m_targetPose.Y()).to<double>());
 
-  auto bashGuardPath =
-      path_planning::GenerateProfiledBashGuard(m_bashGuard->GetBashGuardExtension(),
-                                               targetBashGuardPosition,
-                                               {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},
-                                               50_ms);
+  auto bashGuardPath = path_planning::GenerateProfiledBashGuard(m_bashGuard->GetBashGuardExtension(),
+                                                                targetBashGuardPosition,
+                                                                {.maxVelocity = 120_ips, .maxAcceleration = 120_ips2},
+                                                                50_ms);
   auto generalArmPath = path_planning::GenerateProfiledPath(
       desiredPath,
       {.maxVelocity = m_maxVelocity, .maxAcceleration = m_maxAcceleration},

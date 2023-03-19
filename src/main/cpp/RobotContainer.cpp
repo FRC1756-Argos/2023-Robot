@@ -19,6 +19,7 @@
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
+#include <frc2/command/WaitUntilCommand.h>
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
 
@@ -57,6 +58,7 @@ RobotContainer::RobotContainer()
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoOnlyBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
@@ -69,7 +71,8 @@ RobotContainer::RobotContainer()
                       &m_autoBalance,
                       &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
-                      &m_autoScorePickupBalanceCone},
+                      &m_autoScorePickupBalanceCone,
+                      &m_autoOnlyBalance},
                      &m_autoNothing}
     , m_lateralNudgeRate{6 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
@@ -295,16 +298,6 @@ RobotContainer::RobotContainer()
 
   m_bash.SetDefaultCommand(frc2::RunCommand(
       [this] {
-        // REMOVEME debugging
-        frc::SmartDashboard::PutNumber("BashDebug/BashGuardSubsystem/Current Extension (inches)",
-                                       m_bash.GetBashGuardExtension().to<double>());
-        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Home Failed? (m_bashHomeFailed)",
-                                        m_bash.GetHomeFailed());
-        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Actually Homed ? (m_bashGuardHomed)",
-                                        m_bash.GetRawBashHomed());
-        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Homed ? (m_bashGuardHomed || m_bashHomeFailed)",
-                                        m_bash.IsBashGuardHomed());
-        // ! end debuug
         double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
                                argos_lib::XboxController::JoystickHand::kLeftHand))) ?
                                -1 * m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
@@ -501,19 +494,28 @@ void RobotContainer::ConfigureBindings() {
                                      speeds::armKinematicSpeeds::effectorFastAcceleration))
           .ToPtr());
   (intakeConeTrigger || intakeCubeTrigger)
-      .OnFalse(frc2::ParallelCommandGroup(
-                   frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms),
-                                                frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
-                   SetArmPoseCommand(
-                       &m_lifter,
-                       &m_bash,
-                       ScoringPosition{.column = ScoringColumn::stow},
-                       [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                       []() { return false; },
-                       PathType::concaveDown,
-                       speeds::armKinematicSpeeds::effectorFastVelocity,
-                       speeds::armKinematicSpeeds::effectorFastAcceleration))
-                   .ToPtr());
+      .OnFalse(
+          (frc2::WaitCommand(2000_ms).ToPtr().AndThen(
+               frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr()))
+              .AlongWith(
+                  frc2::InstantCommand(
+                      [this] { m_lifter.SetArmExtension(measure_up::lifter::arm_extension::minExtension); },
+                      {&m_lifter})
+                      .ToPtr()
+                      .AndThen(frc2::WaitUntilCommand{[this] {
+                                 return units::math::abs(m_lifter.GetArmExtension() -
+                                                         measure_up::lifter::arm_extension::minExtension) < 0.5_in;
+                               }}.ToPtr())
+                      .AndThen(SetArmPoseCommand(
+                                   &m_lifter,
+                                   &m_bash,
+                                   []() {
+                                     return ScoringPosition{.column = ScoringColumn::stow};
+                                   },  // Function instead of constant value so we know this was commanded by button box
+                                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                   []() { return false; },
+                                   PathType::unmodified)
+                                   .ToPtr())));
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
   scoreConeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());

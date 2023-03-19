@@ -23,20 +23,9 @@ void BashGuardHomingCommand::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void BashGuardHomingCommand::Execute() {
-  // Calc time passed
   auto timePassed = units::second_t{std::chrono::steady_clock::now() - m_startTime};
 
-  // REMOVEME debugging
-  bool bashManualOverride = m_bashGuardSubsytem.IsBashGuardManualOverride();
-  bool timeout = (timePassed) > 1.5_s;
-  bool finished = bashManualOverride || timeout;
-  frc::SmartDashboard::PutNumber("BashDebug/BashGuardHoming/TimePassed (seconds)", timePassed.to<double>());
-  frc::SmartDashboard::PutBoolean("BashDebug/BashGuardHoming/Is Timeout ?", bashManualOverride);
-  frc::SmartDashboard::PutBoolean("BashDebug/BashGuardHoming/Bash Override ?", bashManualOverride);
-  frc::SmartDashboard::PutBoolean("BashDebug/BashGuardHoming/Is Finished (bash override || timeout) ?", finished);
-  // ! end debugging
-
-  if (bashManualOverride || timeout) {
+  if (m_bashGuardSubsytem.IsBashGuardManualOverride() || (timePassed) > 1.5_s) {
     Cancel();
   } else {
     m_bashGuardSubsytem.SetExtensionSpeed(-0.1);
