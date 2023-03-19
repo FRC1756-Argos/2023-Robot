@@ -298,16 +298,6 @@ RobotContainer::RobotContainer()
 
   m_bash.SetDefaultCommand(frc2::RunCommand(
       [this] {
-        // REMOVEME debugging
-        frc::SmartDashboard::PutNumber("BashDebug/BashGuardSubsystem/Current Extension (inches)",
-                                       m_bash.GetBashGuardExtension().to<double>());
-        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Home Failed? (m_bashHomeFailed)",
-                                        m_bash.GetHomeFailed());
-        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Actually Homed ? (m_bashGuardHomed)",
-                                        m_bash.GetRawBashHomed());
-        frc::SmartDashboard::PutBoolean("BashDebug/BashGuardSubsystem/Homed ? (m_bashGuardHomed || m_bashHomeFailed)",
-                                        m_bash.IsBashGuardHomed());
-        // ! end debuug
         double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
                                argos_lib::XboxController::JoystickHand::kLeftHand))) ?
                                -1 * m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
