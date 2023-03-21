@@ -48,7 +48,7 @@ namespace argos_lib {
     bool m_rawStatus;                                ///< Last raw value
     bool m_debouncedStatus;                          ///< Current value after applying debounce
     std::chrono::time_point<std::chrono::steady_clock>
-        m_debounceTransitionTime;  ///< Time when latest transition detected
+        m_debounceTransitionTime;                    ///< Time when latest transition detected
   };
 
 }  // namespace argos_lib
