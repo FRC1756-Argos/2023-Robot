@@ -107,6 +107,10 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @return True when arm is in motion
   bool IsArmExtensionMoving();
 
+  /// @brief Detect if shoulder is in motion
+  /// @return True when shoulder is in motion
+  bool IsShoulderMoving();
+
   /// @brief Update arm home position
   void UpdateArmExtensionHome();
 

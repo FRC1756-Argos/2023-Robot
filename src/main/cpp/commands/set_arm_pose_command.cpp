@@ -354,6 +354,17 @@ void SetArmPoseCommand::Initialize() {
     // Populate extension and shoulder targets
     m_targetExtension = compositePath.extensionPath.end()->position;
     m_targetShoulder = compositePath.shoulderPath.end()->position;
+
+    // Stop any incorrect motion
+    if (m_isExtending) {
+      if (m_lifter->IsArmExtensionMoving() && !m_lifter->IsExtensionAt(m_targetExtension)) {
+        m_lifter->StopArmExtension();
+      }
+    } else {
+      if (m_lifter->IsShoulderMoving() && !m_lifter->IsShoulderAt(m_targetShoulder)) {
+        m_lifter->StopShoulder();
+      }
+    }
   }
 
   m_hasBashGuardMotion = compositePath.bashGuardPath.size() > 0;

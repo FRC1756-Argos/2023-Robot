@@ -267,6 +267,10 @@ bool LifterSubsystem::IsArmExtensionMoving() {
   return std::abs(m_armExtensionMotor.GetSelectedSensorVelocity()) > 10;
 }
 
+bool LifterSubsystem::IsShoulderMoving() {
+  return std::abs(m_shoulderDrive.GetSelectedSensorVelocity()) > 10;
+}
+
 void LifterSubsystem::UpdateArmExtensionHome() {
   m_armExtensionMotor.SetSelectedSensorPosition(
       sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
