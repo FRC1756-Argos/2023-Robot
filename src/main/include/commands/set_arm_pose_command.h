@@ -13,7 +13,7 @@
 #include "subsystems/lifter_subsystem.h"
 #include "utils/custom_units.h"
 
-enum class PathType { unmodified, concaveDown, concaveUp };
+enum class PathType { unmodified, concaveDown, concaveUp, componentWise };
 
 class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPoseCommand> {
  public:
@@ -66,6 +66,8 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   std::optional<std::function<bool()>> m_placeGamePieceInvertedCb;
   frc::Translation2d m_targetPose;
   BashGuardPosition m_bashGuardTarget;
+  units::degree_t m_targetShoulder;
+  units::inch_t m_targetExtension;
   units::velocity::inches_per_second_t m_maxVelocity;
   units::acceleration::inches_per_second_squared_t m_maxAcceleration;
   bool m_isTunable;
@@ -78,6 +80,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   bool m_hasShoulderMotion;
   bool m_hasExtensionMotion;
   bool m_hasBashGuardMotion;
+  bool m_isExtending;
 
   unsigned m_id;
 };

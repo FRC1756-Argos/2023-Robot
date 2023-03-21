@@ -43,6 +43,11 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @param extension The inches to extend, from fulcrum to back face of wrist gear
   void SetArmExtension(units::inch_t extension);
 
+  /// @brief Checks if the arm extension is within an error of extension
+  /// @param extension The extension of the arm to compare to
+  /// @return True if within acceptable error, False otherwise
+  bool IsExtensionAt(units::inch_t extension);
+
   /// @brief Sets the wrist speed
   /// @param speed double, on the interval [-1, 1]
   void SetWristSpeed(double speed);
@@ -114,6 +119,11 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Sets the shoulder joint's angle (see GetShoulderAngle or docs for convention)
   /// @param angle The target angle the shoulder should go to, in an units::degree_t
   void SetShoulderAngle(units::degree_t angle);
+
+  /// @brief Checks if the shoulder is within an error of extension
+  /// @param angle The angle of the shoulder to compare to
+  /// @return True if within acceptable error, False otherwise
+  bool IsShoulderAt(units::degree_t angle);
 
   /// @brief Uses the kinematics object to calculate robot pose
   /// @return The arm's current pose in robot space as a Translation2d
