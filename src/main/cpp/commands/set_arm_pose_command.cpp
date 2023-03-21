@@ -357,11 +357,11 @@ void SetArmPoseCommand::Initialize() {
 
     // Stop any incorrect motion
     if (m_isExtending) {
-      if (m_lifter->IsArmExtensionMoving() && !m_lifter->IsExtensionAt(m_targetExtension)) {
+      if (!m_lifter->IsShoulderAt(m_targetShoulder)) {
         m_lifter->StopArmExtension();
       }
     } else {
-      if (m_lifter->IsShoulderMoving() && !m_lifter->IsShoulderAt(m_targetShoulder)) {
+      if (!m_lifter->IsExtensionAt(m_targetExtension)) {
         m_lifter->StopShoulder();
       }
     }
