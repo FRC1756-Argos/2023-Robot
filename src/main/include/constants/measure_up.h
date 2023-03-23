@@ -71,7 +71,11 @@ namespace measure_up {
     constexpr auto minExtension = 4.5_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
-  // namespace wrist {
+  namespace camera {
+    constexpr auto cameraHeight = 8.541_in;
+    constexpr auto cameraMountAngle = 13.5_deg;
+    constexpr auto bottomPoleTapeCenter = 23.55_in;
+  }  // namespace camera
   //   constexpr auto
   constexpr std::array<path_planning::ArmPathPoint, 13> PathPlanningKeepOutZone = {
       path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 0_in},

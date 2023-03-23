@@ -48,6 +48,20 @@ std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
   return std::nullopt;
 }
 
+std::optional<units::inch_t> VisionSubsystem::GetDistanceToPoleTape() {
+  if (GetCameraTargetValues().hasTargets) {
+    units::inch_t distance =
+        (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraHeight) /
+        std::tan(static_cast<units::radian_t>(measure_up::camera::cameraMountAngle + GetCameraTargetValues().m_pitch)
+                     .to<double>());
+
+    frc::SmartDashboard::PutNumber("(GetDistanceToPoleTape) Vision Distance To RetroReflective Tape (inches)",
+                                   distance.to<double>());
+  }
+
+  return std::nullopt;
+}
+
 void VisionSubsystem::SetReflectiveVisionMode(bool mode) {
   std::shared_ptr<nt::NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
 

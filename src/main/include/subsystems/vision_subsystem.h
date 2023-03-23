@@ -116,6 +116,14 @@ class VisionSubsystem : public frc2::SubsystemBase {
    */
   std::optional<units::degree_t> GetHorizontalOffsetToTarget();
 
+  /**
+   * @brief Get the distance to the retroreflective tape
+   * for now assume we are always seeing the lower pole
+   *
+   * @return units::inch_t
+   */
+  std::optional<units::inch_t> GetDistanceToPoleTape();
+
   void SetReflectiveVisionMode(bool mode);
 
   bool AimToPlaceCone();
