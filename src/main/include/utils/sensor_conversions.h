@@ -52,7 +52,7 @@ namespace sensor_conversions {
   namespace lifter {
     namespace arm_extension {
       constexpr double sensorToMotorRevolution = 1.0 / 2048;
-      constexpr double gearboxReduction = 1.0 / 20;
+      constexpr double gearboxReduction = 1.0 / 12.0;
       constexpr double driveSprocketTeeth = 15.0;
       constexpr double extensionInchesPerTooth = 0.375 / 1;
 
@@ -114,16 +114,19 @@ namespace sensor_conversions {
     }  // namespace shoulder
     namespace shoulder_actuator {
       constexpr double sensorToMotorRev = 1.0 / 2048;
+      constexpr double beltReduction = 30.0 / 18.0;
       constexpr double extensionMillimetersPerRevolution = 4.0;
       constexpr double fudgeFactor = 0.992;
 
       constexpr double ToSensorUnit(const units::inch_t extension) {
-        return (units::millimeter_t(extension) / extensionMillimetersPerRevolution / sensorToMotorRev / fudgeFactor)
+        return (units::millimeter_t(extension) / extensionMillimetersPerRevolution / beltReduction / sensorToMotorRev /
+                fudgeFactor)
             .to<double>();
       }
 
       constexpr units::inch_t ToExtension(const double sensorUnits) {
-        return units::millimeter_t(sensorUnits * sensorToMotorRev * extensionMillimetersPerRevolution * fudgeFactor);
+        return units::millimeter_t(sensorUnits * sensorToMotorRev * beltReduction * extensionMillimetersPerRevolution *
+                                   fudgeFactor);
       }
 
       constexpr units::inches_per_second_t ToVelocity(const double sensorVelocity) {
