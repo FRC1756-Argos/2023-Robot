@@ -40,6 +40,11 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
     , m_isExtending{false}
+    , m_wristSafeZoneMinAngle{m_lifter
+                                  ->ConvertLifterPose(
+                                      scoring_positions::lifter_extension_end::coneIntake.lifterPosition)
+                                  .shoulderAngle +
+                              5_deg}
     , m_id{static_cast<unsigned>(
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
               .count())} {
@@ -75,6 +80,11 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
     , m_isExtending{false}
+    , m_wristSafeZoneMinAngle{m_lifter
+                                  ->ConvertLifterPose(
+                                      scoring_positions::lifter_extension_end::coneIntake.lifterPosition)
+                                  .shoulderAngle +
+                              5_deg}
     , m_id{static_cast<unsigned>(
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
               .count())} {
@@ -120,6 +130,11 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
     , m_isExtending{false}
+    , m_wristSafeZoneMinAngle{m_lifter
+                                  ->ConvertLifterPose(
+                                      scoring_positions::lifter_extension_end::coneIntake.lifterPosition)
+                                  .shoulderAngle +
+                              5_deg}
     , m_id{static_cast<unsigned>(
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
               .count())} {
@@ -423,6 +438,22 @@ void SetArmPoseCommand::Execute() {
           m_lifter->SetShoulderAngle(m_targetShoulder);
         }
       }
+    }
+  }
+
+  // Move wrist when it's in a relatively safe area
+  if (m_endingWristPosition != WristPosition::Unknown && m_lifter->GetArmExtension() < m_wristSafeZoneMaxExtension &&
+      m_lifter->GetShoulderBoomAngle() >= m_wristSafeZoneMinAngle) {
+    switch (m_endingWristPosition) {
+      case WristPosition::RollersUp:
+        m_lifter->SetWristAngle(measure_up::lifter::wrist::nominalAngle);
+        break;
+      case WristPosition::RollersDown:
+        m_lifter->SetWristAngle(measure_up::lifter::wrist::invertedAngle);
+        break;
+      default:
+        // Just leave wrist alone
+        break;
     }
   }
 }
