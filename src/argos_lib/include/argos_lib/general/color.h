@@ -47,7 +47,7 @@ namespace argos_lib {
     constexpr static ArgosColor kHotPink = ArgosColor{255, 105, 180};
     constexpr static ArgosColor kCatYellow = ArgosColor{255, 163, 0};  // Pantone 137C
     constexpr static ArgosColor kPurple = ArgosColor{75, 0, 130};
-  }  // namespace colors
+  }                                                                    // namespace colors
 
   constexpr ArgosColor GammaCorrect(ArgosColor original) {
     return ArgosColor{gamma8[original.r], gamma8[original.g], gamma8[original.b]};
