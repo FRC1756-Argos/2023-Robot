@@ -116,7 +116,7 @@ namespace sensor_conversions {
       constexpr double sensorToMotorRev = 1.0 / 2048;
       constexpr double beltReduction = 30.0 / 18.0;
       constexpr double extensionMillimetersPerRevolution = 4.0;
-      constexpr double fudgeFactor = 0.992;
+      constexpr double fudgeFactor = 1.0;
 
       constexpr double ToSensorUnit(const units::inch_t extension) {
         return (units::millimeter_t(extension) / extensionMillimetersPerRevolution / beltReduction / sensorToMotorRev /
