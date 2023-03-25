@@ -108,5 +108,6 @@ class RobotContainer {
   nt::GenericEntry* p_wristSetpoint;
   frc::SlewRateLimiter<units::scalar> m_lateralNudgeRate;
   frc::SlewRateLimiter<units::scalar> m_rotationalNudgeRate;
+  frc::SlewRateLimiter<units::scalar> m_distanceNudgeRate;
   argos_lib::GenericDebouncer<AlignLedStatus> m_alignLedDebouncer;
 };

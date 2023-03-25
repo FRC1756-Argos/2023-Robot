@@ -76,6 +76,7 @@ RobotContainer::RobotContainer()
                      &m_autoNothing}
     , m_lateralNudgeRate{6 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
+    , m_distanceNudgeRate{6 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
@@ -102,6 +103,14 @@ RobotContainer::RobotContainer()
         std::optional<units::degree_t> visionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
 
         units::degree_t rotationalError = 0_deg;
+
+        // Distance
+        auto distance = m_visionSubSystem.GetDistanceToPoleTape();
+        if (distance) {
+          auto distanceError =
+              distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
+                                  measure_up::bumperExtension + 1_in);
+        }
 
         // Rotate robot to square toward target
         if (isAimBotEngaged) {
