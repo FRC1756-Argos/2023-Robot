@@ -136,7 +136,7 @@ RobotContainer::RobotContainer()
             }
 
             // * Constant scalar for game piece depth influlence
-            gamePieceDepth = gamePieceDepth.value() *= 0.7;
+            //gamePieceDepth = gamePieceDepth.value() *= 0.7;
 
             // ? Why is this inverted?
             units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance);
