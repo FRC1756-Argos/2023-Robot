@@ -367,7 +367,7 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
 
   angle = argos_lib::angle::ConstrainAngle(angle, -180_deg, 180_deg);  // Constrain to 0 to 360
 
-  if (angle < measure_up::lifter::shoulder::minAngle) {  // Handle angle below bound, clamp to min
+  if (angle < measure_up::lifter::shoulder::minAngle) {                // Handle angle below bound, clamp to min
     angle = measure_up::lifter::shoulder::minAngle;
     m_logger.Log(argos_lib::INFO,
                  "Shoulder commanded to angle [%f] below bound of [%f]\n",
