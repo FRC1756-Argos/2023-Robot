@@ -67,17 +67,17 @@ namespace argos_lib {
 
    private:
     argos_lib::NTSubscriber
-        m_updateSubscriber;  ///< Subscriber to manage all updates from user inputs through network tables
+        m_updateSubscriber;    ///< Subscriber to manage all updates from user inputs through network tables
     const std::vector<ctre::phoenix::motorcontrol::can::BaseTalon*>
-        m_pMotors;                                 ///< Motors being configured and monitored
-    const unsigned m_pidSlot;                      ///< PID slot index actively used on motors
+        m_pMotors;             ///< Motors being configured and monitored
+    const unsigned m_pidSlot;  ///< PID slot index actively used on motors
     std::shared_ptr<nt::NetworkTable> m_pntTable;  ///< Network table containing status and tuning keys
     ClosedLoopSensorConversions
-        m_sensorConversions;  ///< Sensor conversion factors used to translate raw sensor readings
+        m_sensorConversions;                       ///< Sensor conversion factors used to translate raw sensor readings
 
-    std::mutex m_threadMutex;                ///< Lock to aid notifying thread of stop
-    std::condition_variable m_threadStopCv;  ///< Used to notify thread to stop at shutdown
-    std::thread m_statusUpdateThread;        ///< Thread monitoring motors
+    std::mutex m_threadMutex;                      ///< Lock to aid notifying thread of stop
+    std::condition_variable m_threadStopCv;        ///< Used to notify thread to stop at shutdown
+    std::thread m_statusUpdateThread;              ///< Thread monitoring motors
 
     /**
      * @brief Update statuses from all motors
