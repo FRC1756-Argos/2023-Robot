@@ -82,5 +82,8 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   bool m_hasBashGuardMotion;
   bool m_isExtending;
 
+  constexpr static auto m_wristSafeZoneMaxExtension = measure_up::lifter::arm_extension::minExtension + 6_in;
+  const units::degree_t m_wristSafeZoneMinAngle;
+
   unsigned m_id;
 };
