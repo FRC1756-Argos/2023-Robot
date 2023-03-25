@@ -41,10 +41,10 @@ namespace controlLoop {
     }     // namespace drive
     namespace lifter {
       struct armExtension {
-        constexpr static double kP = 0.2;
+        constexpr static double kP = 0.1;
         constexpr static double kI = 0;
         constexpr static double kD = 0;
-        constexpr static double kF = 0.18;
+        constexpr static double kF = 0.08;
         constexpr static double iZone = 300;
         constexpr static double allowableError = 45;
       };
