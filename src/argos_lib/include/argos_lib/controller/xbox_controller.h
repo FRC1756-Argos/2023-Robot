@@ -390,7 +390,7 @@ namespace argos_lib {
     std::array<std::chrono::time_point<std::chrono::steady_clock>, static_cast<int>(Button::COUNT)>
         m_buttonDebounceTransitionTime;  ///< Time when new value was first seen
 
-    VibrationModel m_vibrationModel;  ///< Active vibration model
+    VibrationModel m_vibrationModel;     ///< Active vibration model
   };
 
 }  // namespace argos_lib
