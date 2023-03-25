@@ -72,9 +72,13 @@ namespace measure_up {
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
   namespace camera {
-    constexpr auto cameraHeight = 8.541_in;
+    constexpr auto cameraHeight = 7.375_in;
     constexpr auto cameraMountAngle = 13.5_deg;
     constexpr auto bottomPoleTapeCenter = 23.55_in;
+    constexpr auto upperPoleTapeCenter = 43.81_in;
+    constexpr auto offsetBetweenPoles = 17.03_in;
+    constexpr auto upperPoleTargetAreaThreshold = 0.03;
+    constexpr auto upperPoleTargetPitchThreshold = 3.0_deg;
   }  // namespace camera
   //   constexpr auto
   constexpr std::array<path_planning::ArmPathPoint, 13> PathPlanningKeepOutZone = {

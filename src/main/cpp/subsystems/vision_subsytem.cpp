@@ -22,6 +22,8 @@ void VisionSubsystem::Periodic() {
     // m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
   }
 
+  GetDistanceToPoleTape();
+
   if (targetValues.hasTargets) {
     frc::SmartDashboard::PutBoolean("(Vision - Periodic) Is Target Present?", targetValues.hasTargets);
     frc::SmartDashboard::PutNumber("(Vision - Periodic) Target Pitch", targetValues.m_pitch.to<double>());
@@ -50,13 +52,31 @@ std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
 
 std::optional<units::inch_t> VisionSubsystem::GetDistanceToPoleTape() {
   if (GetCameraTargetValues().hasTargets) {
-    units::inch_t distance =
-        (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraHeight) /
-        std::tan(static_cast<units::radian_t>(measure_up::camera::cameraMountAngle + GetCameraTargetValues().m_pitch)
-                     .to<double>());
+    units::inch_t distance;
 
-    frc::SmartDashboard::PutNumber("(GetDistanceToPoleTape) Vision Distance To RetroReflective Tape (inches)",
+    // first of all, change the pipeline to sort the targets "closest" and distance we return should always be to the bottom pole
+    // if we determine target we are seeing is the upper pole based on the properties, then calculate accordingly
+    // else assume we are seeing lower target all the time
+
+    if (GetCameraTargetValues().m_area < measure_up::camera::upperPoleTargetAreaThreshold &&
+        GetCameraTargetValues().m_pitch > measure_up::camera::upperPoleTargetPitchThreshold) {
+      distance =
+          (measure_up::camera::upperPoleTapeCenter - measure_up::camera::cameraHeight) /
+          std::tan(static_cast<units::radian_t>(measure_up::camera::cameraMountAngle + GetCameraTargetValues().m_pitch)
+                       .to<double>());
+
+      distance -= measure_up::camera::offsetBetweenPoles;
+    } else {
+      distance =
+          (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraHeight) /
+          std::tan(static_cast<units::radian_t>(measure_up::camera::cameraMountAngle + GetCameraTargetValues().m_pitch)
+                       .to<double>());
+    }
+
+    frc::SmartDashboard::PutNumber("(GetDistanceToPoleTape) Vision Distance To LowerPole RetroReflective Tape (inches)",
                                    distance.to<double>());
+
+    return distance;
   }
 
   return std::nullopt;
@@ -117,9 +137,11 @@ LimelightTarget::tValues LimelightTarget::GetTarget() {
   m_hasTargets = (table->GetNumber("tv", 0) == 1);
   m_yaw = units::make_unit<units::degree_t>(table->GetNumber("tx", 0.0));
   m_pitch = units::make_unit<units::degree_t>(table->GetNumber("ty", 0.0));
+  m_area = (table->GetNumber("ta", 0.0));
   m_totalLatency = units::make_unit<units::millisecond_t>(rawRobotPose.at(6));
 
-  return tValues{m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_pitch, m_yaw, m_totalLatency};
+  return tValues{
+      m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_pitch, m_yaw, m_area, m_totalLatency};
 }
 
 bool LimelightTarget::HasTarget() {

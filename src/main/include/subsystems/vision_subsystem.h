@@ -23,6 +23,7 @@ class LimelightTarget {
   bool m_hasTargets;                    ///< True if the camera has a target it can read
   units::degree_t m_pitch;              ///< Pitch of target relative to camera -24.85 to 24.85 degrees
   units::degree_t m_yaw;                ///< Yaw of target relative to camera -31.65 to 31.65 degrees
+  double m_area;                        ///< Area of the target in percentage of total pixels
   units::millisecond_t m_totalLatency;  ///< Total latency
 
  public:
@@ -39,6 +40,7 @@ class LimelightTarget {
     bool hasTargets;                    ///< @copydoc LimelightTarget::m_hasTargets
     units::degree_t m_pitch;            ///< @copydoc LimelightTarget::m_pitch
     units::degree_t m_yaw;              ///< @copydoc LimelightTarget::m_yaw
+    double m_area;                      ///< @copydoc LimelightTarget::m_area
     units::millisecond_t totalLatency;  ///< @copydoc LimelightTarget::m_totalLatency
   };
 
