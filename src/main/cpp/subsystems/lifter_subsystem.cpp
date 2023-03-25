@@ -157,12 +157,12 @@ void LifterSubsystem::SetArmExtension(units::inch_t extension) {
 
   SetExtensionManualOverride(false);
 
-  // guard against out of bounds commandds by clamping to min and max
+  // guard against out of bounds commands by clamping to min and max
   extension = std::clamp<units::inch_t>(
       extension, measure_up::lifter::arm_extension::minExtension, measure_up::lifter::arm_extension::maxExtension);
 
-  m_armExtensionMotor.ConfigMotionAcceleration(sensor_conversions::lifter::arm_extension::ToSensorVelocity(120_ips));
-  m_armExtensionMotor.ConfigMotionCruiseVelocity(sensor_conversions::lifter::arm_extension::ToSensorVelocity(120_ips));
+  m_armExtensionMotor.ConfigMotionAcceleration(sensor_conversions::lifter::arm_extension::ToSensorVelocity(225_ips));
+  m_armExtensionMotor.ConfigMotionCruiseVelocity(sensor_conversions::lifter::arm_extension::ToSensorVelocity(225_ips));
   m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::MotionMagic,
                           sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
 }
@@ -389,8 +389,8 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
                  measure_up::lifter::shoulder::minAngle.to<double>());
   }
 
-  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(10_ips));
-  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(10_ips));
+  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(50_ips));
+  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(50_ips));
   m_shoulderDrive.Set(
       motorcontrol::ControlMode::MotionMagic,
       sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_kinematics.ShoulderAngleToBoomExtension(angle)));

@@ -344,16 +344,23 @@ void SetArmPoseCommand::Initialize() {
     shoulderStream.Clear();
     armExtensionStream.Clear();
 
-    // Extensionn extending or retracting dictates component-wise behavior
-    if (compositePath.extensionPath.size() > 0) {
-      if (compositePath.extensionPath.end()->position > m_lifter->GetArmExtension()) {
-        m_isExtending = true;
-      }
+    // Populate extension and shoulder targets
+    auto jointPositions = m_lifter->ConvertLifterPose(m_targetPose);
+    m_targetExtension = jointPositions.armLen;
+    m_targetShoulder = jointPositions.shoulderAngle;
+
+    // Extension extending or retracting dictates component-wise behavior
+    if (m_targetExtension > m_lifter->GetArmExtension()) {
+      m_isExtending = true;
+    } else {
+      m_isExtending = false;
     }
 
-    // Populate extension and shoulder targets
-    m_targetExtension = compositePath.extensionPath.end()->position;
-    m_targetShoulder = compositePath.shoulderPath.end()->position;
+    frc::SmartDashboard::PutNumber("m_targetExtension:", m_targetExtension.to<double>());
+    frc::SmartDashboard::PutNumber("m_targetShoulder:", m_targetShoulder.to<double>());
+
+    m_lifter->SetShoulderManualOverride(false);
+    m_lifter->SetExtensionManualOverride(false);
 
     // Stop any incorrect motion
     if (m_isExtending) {
@@ -406,22 +413,22 @@ void SetArmPoseCommand::Execute() {
       m_bashGuard->StopMotionProfile();
       Initialize();
     }
+  }
 
-    if (m_pathType == PathType::componentWise) {
-      if (m_isExtending) {
-        // Shoulder first, then extension
-        if (!m_lifter->IsShoulderAt(m_targetShoulder)) {
-          m_lifter->SetShoulderAngle(m_targetShoulder);
-        } else {
-          m_lifter->SetArmExtension(m_targetExtension);
-        }
+  if (m_pathType == PathType::componentWise) {
+    if (m_isExtending) {
+      // Shoulder first, then extension
+      if (!m_lifter->IsShoulderAt(m_targetShoulder)) {
+        m_lifter->SetShoulderAngle(m_targetShoulder);
       } else {
-        // Extension first, then shoulder
-        if (!m_lifter->IsExtensionAt(m_targetExtension)) {
-          m_lifter->SetArmExtension(m_targetExtension);
-        } else {
-          m_lifter->SetShoulderAngle(m_targetShoulder);
-        }
+        m_lifter->SetArmExtension(m_targetExtension);
+      }
+    } else {
+      // Extension first, then shoulder
+      if (!m_lifter->IsExtensionAt(m_targetExtension)) {
+        m_lifter->SetArmExtension(m_targetExtension);
+      } else {
+        m_lifter->SetShoulderAngle(m_targetShoulder);
       }
     }
   }
