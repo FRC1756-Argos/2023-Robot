@@ -27,6 +27,8 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_placeGamePieceInvertedCb(placeGamePieceInvertedCb)
     , m_targetPose()
     , m_bashGuardTarget()
+    , m_targetShoulder{0_deg}
+    , m_targetExtension{0_in}
     , m_maxVelocity(maxVelocity)
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
@@ -37,6 +39,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
+    , m_isExtending{false}
     , m_id{static_cast<unsigned>(
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
               .count())} {
@@ -59,6 +62,8 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_placeGamePieceInvertedCb(placeGamePieceInvertedCb)
     , m_targetPose()
     , m_bashGuardTarget()
+    , m_targetShoulder{0_deg}
+    , m_targetExtension{0_in}
     , m_maxVelocity(maxVelocity)
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{false}
@@ -69,6 +74,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
+    , m_isExtending{false}
     , m_id{static_cast<unsigned>(
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
               .count())} {
@@ -101,6 +107,8 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_placeGamePieceInvertedCb(std::nullopt)
     , m_targetPose(targetPose)
     , m_bashGuardTarget(desiredBashGuardPosition)
+    , m_targetShoulder{0_deg}
+    , m_targetExtension{0_in}
     , m_maxVelocity(maxVelocity)
     , m_maxAcceleration(maxAcceleration)
     , m_isTunable{isTuneable}
@@ -111,6 +119,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     , m_hasShoulderMotion{false}
     , m_hasExtensionMotion{false}
     , m_hasBashGuardMotion{false}
+    , m_isExtending{false}
     , m_id{static_cast<unsigned>(
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
               .count())} {
@@ -232,7 +241,7 @@ void SetArmPoseCommand::Initialize() {
       case PathType::concaveUp:
         desiredPath.emplace_back(m_targetPose.X(), minY);
         break;
-      case PathType::unmodified:
+      default:
         // Don't insert extra points
         break;
     }
@@ -244,7 +253,7 @@ void SetArmPoseCommand::Initialize() {
       case PathType::concaveUp:
         desiredPath.emplace_back(initialPosition.X(), minY);
         break;
-      case PathType::unmodified:
+      default:
         // Don't insert extra points
         break;
     }
@@ -291,40 +300,71 @@ void SetArmPoseCommand::Initialize() {
   }
 
   BufferedTrajectoryPointStream& shoulderStream = m_lifter->GetShoulderMPStream();
-  shoulderStream.Clear();
-  for (auto pointIt = compositePath.shoulderPath.begin(); pointIt != compositePath.shoulderPath.end(); ++pointIt) {
-    shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
-        sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_lifter->ConvertShoulderAngle(pointIt->position)),
-        sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(
-            -m_lifter->ConvertShoulderVelocity(pointIt->position, pointIt->velocity)),
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        pointIt == std::prev(compositePath.shoulderPath.end()),
-        false,
-        pointIt->time.to<double>(),
-        false));
-  }
-
   BufferedTrajectoryPointStream& armExtensionStream = m_lifter->GetExtensionMPStream();
-  armExtensionStream.Clear();
-  for (auto pointIt = compositePath.extensionPath.begin(); pointIt != compositePath.extensionPath.end(); ++pointIt) {
-    armExtensionStream.Write(ctre::phoenix::motion::TrajectoryPoint(
-        sensor_conversions::lifter::arm_extension::ToSensorUnit(pointIt->position),
-        sensor_conversions::lifter::arm_extension::ToSensorVelocity(pointIt->velocity),
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        pointIt == std::prev(compositePath.extensionPath.end()),
-        false,
-        pointIt->time.to<double>(),
-        false));
+
+  if (m_pathType != PathType::componentWise) {
+    shoulderStream.Clear();
+    for (auto pointIt = compositePath.shoulderPath.begin(); pointIt != compositePath.shoulderPath.end(); ++pointIt) {
+      shoulderStream.Write(ctre::phoenix::motion::TrajectoryPoint(
+          sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(
+              m_lifter->ConvertShoulderAngle(pointIt->position)),
+          sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(
+              -m_lifter->ConvertShoulderVelocity(pointIt->position, pointIt->velocity)),
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          pointIt == std::prev(compositePath.shoulderPath.end()),
+          false,
+          pointIt->time.to<double>(),
+          false));
+    }
+
+    armExtensionStream.Clear();
+    for (auto pointIt = compositePath.extensionPath.begin(); pointIt != compositePath.extensionPath.end(); ++pointIt) {
+      armExtensionStream.Write(ctre::phoenix::motion::TrajectoryPoint(
+          sensor_conversions::lifter::arm_extension::ToSensorUnit(pointIt->position),
+          sensor_conversions::lifter::arm_extension::ToSensorVelocity(pointIt->velocity),
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          pointIt == std::prev(compositePath.extensionPath.end()),
+          false,
+          pointIt->time.to<double>(),
+          false));
+    }
+  } else {
+    // Initialization for component-wise path type
+
+    shoulderStream.Clear();
+    armExtensionStream.Clear();
+
+    // Extensionn extending or retracting dictates component-wise behavior
+    if (compositePath.extensionPath.size() > 0) {
+      if (compositePath.extensionPath.end()->position > m_lifter->GetArmExtension()) {
+        m_isExtending = true;
+      }
+    }
+
+    // Populate extension and shoulder targets
+    m_targetExtension = compositePath.extensionPath.end()->position;
+    m_targetShoulder = compositePath.shoulderPath.end()->position;
+
+    // Stop any incorrect motion
+    if (m_isExtending) {
+      if (!m_lifter->IsShoulderAt(m_targetShoulder)) {
+        m_lifter->StopArmExtension();
+      }
+    } else {
+      if (!m_lifter->IsExtensionAt(m_targetExtension)) {
+        m_lifter->StopShoulder();
+      }
+    }
   }
 
   m_hasBashGuardMotion = compositePath.bashGuardPath.size() > 0;
@@ -334,7 +374,9 @@ void SetArmPoseCommand::Initialize() {
   if (!bashGuardDisabled) {
     m_bashGuard->StartMotionProfile(compositePath.bashGuardPath.size());
   }
-  m_lifter->StartMotionProfile(compositePath.shoulderPath.size(), compositePath.extensionPath.size(), 0);
+  if (m_pathType != PathType::componentWise) {
+    m_lifter->StartMotionProfile(compositePath.shoulderPath.size(), compositePath.extensionPath.size(), 0);
+  }
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -364,6 +406,24 @@ void SetArmPoseCommand::Execute() {
       m_bashGuard->StopMotionProfile();
       Initialize();
     }
+
+    if (m_pathType == PathType::componentWise) {
+      if (m_isExtending) {
+        // Shoulder first, then extension
+        if (!m_lifter->IsShoulderAt(m_targetShoulder)) {
+          m_lifter->SetShoulderAngle(m_targetShoulder);
+        } else {
+          m_lifter->SetArmExtension(m_targetExtension);
+        }
+      } else {
+        // Extension first, then shoulder
+        if (!m_lifter->IsExtensionAt(m_targetExtension)) {
+          m_lifter->SetArmExtension(m_targetExtension);
+        } else {
+          m_lifter->SetShoulderAngle(m_targetShoulder);
+        }
+      }
+    }
   }
 }
 
@@ -371,6 +431,8 @@ void SetArmPoseCommand::Execute() {
 void SetArmPoseCommand::End(bool interrupted) {
   if (interrupted) {
     m_lifter->StopMotionProfile();
+    m_lifter->StopArmExtension();
+    m_lifter->StopShoulder();
     m_bashGuard->StopMotionProfile();
   } else {
     switch (m_endingWristPosition) {
@@ -390,9 +452,17 @@ void SetArmPoseCommand::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool SetArmPoseCommand::IsFinished() {
-  bool isFinished = (!m_hasExtensionMotion || m_lifter->IsExtensionMPComplete()) &&
-                    (!m_hasShoulderMotion || m_lifter->IsShoulderMPComplete()) &&
-                    (!m_hasBashGuardMotion || m_bashGuard->IsBashGuardMPComplete());
+  bool isFinished;
+
+  if (m_pathType == PathType::componentWise) {
+    isFinished = ((!m_hasBashGuardMotion || m_bashGuard->IsBashGuardMPComplete()) &&
+                  m_lifter->IsShoulderAt(m_targetShoulder) && m_lifter->IsExtensionAt(m_targetExtension));
+  } else {
+    isFinished = (!m_hasExtensionMotion || m_lifter->IsExtensionMPComplete()) &&
+                 (!m_hasShoulderMotion || m_lifter->IsShoulderMPComplete()) &&
+                 (!m_hasBashGuardMotion || m_bashGuard->IsBashGuardMPComplete());
+  }
+
   frc::SmartDashboard::PutBoolean("Set Arm Pose Command Is Finished: ", isFinished);
   return isFinished;
 }

@@ -145,6 +145,10 @@ void LifterSubsystem::SetArmExtensionSpeed(double speed) {
   m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
+bool LifterSubsystem::IsExtensionAt(units::inch_t extension) {
+  return units::math::abs(GetArmExtension() - extension) < measure_up::lifter::arm_extension::acceptErr;
+}
+
 void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   if (!IsArmExtensionHomed()) {
     m_logger.Log(argos_lib::LogLevel::ERR, "Arm extension commanded while not home\n");
@@ -261,6 +265,10 @@ void LifterSubsystem::Disable() {
 
 bool LifterSubsystem::IsArmExtensionMoving() {
   return std::abs(m_armExtensionMotor.GetSelectedSensorVelocity()) > 10;
+}
+
+bool LifterSubsystem::IsShoulderMoving() {
+  return std::abs(m_shoulderDrive.GetSelectedSensorVelocity()) > 10;
 }
 
 void LifterSubsystem::UpdateArmExtensionHome() {
@@ -386,6 +394,10 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
   m_shoulderDrive.Set(
       motorcontrol::ControlMode::MotionMagic,
       sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_kinematics.ShoulderAngleToBoomExtension(angle)));
+}
+
+bool LifterSubsystem::IsShoulderAt(units::degree_t angle) {
+  return units::math::abs(GetShoulderAngle() - angle) < measure_up::lifter::shoulder::acceptErr;
 }
 
 frc::Translation2d LifterSubsystem::GetEffectorPose(const WristPosition wristPosition) {

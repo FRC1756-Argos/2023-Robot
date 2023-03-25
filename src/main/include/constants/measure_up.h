@@ -35,6 +35,7 @@ namespace measure_up {
       constexpr auto homeExtension = 37.50_in;
       constexpr auto maxExtension = 68.00_in;
       constexpr auto minExtension = 38.00_in;
+      constexpr auto acceptErr = 0.5_in;
 
     }  // namespace arm_extension
     namespace wrist {
@@ -49,6 +50,7 @@ namespace measure_up {
       constexpr auto homeAngle = 0_deg;
       constexpr auto minAngle = -59_deg;
       constexpr auto maxAngle = 5_deg;
+      constexpr auto acceptErr = 2_deg;
       constexpr auto fixedBoomActuatorPosition =
           frc::Translation2d{-14.75_in, 4.5_in};  ///< Linear actuator mount point relative to robot origin
       constexpr auto actuatedBoomActuatorPosition =
