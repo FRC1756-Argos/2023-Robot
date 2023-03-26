@@ -426,6 +426,10 @@ void SetArmPoseCommand::Execute() {
     if (updatedScoringPosition != m_latestScoringPosition) {
       m_lifter->StopMotionProfile();
       m_bashGuard->StopMotionProfile();
+      // Check if bashguards enabled, if so, finish motion before re-initializing
+      if (m_hasBashGuardMotion) {
+        m_bashGuard->SetExtensionLength(m_bashGuard->DecomposeBashExtension(m_bashGuardTarget));
+      }
       Initialize();
     }
   }
@@ -472,6 +476,9 @@ void SetArmPoseCommand::End(bool interrupted) {
     m_lifter->StopArmExtension();
     m_lifter->StopShoulder();
     m_bashGuard->StopMotionProfile();
+    if (m_hasBashGuardMotion) {
+      m_bashGuard->SetExtensionLength(m_bashGuard->DecomposeBashExtension(m_bashGuardTarget));
+    }
   } else {
     switch (m_endingWristPosition) {
       case WristPosition::RollersUp:
