@@ -20,9 +20,10 @@ using namespace std::chrono_literals;
 
 SimpleLedSubsystem::SimpleLedSubsystem(argos_lib::RobotInstance instance)
     : m_CANdle{instance == argos_lib::RobotInstance::Competition ?
-                   (CANdle(GetCANAddr(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance),
-                           std::string(GetCANBus(
-                               address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance)))) :
+                   std::make_optional<CANdle>(
+                       GetCANAddr(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance),
+                       std::string(
+                           GetCANBus(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance))) :
                    std::nullopt}
     , m_log{"SIMPLE_LED_SUBSYSTEM"}
     , m_enabled{false}
@@ -273,6 +274,9 @@ void SimpleLedSubsystem::SetAllGroupsFade(argos_lib::ArgosColor color,
 }
 
 void SimpleLedSubsystem::SetAllGroupsFlash(argos_lib::ArgosColor color, bool restorable) {
+  if (!m_CANdle) {
+    return;
+  }
   if (restorable) {
     m_ledUpdateFunction = [this, color]() { this->SetAllGroupsFlash(color, false); };
   }
