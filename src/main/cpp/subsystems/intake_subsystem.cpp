@@ -92,7 +92,7 @@ void IntakeSubsystem::Disable() {
 }
 
 std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
-  if (!IsConeDetected()) {
+  if (!TofConeDetected()) {
     return std::nullopt;
   }
 
@@ -104,7 +104,6 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
   // but generate distance that left sensor should see
   if (rightSensorDistance > leftSensorDistance) {
     sensorDistance = measure_up::lifter::wrist::wristWidth - rightSensorDistance - cone::coneWidth;
-    //sensorDistance *= -1;
   }
 
   // * useful for wrist positions
@@ -118,22 +117,20 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
   return gamePieceDepth;
 }
 
+bool IntakeSubsystem::TofConeDetected() {
+  return units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange()) < 16_in;
+}
+
+bool IntakeSubsystem::TofCubeDetected() {
+  return units::make_unit<units::millimeter_t>(m_cubeIntakeSensor.GetRange()) < 16_in;
+}
+
 bool IntakeSubsystem::IsConeDetected() {
-  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange());
-  if (GetIntakeDistance < 16_in) {
-    //return IsGamePieceDetected();
-    return true;
-  }
-  return false;
+  return TofConeDetected() && IsGamePieceDetected();
 }
 
 bool IntakeSubsystem::IsCubeDetected() {
-  units::inch_t GetIntakeDistance = units::make_unit<units::millimeter_t>(m_cubeIntakeSensor.GetRange());
-  if (GetIntakeDistance < 16_in) {
-    return IsGamePieceDetected();
-    return true;
-  }
-  return false;
+  return TofCubeDetected() && IsGamePieceDetected();
 }
 
 bool IntakeSubsystem::IsGamePieceDetected() {

@@ -44,7 +44,7 @@ namespace measure_up {
       constexpr auto invertedAngle = -180_deg;
       constexpr auto nominalAngle = 0_deg;
       constexpr auto maxAngle = 10_deg;
-      constexpr auto wristWidth = 18.5_in;
+      constexpr auto wristWidth = 17.75_in;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 0_deg;
@@ -54,7 +54,7 @@ namespace measure_up {
       constexpr auto fixedBoomActuatorPosition =
           frc::Translation2d{-14.75_in, 4.5_in};  ///< Linear actuator mount point relative to robot origin
       constexpr auto actuatedBoomActuatorPosition =
-          frc::Translation2d{14_in, -2.5_in};     ///< Linear actuator mount point relative to fulcrum.
+          frc::Translation2d{14_in, -2.5_in};  ///< Linear actuator mount point relative to fulcrum.
       /// x is along length of arm, y is up with zero at same elevation as fulcrum
       /// (when arm in front of robot parallel to ground)
     }  // namespace shoulder
