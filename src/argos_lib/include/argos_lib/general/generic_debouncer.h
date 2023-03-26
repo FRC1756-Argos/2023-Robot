@@ -60,8 +60,8 @@ namespace argos_lib {
 
    private:
     units::millisecond_t m_debounceTime;
-    T m_rawStatus;                 ///< Last raw value
-    T m_debouncedStatus;           ///< Current value after applying debounce
+    T m_rawStatus;        ///< Last raw value
+    T m_debouncedStatus;  ///< Current value after applying debounce
     std::chrono::time_point<std::chrono::steady_clock>
         m_debounceTransitionTime;  ///< Time when latest transition detected
   };

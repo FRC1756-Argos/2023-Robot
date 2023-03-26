@@ -104,14 +104,6 @@ RobotContainer::RobotContainer()
 
         units::degree_t rotationalError = 0_deg;
 
-        // Distance
-        auto distance = m_visionSubSystem.GetDistanceToPoleTape();
-        if (distance) {
-          auto distanceError =
-              distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
-                                  measure_up::bumperExtension + 1_in);
-        }
-
         // Rotate robot to square toward target
         if (isAimBotEngaged) {
           const auto robotYaw = m_swerveDrive.GetContinuousOdometryAngle().Degrees();
@@ -132,57 +124,60 @@ RobotContainer::RobotContainer()
 
         // If aim bot is engaged and there is a degree error
         if (isAimBotEngaged && visionHorizontalOffset && rotationalError < 3_deg) {
+          // Distance
+          double longitudinalBias = 0;
+          auto distance = m_visionSubSystem.GetDistanceToPoleTape();
+          if (distance) {
+            auto distanceError =
+                distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
+                                    measure_up::bumperExtension + 2_in);
+            longitudinalBias =
+                std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.02).to<double>(), -0.3, 0.3);
+          } else {
+            distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
+                       field_points::grids::middleConeNodeDepth;
+          }
+
           std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
 
           if (gamePieceDepth) {
-            /// Get distance to the target
-            auto distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
-                            field_points::grids::middleConeNodeDepth;
-
             // invert distance if wrist is inverted
             if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
               gamePieceDepth = gamePieceDepth.value() *= -1;
             }
 
-            // * Constant scalar for game piece depth influlence
+            // * Constant scalar for game piece depth influence
             gamePieceDepth = gamePieceDepth.value() *= 0.7;
 
             // ? Why is this inverted?
-            units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance);
+            units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance.value());
             visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
           }
 
           units::degree_t robotYaw =
-              argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
-                                               0_deg,
-                                               360_deg);  // Gets the robots yaw relative to field-centric home
+              m_swerveDrive.GetFieldCentricAngle();  // Gets the robots yaw relative to field-centric home
           // ? Why is this negated?
           units::degree_t error = -visionHorizontalOffset.value();
-          // Angle of lateral bias velocity velocity vector relative to field home
-          units::degree_t lateralBiasFieldAngle =
-              argos_lib::angle::ConstrainAngle(robotYaw + (error < 0_deg ? -90_deg : 90_deg), 0_deg, 360_deg);
 
           // Calculate the lateral bias
           double lateralBias_r =
-              speeds::drive::aimBotMaxBias *
-              units::math::abs<units::degree_t>(error / camera::halfhorizontalAngleResolution.to<double>())
-                  .to<double>();
+              speeds::drive::aimBotMaxBias * (error / camera::halfhorizontalAngleResolution).to<double>();
 
           units::scalar_t filteredLateralBias_r = m_lateralNudgeRate.Calculate(units::scalar_t(lateralBias_r));
 
           // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
-          double lateralBias_x =
-              filteredLateralBias_r.to<double>() * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
-          double lateralBias_y =
-              filteredLateralBias_r.to<double>() * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
+          double lateralBias_x = filteredLateralBias_r.to<double>() * std::cos(units::radian_t{robotYaw}.to<double>()) +
+                                 longitudinalBias * std::sin(units::radian_t{robotYaw}.to<double>());
+          double lateralBias_y = filteredLateralBias_r.to<double>() * std::sin(units::radian_t{robotYaw}.to<double>()) +
+                                 longitudinalBias * std::cos(units::radian_t{robotYaw}.to<double>());
 
           // Actually apply the lateral bias
           deadbandTranslationSpeeds.leftSpeedPct += lateralBias_x;
           deadbandTranslationSpeeds.forwardSpeedPct += lateralBias_y;
 
-          // frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
           m_lateralNudgeRate.Reset(0);
+          m_distanceNudgeRate.Reset(0);
           m_alignLedDebouncer.Reset(AlignLedStatus::NoTarget);
         }
 

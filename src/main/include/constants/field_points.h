@@ -358,7 +358,7 @@ namespace field_points {
 
     }  // namespace outer_grid
 
-  }    // namespace red_alliance
+  }  // namespace red_alliance
 }  // namespace field_points
 
 namespace cone {

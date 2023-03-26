@@ -52,7 +52,7 @@ namespace measure_up {
       constexpr auto fixedBoomActuatorPosition =
           frc::Translation2d{-14.75_in, 4.5_in};  ///< Linear actuator mount point relative to robot origin
       constexpr auto actuatedBoomActuatorPosition =
-          frc::Translation2d{14_in, -2.5_in};     ///< Linear actuator mount point relative to fulcrum.
+          frc::Translation2d{14_in, -2.5_in};  ///< Linear actuator mount point relative to fulcrum.
       /// x is along length of arm, y is up with zero at same elevation as fulcrum
       /// (when arm in front of robot parallel to ground)
     }  // namespace shoulder
@@ -72,11 +72,16 @@ namespace measure_up {
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
   namespace camera {
-    constexpr auto cameraHeight = 7.375_in;
+    constexpr auto cameraX = 0_in;
+    constexpr auto cameraZ = 7.375_in;
     constexpr auto cameraMountAngle = 13.5_deg;
-    constexpr auto bottomPoleTapeCenter = 23.55_in;
-    constexpr auto upperPoleTapeCenter = 43.81_in;
-    constexpr auto offsetBetweenPoles = 17.03_in;
+    constexpr auto vFov = 24.85_deg * 2;
+    constexpr auto hFov = 29.8_deg * 2;
+    constexpr auto bottomPoleTapeCenter = 24.125_in;
+    constexpr auto bottomPoleTapeBottom = 22.125_in;
+    constexpr auto upperPoleTapeCenter = 43.875_in;
+    constexpr auto upperPoleTapeBottom = 41.875_in;
+    constexpr auto offsetBetweenPoles = 17.0_in;
     constexpr auto upperPoleTargetAreaThreshold = 0.03;
     constexpr auto upperPoleTargetPitchThreshold = 3.0_deg;
   }  // namespace camera

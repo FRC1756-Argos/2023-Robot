@@ -42,7 +42,7 @@ std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
 
   // add more target validation after testing e.g. area, margin, skew etc
   // for now has target is enough as we will be fairly close to target
-  // and will tune the pipeline not to combine detctions and choose the highest area
+  // and will tune the pipeline not to combine detections and choose the highest area
   if (targetValues.hasTargets) {
     return targetValues.m_yaw;
   }
@@ -51,27 +51,22 @@ std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
 }
 
 std::optional<units::inch_t> VisionSubsystem::GetDistanceToPoleTape() {
-  if (GetCameraTargetValues().hasTargets) {
+  const auto targets = GetCameraTargetValues();
+  if (targets.hasTargets) {
     units::inch_t distance;
 
     // first of all, change the pipeline to sort the targets "closest" and distance we return should always be to the bottom pole
     // if we determine target we are seeing is the upper pole based on the properties, then calculate accordingly
     // else assume we are seeing lower target all the time
 
-    if (GetCameraTargetValues().m_area < measure_up::camera::upperPoleTargetAreaThreshold &&
-        GetCameraTargetValues().m_pitch > measure_up::camera::upperPoleTargetPitchThreshold) {
-      distance =
-          (measure_up::camera::upperPoleTapeCenter - measure_up::camera::cameraHeight) /
-          std::tan(static_cast<units::radian_t>(measure_up::camera::cameraMountAngle + GetCameraTargetValues().m_pitch)
-                       .to<double>());
+    const units::radian_t targetAngle =
+        measure_up::camera::cameraMountAngle - (measure_up::camera::vFov / 2) + targets.m_pitch;
 
-      distance -= measure_up::camera::offsetBetweenPoles;
-    } else {
-      distance =
-          (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraHeight) /
-          std::tan(static_cast<units::radian_t>(measure_up::camera::cameraMountAngle + GetCameraTargetValues().m_pitch)
-                       .to<double>());
-    }
+    // Assume we're seeing the low node, because robot can quickly drive away from grid if it
+    // incorrectly assumes high node
+    distance =
+        (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraZ) / std::tan(targetAngle.to<double>()) +
+        measure_up::camera::cameraX;
 
     frc::SmartDashboard::PutNumber("(GetDistanceToPoleTape) Vision Distance To LowerPole RetroReflective Tape (inches)",
                                    distance.to<double>());

@@ -237,10 +237,10 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   DriveControlMode m_controlMode;  ///< Active control mode
 
-  SwerveModule m_frontLeft;        ///< Front left swerve module
-  SwerveModule m_frontRight;       ///< Front right swerve module
-  SwerveModule m_backRight;        ///< Back right swerve module
-  SwerveModule m_backLeft;         ///< Back left swerve module
+  SwerveModule m_frontLeft;   ///< Front left swerve module
+  SwerveModule m_frontRight;  ///< Front right swerve module
+  SwerveModule m_backRight;   ///< Back right swerve module
+  SwerveModule m_backLeft;    ///< Back left swerve module
 
   // GYROSCOPIC SENSORS
   frc::ADIS16448_IMU m_imu;
@@ -260,8 +260,8 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   frc::SwerveDriveKinematics<4> m_swerveDriveKinematics;  ///< Kinematics model for swerve drive system
 
-  frc::SwerveDriveOdometry<4> m_odometry;                 ///< Odometry to track robot
-  units::degree_t m_prevOdometryAngle;                    ///< Last odometry angle used for continuous calculations
+  frc::SwerveDriveOdometry<4> m_odometry;      ///< Odometry to track robot
+  units::degree_t m_prevOdometryAngle;         ///< Last odometry angle used for continuous calculations
   units::degree_t m_continuousOdometryOffset;  ///< Offset to convert [-180,180] odometry angle to continuous angle
 
   frc::SwerveDrivePoseEstimator<4> m_poseEstimator;  ///< accounts vision-based measurements for odometry
@@ -269,17 +269,17 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   // std::FILE SYSTEM HOMING STORAGE
   argos_lib::SwerveFSHomingStorage m_fsStorage;  ///< Roborio filesystem access for homes
 
-  bool m_followingProfile;                       ///< True when an incomplete drive profile is being run
-  bool m_profileComplete;                        ///< True once a drive profile has been completed
+  bool m_followingProfile;  ///< True when an incomplete drive profile is being run
+  bool m_profileComplete;   ///< True once a drive profile has been completed
   bool m_manualOverride;
   std::unique_ptr<SwerveTrapezoidalProfileSegment> m_pActiveSwerveProfile;      ///< Profile to execute
   std::chrono::time_point<std::chrono::steady_clock> m_swerveProfileStartTime;  ///< Time when active profile began
   frc2::PIDController m_linearPID;  ///< Correction parameters for x/y error when following drive profile
   frc::ProfiledPIDController<units::radians>
-      m_rotationalPID;              ///< Correction parameters for rotational error when following drive profile
+      m_rotationalPID;  ///< Correction parameters for rotational error when following drive profile
   frc::HolonomicDriveController m_followerController;  ///< Controller to follow drive profile
 
-  argos_lib::NTMotorPIDTuner m_driveMotorPIDTuner;     ///< Utility to tune drive motors
+  argos_lib::NTMotorPIDTuner m_driveMotorPIDTuner;  ///< Utility to tune drive motors
 
   /**
  * @brief Get the Raw Module States object and switch between robot-centric and field-centric
