@@ -13,13 +13,13 @@ contour_sort_final:6
 convexity_max:100
 convexity_min:68.8
 corner_approx:5.000000
-crop_x_max:0.6
-crop_x_min:-0.6
+crop_x_max:1
+crop_x_min:-1
 crop_y_max:0.63
-crop_y_min:-0.85
+crop_y_min:-0.49
 cross_a_a:1
 cross_a_x:0
-cross_a_y:-0.63
+cross_a_y:-1
 cross_b_a:1
 cross_b_x:0
 cross_b_y:0
