@@ -45,6 +45,7 @@ void PlaceConeCommand::Initialize() {
           .AndThen(SetArmPoseCommand{m_lifter,
                                      m_bashGuard,
                                      m_scoringPosition,
+                                     frc::Translation2d{0_in, 0_in},
                                      []() { return true; },
                                      []() { return false; },
                                      PathType::concaveDown}

@@ -15,6 +15,7 @@
 SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
                                      BashGuardSubsystem* bashGuard,
                                      std::function<ScoringPosition()> scoringPositionCb,
+                                     frc::Translation2d scoringPositionOffset,
                                      std::function<bool()> bashGuardModeCb,
                                      std::function<bool()> placeGamePieceInvertedCb,
                                      PathType pathType,
@@ -23,6 +24,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     : m_lifter(lifter)
     , m_bashGuard(bashGuard)
     , m_scoringPositionCb(scoringPositionCb)
+    , m_scoringPositionOffset(scoringPositionOffset)
     , m_bashGuardModeCb(bashGuardModeCb)
     , m_placeGamePieceInvertedCb(placeGamePieceInvertedCb)
     , m_targetPose()
@@ -47,6 +49,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
 SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
                                      BashGuardSubsystem* bashGuard,
                                      ScoringPosition scoringPosition,
+                                     frc::Translation2d scoringPositionOffset,
                                      std::function<bool()> bashGuardModeCb,
                                      std::function<bool()> placeGamePieceInvertedCb,
                                      PathType pathType,
@@ -55,6 +58,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     : m_lifter(lifter)
     , m_bashGuard(bashGuard)
     , m_scoringPositionCb(std::nullopt)
+    , m_scoringPositionOffset(scoringPositionOffset)
     , m_bashGuardModeCb(bashGuardModeCb)
     , m_placeGamePieceInvertedCb(placeGamePieceInvertedCb)
     , m_targetPose()
@@ -78,7 +82,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
   auto targetLifterPosition = GetTargetPosition(scoringPosition, true, m_endingWristPosition);
 
   if (targetLifterPosition) {
-    m_targetPose = targetLifterPosition.value().lifterPosition;
+    m_targetPose = targetLifterPosition.value().lifterPosition + m_scoringPositionOffset;
     m_bashGuardTarget = targetLifterPosition.value().bashGuardPosition;
   } else {
     m_targetPose = m_lifter->GetArmPose();
@@ -88,6 +92,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
 SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
                                      BashGuardSubsystem* bashGuard,
                                      frc::Translation2d targetPose,
+                                     frc::Translation2d scoringPositionOffset,
                                      BashGuardPosition desiredBashGuardPosition,
                                      WristPosition desiredWristPosition,
                                      PathType pathType,
@@ -97,6 +102,7 @@ SetArmPoseCommand::SetArmPoseCommand(LifterSubsystem* lifter,
     : m_lifter(lifter)
     , m_bashGuard(bashGuard)
     , m_scoringPositionCb(std::nullopt)
+    , m_scoringPositionOffset(scoringPositionOffset)
     , m_bashGuardModeCb(std::nullopt)
     , m_placeGamePieceInvertedCb(std::nullopt)
     , m_targetPose(targetPose)
@@ -140,12 +146,15 @@ void SetArmPoseCommand::Initialize() {
     m_latestScoringPosition = m_scoringPositionCb.value()();
   }
 
+  frc::Translation2d scoringOffset{0_in, 0_in};
+
   switch (m_latestScoringPosition.column) {
-    case ScoringColumn::coneIntake:
-    case ScoringColumn::cubeIntake:
     case ScoringColumn::leftGrid_middleCube:
     case ScoringColumn::middleGrid_middleCube:
     case ScoringColumn::rightGrid_middleCube:
+      scoringOffset = m_scoringPositionOffset;
+    case ScoringColumn::coneIntake:
+    case ScoringColumn::cubeIntake:
       m_endingWristPosition = WristPosition::RollersUp;
       break;
     case ScoringColumn::stow:
@@ -159,6 +168,7 @@ void SetArmPoseCommand::Initialize() {
       m_endingWristPosition = WristPosition::Unknown;
       break;
     default:
+      scoringOffset = m_scoringPositionOffset;
       if constexpr (warning::nuclear::option::wristEnabled) {
         if (m_placeGamePieceInvertedCb) {
           m_endingWristPosition =
@@ -177,7 +187,7 @@ void SetArmPoseCommand::Initialize() {
     auto targetLifterPosition = GetTargetPosition(m_latestScoringPosition, bashGuardEnable, m_endingWristPosition);
 
     if (targetLifterPosition) {
-      m_targetPose = targetLifterPosition.value().lifterPosition;
+      m_targetPose = targetLifterPosition.value().lifterPosition + scoringOffset;
       m_bashGuardTarget = targetLifterPosition.value().bashGuardPosition;
     } else {
       Cancel();
@@ -191,9 +201,11 @@ void SetArmPoseCommand::Initialize() {
   if (m_isTunable) {
     targetBashGuardPosition =
         units::make_unit<units::inch_t>((frc::SmartDashboard::GetNumber("MPTesting/BashGuard", 0)));
-    m_targetPose = frc::Translation2d(
-        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
-        units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetZ (in)", 18.0)));
+    m_targetPose =
+        frc::Translation2d(
+            units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetX (in)", 50.0)),
+            units::make_unit<units::inch_t>(frc::SmartDashboard::GetNumber("MPTesting/TargetZ (in)", 18.0))) +
+        m_scoringPositionOffset;
 
     m_maxVelocity = units::make_unit<units::inches_per_second_t>(
         frc::SmartDashboard::GetNumber("MPTesting/TravelSpeed (in/s)", 90.0));

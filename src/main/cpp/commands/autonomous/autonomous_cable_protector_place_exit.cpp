@@ -34,6 +34,7 @@ AutonomousCableProtectorPlaceExit::AutonomousCableProtectorPlaceExit(SwerveDrive
                         .AndThen(SetArmPoseCommand{&lifter,
                                                    &bash,
                                                    ScoringPosition{.column = ScoringColumn::stow},
+                                                   frc::Translation2d{0_in, 0_in},
                                                    []() { return false; },
                                                    []() { return false; },
                                                    PathType::concaveDown}

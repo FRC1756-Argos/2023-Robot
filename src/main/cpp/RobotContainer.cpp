@@ -25,6 +25,7 @@
 
 // Include GamePiece enum
 #include <constants/field_points.h>
+#include <constants/scoring_positions.h>
 #include <Constants.h>
 
 #include <cmath>
@@ -130,7 +131,7 @@ RobotContainer::RobotContainer()
           if (distance) {
             auto distanceError =
                 distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
-                                    measure_up::bumperExtension + 2_in);
+                                    measure_up::bumperExtension + scoring_positions::visionScoringOffset.X());
             longitudinalBias =
                 std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.02).to<double>(), -0.3, 0.3);
           } else {
@@ -479,6 +480,7 @@ void RobotContainer::ConfigureBindings() {
                                      &m_lifter,
                                      &m_bash,
                                      ScoringPosition{.column = ScoringColumn::coneIntake},
+                                     frc::Translation2d{0_in, 0_in},
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                      []() { return false; },
                                      PathType::concaveDown,
@@ -491,6 +493,7 @@ void RobotContainer::ConfigureBindings() {
                                      &m_lifter,
                                      &m_bash,
                                      ScoringPosition{.column = ScoringColumn::cubeIntake},
+                                     frc::Translation2d{0_in, 0_in},
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                      []() { return false; },
                                      PathType::concaveDown,
@@ -516,6 +519,7 @@ void RobotContainer::ConfigureBindings() {
                                    []() {
                                      return ScoringPosition{.column = ScoringColumn::stow};
                                    },  // Function instead of constant value so we know this was commanded by button box
+                                   frc::Translation2d{0_in, 0_in},
                                    [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                    []() { return false; },
                                    PathType::unmodified)
@@ -545,6 +549,7 @@ void RobotContainer::ConfigureBindings() {
                   &m_lifter,
                   &m_bash,
                   [this]() { return m_buttonBox.GetScoringPosition(); },
+                  scoring_positions::visionScoringOffset,
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
                   PathType::concaveDown)
@@ -556,6 +561,7 @@ void RobotContainer::ConfigureBindings() {
                   []() {
                     return ScoringPosition{.column = ScoringColumn::stow};
                   },  // Function instead of constant value so we know this was commanded by button box
+                  frc::Translation2d{0_in, 0_in},
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
                   PathType::concaveDown)

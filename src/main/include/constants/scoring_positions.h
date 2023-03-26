@@ -20,6 +20,8 @@ struct SetpointPosition {
 
 namespace scoring_positions {
 
+  constexpr static auto visionScoringOffset = frc::Translation2d{2_in, 0_in};  ///< @note Should only change x value
+
   namespace lifter_extension_end {
     constexpr static units::inch_t robotPlacingOffsetX = measure_up::chassis::length / 2 + measure_up::bumperExtension;
 

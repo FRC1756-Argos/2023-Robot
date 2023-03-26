@@ -20,6 +20,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   SetArmPoseCommand(LifterSubsystem* lifter,
                     BashGuardSubsystem* bashGuard,
                     std::function<ScoringPosition()> scoringPositionCb,
+                    frc::Translation2d scoringPositionOffset,
                     std::function<bool()> bashGuardModeCb,
                     std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
@@ -30,6 +31,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   SetArmPoseCommand(LifterSubsystem* lifter,
                     BashGuardSubsystem* bashGuard,
                     ScoringPosition scoringPosition,
+                    frc::Translation2d scoringPositionOffset,
                     std::function<bool()> bashGuardModeCb,
                     std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
@@ -40,6 +42,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   SetArmPoseCommand(LifterSubsystem* lifter,
                     BashGuardSubsystem* bashGuard,
                     frc::Translation2d targetPose,
+                    frc::Translation2d scoringPositionOffset,
                     BashGuardPosition desiredBashGuardPosition,
                     WristPosition desiredWristPosition = WristPosition::Unknown,
                     PathType pathType = PathType::unmodified,
@@ -62,6 +65,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   LifterSubsystem* m_lifter;
   BashGuardSubsystem* m_bashGuard;
   std::optional<std::function<ScoringPosition()>> m_scoringPositionCb;
+  frc::Translation2d m_scoringPositionOffset;
   std::optional<std::function<bool()>> m_bashGuardModeCb;
   std::optional<std::function<bool()>> m_placeGamePieceInvertedCb;
   frc::Translation2d m_targetPose;
