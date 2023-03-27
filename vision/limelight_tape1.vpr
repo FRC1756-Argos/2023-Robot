@@ -46,7 +46,7 @@ flicker_correction:0
 force_convex:1
 hue_max:95
 hue_min:81
-image_flip:0
+image_flip:1
 image_source:0
 img_to_show:1
 intersection_filter:0

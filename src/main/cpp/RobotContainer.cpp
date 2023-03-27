@@ -147,9 +147,6 @@ RobotContainer::RobotContainer()
               gamePieceDepth = gamePieceDepth.value() *= -1;
             }
 
-            // * Constant scalar for game piece depth influence
-            gamePieceDepth = gamePieceDepth.value() *= 0.7;
-
             // ? Why is this inverted?
             units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance.value());
             visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
@@ -483,7 +480,7 @@ void RobotContainer::ConfigureBindings() {
                                      frc::Translation2d{0_in, 0_in},
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                      []() { return false; },
-                                     PathType::concaveDown,
+                                     PathType::componentWise,
                                      speeds::armKinematicSpeeds::effectorFastVelocity,
                                      speeds::armKinematicSpeeds::effectorFastAcceleration))
           .ToPtr());
@@ -496,34 +493,24 @@ void RobotContainer::ConfigureBindings() {
                                      frc::Translation2d{0_in, 0_in},
                                      [this]() { return m_buttonBox.GetBashGuardStatus(); },
                                      []() { return false; },
-                                     PathType::concaveDown,
+                                     PathType::componentWise,
                                      speeds::armKinematicSpeeds::effectorFastVelocity,
                                      speeds::armKinematicSpeeds::effectorFastAcceleration))
           .ToPtr());
   (intakeConeTrigger || intakeCubeTrigger)
-      .OnFalse(
-          (frc2::WaitCommand(2000_ms).ToPtr().AndThen(
-               frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr()))
-              .AlongWith(
-                  frc2::InstantCommand(
-                      [this] { m_lifter.SetArmExtension(measure_up::lifter::arm_extension::minExtension); },
-                      {&m_lifter})
-                      .ToPtr()
-                      .AndThen(frc2::WaitUntilCommand{[this] {
-                                 return units::math::abs(m_lifter.GetArmExtension() -
-                                                         measure_up::lifter::arm_extension::minExtension) < 0.5_in;
-                               }}.ToPtr())
-                      .AndThen(SetArmPoseCommand(
-                                   &m_lifter,
-                                   &m_bash,
-                                   []() {
-                                     return ScoringPosition{.column = ScoringColumn::stow};
-                                   },  // Function instead of constant value so we know this was commanded by button box
-                                   frc::Translation2d{0_in, 0_in},
-                                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                                   []() { return false; },
-                                   PathType::unmodified)
-                                   .ToPtr())));
+      .OnFalse((frc2::WaitCommand(2000_ms).ToPtr().AndThen(
+                    frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr()))
+                   .AlongWith(SetArmPoseCommand(
+                                  &m_lifter,
+                                  &m_bash,
+                                  []() {
+                                    return ScoringPosition{.column = ScoringColumn::stow};
+                                  },  // Function instead of constant value so we know this was commanded by button box
+                                  frc::Translation2d{0_in, 0_in},
+                                  [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                  []() { return false; },
+                                  PathType::componentWise)
+                                  .ToPtr()));
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
   scoreConeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
@@ -552,7 +539,7 @@ void RobotContainer::ConfigureBindings() {
                   scoring_positions::visionScoringOffset,
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
-                  PathType::concaveDown)
+                  PathType::componentWise)
                   .ToPtr());
   (!intakeConeTrigger && !intakeCubeTrigger && stowPositionTrigger)
       .OnTrue(SetArmPoseCommand(
@@ -564,7 +551,7 @@ void RobotContainer::ConfigureBindings() {
                   frc::Translation2d{0_in, 0_in},
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
-                  PathType::concaveDown)
+                  PathType::componentWise)
                   .ToPtr());
   (!intakeConeTrigger && !intakeCubeTrigger && stowPositionTrigger)
       .OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());

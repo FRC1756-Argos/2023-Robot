@@ -84,7 +84,7 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
-  CANdle m_CANdle;
+  std::optional<CANdle> m_CANdle;
   argos_lib::ArgosLogger m_log;
   bool m_enabled;
   bool m_hasBeenConnected;

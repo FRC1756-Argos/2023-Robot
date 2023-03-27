@@ -362,5 +362,5 @@ namespace field_points {
 }  // namespace field_points
 
 namespace cone {
-  constexpr auto coneWidth = 8.5_in;
+  constexpr auto coneWidth = 6_in;  ///< Does not include square rim
 }  // namespace cone

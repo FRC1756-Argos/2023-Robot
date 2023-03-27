@@ -19,8 +19,12 @@
 using namespace std::chrono_literals;
 
 SimpleLedSubsystem::SimpleLedSubsystem(argos_lib::RobotInstance instance)
-    : m_CANdle{GetCANAddr(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance),
-               std::string(GetCANBus(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance))}
+    : m_CANdle{instance == argos_lib::RobotInstance::Competition ?
+                   std::make_optional<CANdle>(
+                       GetCANAddr(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance),
+                       std::string(
+                           GetCANBus(address::comp_bot::led::CANdle, address::practice_bot::led::CANdle, instance))) :
+                   std::nullopt}
     , m_log{"SIMPLE_LED_SUBSYSTEM"}
     , m_enabled{false}
     , m_hasBeenConnected{false}
@@ -44,7 +48,10 @@ void SimpleLedSubsystem::Disable() {
 }
 
 void SimpleLedSubsystem::SetLedsConnectedBrightness(bool connected) {
-  m_CANdle.ConfigBrightnessScalar(connected ? 0.8 : 0.25);
+  if (!m_CANdle) {
+    return;  // Do nothing, because there is no CANdle on here anyway
+  }
+  m_CANdle.value().ConfigBrightnessScalar(connected ? 0.8 : 0.25);
   if (connected) {
     m_hasBeenConnected = true;
   }
@@ -69,6 +76,10 @@ void SimpleLedSubsystem::Periodic() {
 }
 
 void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, argos_lib::ArgosColor color, bool restorable) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this, group, color]() { this->SetLedGroupColor(group, color, false); };
   }
@@ -77,20 +88,20 @@ void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, argos_lib::ArgosColor 
   int len = -1;
   switch (group) {
     case LedGroup::SIDES:
-      m_CANdle.ClearAnimation(2);
-      m_CANdle.ClearAnimation(3);
+      m_CANdle.value().ClearAnimation(2);
+      m_CANdle.value().ClearAnimation(3);
       startIndx = startIndex_sideFront;
       len = length_sideBack + length_sideFront;
       break;
     case LedGroup::BACK:
-      m_CANdle.ClearAnimation(4);
-      m_CANdle.ClearAnimation(5);
+      m_CANdle.value().ClearAnimation(4);
+      m_CANdle.value().ClearAnimation(5);
       startIndx = startIndex_backRight;
       len = length_backRight + length_backLeft;
       break;
     case LedGroup::FRONT:
-      m_CANdle.ClearAnimation(0);
-      m_CANdle.ClearAnimation(1);
+      m_CANdle.value().ClearAnimation(0);
+      m_CANdle.value().ClearAnimation(1);
       startIndx = startIndex_frontLeft;
       len = length_frontLeft + length_frontRight;
       break;
@@ -104,13 +115,17 @@ void SimpleLedSubsystem::SetLedGroupColor(LedGroup group, argos_lib::ArgosColor 
   }
 
   ctre::phoenix::ErrorCode rslt;
-  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 0, startIndx, len);
+  rslt = m_CANdle.value().SetLEDs(color.r, color.g, color.b, 0, startIndx, len);
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
   }
 }
 
 void SimpleLedSubsystem::SetLedStripColor(LedStrip strip, argos_lib::ArgosColor color, bool restorable) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this, strip, color]() { this->SetLedStripColor(strip, color, false); };
   }
@@ -119,32 +134,32 @@ void SimpleLedSubsystem::SetLedStripColor(LedStrip strip, argos_lib::ArgosColor 
   int len = -1;
   switch (strip) {
     case LedStrip::FrontLeft:
-      m_CANdle.ClearAnimation(0);
+      m_CANdle.value().ClearAnimation(0);
       startIndex = startIndex_frontLeft;
       len = length_frontLeft;
       break;
     case LedStrip::FrontRight:
-      m_CANdle.ClearAnimation(1);
+      m_CANdle.value().ClearAnimation(1);
       startIndex = startIndex_frontRight;
       len = length_frontRight;
       break;
     case LedStrip::SideFront:
-      m_CANdle.ClearAnimation(2);
+      m_CANdle.value().ClearAnimation(2);
       startIndex = startIndex_sideFront;
       len = length_sideFront;
       break;
     case LedStrip::SideBack:
-      m_CANdle.ClearAnimation(3);
+      m_CANdle.value().ClearAnimation(3);
       startIndex = startIndex_sideBack;
       len = length_sideBack;
       break;
     case LedStrip::BackLeft:
-      m_CANdle.ClearAnimation(5);
+      m_CANdle.value().ClearAnimation(5);
       startIndex = startIndex_backLeft;
       len = length_backLeft;
       break;
     case LedStrip::BackRight:
-      m_CANdle.ClearAnimation(4);
+      m_CANdle.value().ClearAnimation(4);
       startIndex = startIndex_backRight;
       len = length_backRight;
       break;
@@ -155,7 +170,7 @@ void SimpleLedSubsystem::SetLedStripColor(LedStrip strip, argos_lib::ArgosColor 
   }
 
   ctre::phoenix::ErrorCode rslt;
-  rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 0, startIndex, len);
+  rslt = m_CANdle.value().SetLEDs(color.r, color.g, color.b, 0, startIndex, len);
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
   }
@@ -164,6 +179,10 @@ void SimpleLedSubsystem::SetLedStripColor(LedStrip strip, argos_lib::ArgosColor 
 void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color,
                                            bool restorable,
                                            std::optional<std::function<GamePiece()>> tipColor) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this, color, tipColor]() { this->SetAllGroupsColor(color, false, tipColor); };
   }
@@ -173,7 +192,7 @@ void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color,
     int len =
         length_backLeft + length_backRight + length_sideBack + length_sideFront + length_frontLeft + length_frontRight;
     ctre::phoenix::ErrorCode rslt;
-    rslt = m_CANdle.SetLEDs(color.r, color.g, color.b, 0, startIndex_frontLeft, len);
+    rslt = m_CANdle.value().SetLEDs(color.r, color.g, color.b, 0, startIndex_frontLeft, len);
     if (rslt != ctre::phoenix::ErrorCode::OKAY) {
       m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
     }
@@ -193,7 +212,7 @@ void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color,
                                   (inverted_backRight ? tipSize : 0) + startIndex_backRight,
                                   (inverted_backLeft ? tipSize : 0) + startIndex_backLeft};
     for (size_t i = 0; i < lengths.size(); ++i) {
-      m_CANdle.SetLEDs(color.r, color.g, color.b, 0, offsets.at(i), lengths.at(i));
+      m_CANdle.value().SetLEDs(color.r, color.g, color.b, 0, offsets.at(i), lengths.at(i));
     }
 
     std::array<int, 6> tipOffsets = {(inverted_frontLeft ? 0 : length_frontLeft - tipSize) + startIndex_frontLeft,
@@ -204,7 +223,7 @@ void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color,
                                      (inverted_backLeft ? 0 : length_backLeft - tipSize) + startIndex_backLeft};
     auto color = GetGamePieceColor(tipColor.value()());
     for (size_t i = 0; i < tipOffsets.size(); ++i) {
-      m_CANdle.SetLEDs(color.r, color.g, color.b, 0, tipOffsets.at(i), tipSize);
+      m_CANdle.value().SetLEDs(color.r, color.g, color.b, 0, tipOffsets.at(i), tipSize);
     }
   }
 }
@@ -212,6 +231,10 @@ void SimpleLedSubsystem::SetAllGroupsColor(argos_lib::ArgosColor color,
 void SimpleLedSubsystem::SetAllGroupsFade(argos_lib::ArgosColor color,
                                           bool restorable,
                                           std::optional<std::function<GamePiece()>> tipColor) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this, color, tipColor]() { this->SetAllGroupsFade(color, false, tipColor); };
   }
@@ -233,7 +256,7 @@ void SimpleLedSubsystem::SetAllGroupsFade(argos_lib::ArgosColor color,
   for (size_t i = 0; i < lengths.size(); ++i) {
     auto fadeAnimation =
         ctre::phoenix::led::SingleFadeAnimation(color.r, color.g, color.b, 0, 0.7, lengths.at(i), offsets.at(i));
-    m_CANdle.Animate(fadeAnimation, i);
+    m_CANdle.value().Animate(fadeAnimation, i);
   }
 
   if (tipColor) {
@@ -245,12 +268,15 @@ void SimpleLedSubsystem::SetAllGroupsFade(argos_lib::ArgosColor color,
                                      (inverted_backLeft ? 0 : length_backLeft - tipSize) + startIndex_backLeft};
     auto color = GetGamePieceColor(tipColor.value()());
     for (size_t i = 0; i < tipOffsets.size(); ++i) {
-      m_CANdle.SetLEDs(color.r, color.g, color.b, 0, tipOffsets.at(i), tipSize);
+      m_CANdle.value().SetLEDs(color.r, color.g, color.b, 0, tipOffsets.at(i), tipSize);
     }
   }
 }
 
 void SimpleLedSubsystem::SetAllGroupsFlash(argos_lib::ArgosColor color, bool restorable) {
+  if (!m_CANdle) {
+    return;
+  }
   if (restorable) {
     m_ledUpdateFunction = [this, color]() { this->SetAllGroupsFlash(color, false); };
   }
@@ -266,11 +292,15 @@ void SimpleLedSubsystem::SetAllGroupsFlash(argos_lib::ArgosColor color, bool res
   for (size_t i = 0; i < lengths.size(); ++i) {
     auto flashAnimation =
         ctre::phoenix::led::StrobeAnimation(color.r, color.g, color.b, 0, 0.1, lengths.at(i), offsets.at(i));
-    m_CANdle.Animate(flashAnimation, i);
+    m_CANdle.value().Animate(flashAnimation, i);
   }
 }
 
 void SimpleLedSubsystem::FlashStrip(LedStrip strip, argos_lib::ArgosColor color, bool restorable) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing;
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this, color]() { this->SetAllGroupsFlash(color, false); };
   }
@@ -310,7 +340,7 @@ void SimpleLedSubsystem::FlashStrip(LedStrip strip, argos_lib::ArgosColor color,
   }
 
   auto flashAnimation = ctre::phoenix::led::StrobeAnimation(color.r, color.g, color.b, 0, 0.1, len, startIndex);
-  auto rslt = m_CANdle.Animate(flashAnimation, static_cast<int>(strip));
+  auto rslt = m_CANdle.value().Animate(flashAnimation, static_cast<int>(strip));
 
   if (rslt != ctre::phoenix::ErrorCode::OKAY) {
     m_log.Log(argos_lib::LogLevel::ERR, "CANDle::SetLEDs() returned error[%d]", rslt);
@@ -318,6 +348,10 @@ void SimpleLedSubsystem::FlashStrip(LedStrip strip, argos_lib::ArgosColor color,
 }
 
 void SimpleLedSubsystem::SetAllGroupsLarson(argos_lib::ArgosColor color, bool restorable) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this, color]() { this->SetAllGroupsLarson(color, false); };
   }
@@ -340,7 +374,7 @@ void SimpleLedSubsystem::SetAllGroupsLarson(argos_lib::ArgosColor color, bool re
                                                                ctre::phoenix::led::LarsonAnimation::Front,
                                                                10,
                                                                offsets.at(i));
-    m_CANdle.Animate(larsonAnimation, i);
+    m_CANdle.value().Animate(larsonAnimation, i);
   }
 }
 
@@ -378,16 +412,20 @@ void SimpleLedSubsystem::SetAllGroupsGamePieceColor(GamePiece gp, bool restorabl
 }
 
 void SimpleLedSubsystem::StopAllAnimations(bool restorable) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this]() { this->StopAllAnimations(false); };
   }
 
-  m_CANdle.ClearAnimation(0);
-  m_CANdle.ClearAnimation(1);
-  m_CANdle.ClearAnimation(2);
-  m_CANdle.ClearAnimation(3);
-  m_CANdle.ClearAnimation(4);
-  m_CANdle.ClearAnimation(5);
+  m_CANdle.value().ClearAnimation(0);
+  m_CANdle.value().ClearAnimation(1);
+  m_CANdle.value().ClearAnimation(2);
+  m_CANdle.value().ClearAnimation(3);
+  m_CANdle.value().ClearAnimation(4);
+  m_CANdle.value().ClearAnimation(5);
 }
 
 void SimpleLedSubsystem::SetAllGroupsOff(bool restorable) {
@@ -399,6 +437,9 @@ void SimpleLedSubsystem::SetAllGroupsOff(bool restorable) {
 }
 
 void SimpleLedSubsystem::FireEverywhere(bool restorable) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
   if (restorable) {
     m_ledUpdateFunction = [this]() { this->FireEverywhere(false); };
   }
@@ -420,32 +461,36 @@ void SimpleLedSubsystem::FireEverywhere(bool restorable) {
   for (size_t i = 0; i < lengths.size(); ++i) {
     auto fireAnimation =
         ctre::phoenix::led::FireAnimation(0.5, 0.7, lengths.at(i), 1, 0.2, inverts.at(i), offsets.at(i));
-    m_CANdle.Animate(fireAnimation, i);
+    m_CANdle.value().Animate(fireAnimation, i);
   }
 }
 void SimpleLedSubsystem::Blind(bool restorable) {
+  if (!m_CANdle) {
+    return;  // No CANdle, so do nothing
+  }
+
   if (restorable) {
     m_ledUpdateFunction = [this]() { this->Blind(false); };
   }
 
   auto strobeAnimationFL =
       ctre::phoenix::led::StrobeAnimation(211, 138, 31, 0, 0.19, length_frontLeft, startIndex_frontLeft);
-  m_CANdle.Animate(strobeAnimationFL, 0);
+  m_CANdle.value().Animate(strobeAnimationFL, 0);
   auto strobeAnimationFR =
       ctre::phoenix::led::StrobeAnimation(211, 138, 31, 0, 0.15, length_frontRight, startIndex_frontRight);
-  m_CANdle.Animate(strobeAnimationFR, 1);
+  m_CANdle.value().Animate(strobeAnimationFR, 1);
   auto strobeAnimationSF =
       ctre::phoenix::led::StrobeAnimation(0, 100, 100, 0, 0.18, length_sideFront, startIndex_sideFront);
-  m_CANdle.Animate(strobeAnimationSF, 2);
+  m_CANdle.value().Animate(strobeAnimationSF, 2);
   auto strobeAnimationSB =
       ctre::phoenix::led::StrobeAnimation(100, 100, 0, 0, 0.17, length_sideBack, startIndex_sideBack);
-  m_CANdle.Animate(strobeAnimationSB, 3);
+  m_CANdle.value().Animate(strobeAnimationSB, 3);
   auto strobeAnimationBR =
       ctre::phoenix::led::StrobeAnimation(0, 0, 90, 0, 0.16, length_backRight, startIndex_backRight);
-  m_CANdle.Animate(strobeAnimationBR, 4);
+  m_CANdle.value().Animate(strobeAnimationBR, 4);
   auto strobeAnimationBL =
       ctre::phoenix::led::StrobeAnimation(0, 100, 0, 0, 0.14, length_backLeft, startIndex_backLeft);
-  m_CANdle.Animate(strobeAnimationBL, 5);
+  m_CANdle.value().Animate(strobeAnimationBL, 5);
 }
 
 void SimpleLedSubsystem::ColorSweep(argos_lib::ArgosColor color, bool correctGamma, bool restorable) {
