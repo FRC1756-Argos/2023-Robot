@@ -200,7 +200,7 @@ namespace motorConfig {
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
         constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::BasicFX;
-        constexpr static auto continuousCurrentLimit = 20_A;
+        constexpr static auto continuousCurrentLimit = 15_A;  ///< @todo 20_A for competition
       };
     }  // namespace intake
     namespace bash_guard {

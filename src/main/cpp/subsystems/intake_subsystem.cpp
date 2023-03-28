@@ -53,7 +53,8 @@ void IntakeSubsystem::Periodic() {
 }
 
 void IntakeSubsystem::IntakeCone() {
-  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 1.0);
+  m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
+                    0.8);  /// @todo 1.0 for competition
   m_haveCone = true;
   m_haveCube = false;
 }
@@ -77,9 +78,11 @@ void IntakeSubsystem::EjectCube() {
 
 void IntakeSubsystem::IntakeStop() {
   if (m_haveCone) {
-    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.3);
+    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
+                      0.2);  /// @todo 0.3 for competition
   } else if (m_haveCube) {
-    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, -0.75);
+    m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput,
+                      -0.4);  /// @todo 0.75 for competition
   } else {
     m_intakeMotor.Set(ctre::phoenix::motorcontrol::TalonSRXControlMode::PercentOutput, 0.0);
   }

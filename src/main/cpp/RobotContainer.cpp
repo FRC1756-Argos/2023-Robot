@@ -536,7 +536,7 @@ void RobotContainer::ConfigureBindings() {
                   &m_lifter,
                   &m_bash,
                   [this]() { return m_buttonBox.GetScoringPosition(); },
-                  scoring_positions::visionScoringOffset,
+                  scoring_positions::visionScoringOffset * 2,
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
                   PathType::componentWise)
