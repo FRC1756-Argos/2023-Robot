@@ -64,9 +64,10 @@ std::optional<units::inch_t> VisionSubsystem::GetDistanceToPoleTape() {
 
     // Assume we're seeing the low node, because robot can quickly drive away from grid if it
     // incorrectly assumes high node
-    distance =
-        (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraZ) / std::tan(targetAngle.to<double>()) +
-        measure_up::camera::cameraX;
+    distance = units::math::cos(targets.m_yaw).to<double>() *
+                   (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraZ) /
+                   std::tan(targetAngle.to<double>()) +
+               measure_up::camera::cameraX;
 
     frc::SmartDashboard::PutNumber("(GetDistanceToPoleTape) Vision Distance To LowerPole RetroReflective Tape (inches)",
                                    distance.to<double>());

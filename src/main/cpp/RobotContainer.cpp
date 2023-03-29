@@ -131,7 +131,7 @@ RobotContainer::RobotContainer()
           if (distance) {
             auto distanceError =
                 distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
-                                    measure_up::bumperExtension + scoring_positions::visionScoringOffset.X());
+                                    measure_up::bumperExtension + scoring_positions::visionScoringAlignOffset.X());
             longitudinalBias =
                 std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.02).to<double>(), -0.3, 0.3);
           } else {
@@ -148,8 +148,19 @@ RobotContainer::RobotContainer()
             }
 
             // ? Why is this inverted?
-            units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance.value());
+            frc::SmartDashboard::PutNumber("vision/gamePieceDepth (in)", gamePieceDepth.value().to<double>());
+            frc::SmartDashboard::PutNumber("vision/distance (in)", distance.value().to<double>());
+            /// @todo Investigate why we always need an offset for one side (#207)
+            if (gamePieceDepth.value() > 0_in) {
+              gamePieceDepth = units::math::max(gamePieceDepth.value() - 2.5_in, 0_in);
+            }
+            units::degree_t intakeOffset = units::math::atan2(gamePieceDepth.value(), distance.value());
+            frc::SmartDashboard::PutNumber("vision/intakeOffset (deg)", intakeOffset.to<double>());
+            frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset initial (deg)",
+                                           visionHorizontalOffset.value().to<double>());
             visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
+            frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset final (deg)",
+                                           visionHorizontalOffset.value().to<double>());
           }
 
           units::degree_t robotYaw =
@@ -536,7 +547,7 @@ void RobotContainer::ConfigureBindings() {
                   &m_lifter,
                   &m_bash,
                   [this]() { return m_buttonBox.GetScoringPosition(); },
-                  scoring_positions::visionScoringOffset * 2,
+                  scoring_positions::visionScoringPlacementOffset,
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
                   PathType::componentWise)
