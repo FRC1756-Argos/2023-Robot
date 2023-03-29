@@ -20,7 +20,10 @@ struct SetpointPosition {
 
 namespace scoring_positions {
 
-  constexpr static auto visionScoringOffset = frc::Translation2d{2_in, 0_in};  ///< @note Should only change x value
+  constexpr static auto visionScoringAlignOffset =
+      frc::Translation2d{1_in, 0_in};  ///< @note Should only change x value
+  constexpr static auto visionScoringPlacementOffset =
+      frc::Translation2d{3_in, 0_in};  ///< @note Should only change x value
 
   namespace lifter_extension_end {
     constexpr static units::inch_t robotPlacingOffsetX = measure_up::chassis::length / 2 + measure_up::bumperExtension;
@@ -28,8 +31,8 @@ namespace scoring_positions {
     constexpr static SetpointPosition coneLow(frc::Translation2d(24.5_in, 19_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneLow_wristInverted(frc::Translation2d(24.5_in, 19_in),
                                                             BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneMid(frc::Translation2d(36.5_in, 44.5_in), BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneMid_wristInverted(frc::Translation2d(33_in, 44.5_in),
+    constexpr static SetpointPosition coneMid(frc::Translation2d(36.0_in, 44.5_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition coneMid_wristInverted(frc::Translation2d(32.5_in, 44.5_in),
                                                             BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneHigh(frc::Translation2d(51.5_in, 54.5_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(51_in, 54_in),
