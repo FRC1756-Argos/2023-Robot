@@ -83,9 +83,9 @@ When commissioning a new robot, you should set the instance type to either "Comp
 
 See [vision readme](vision/README.md) for information on which pipelines to use and which indices to install these pipelines on.
 
-### Playing With Fusion Addresing
+### Playing With Fusion Addressing
 
-Go to http://172.17.56.2:5812 while connected to the robot to update firmware or change adresses.
+Go to http://10.17.56.2:5812 while connected to the robot to update firmware or change addresses.
 
 ## Project Setup
 
