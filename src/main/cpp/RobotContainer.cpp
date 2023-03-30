@@ -114,7 +114,7 @@ RobotContainer::RobotContainer()
           if (rotationalError < 30_deg) {
             deadbandRotSpeed -=
                 m_rotationalNudgeRate
-                    .Calculate(std::clamp((robotYaw - nearestSquareAngle).to<double>() * 0.05, -0.2, 0.2))
+                    .Calculate(std::clamp((robotYaw - nearestSquareAngle).to<double>() * 0.0376, -0.15, 0.15))
                     .to<double>();
           } else {
             m_rotationalNudgeRate.Reset(0);
@@ -133,7 +133,7 @@ RobotContainer::RobotContainer()
                 distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
                                     measure_up::bumperExtension + scoring_positions::visionScoringAlignOffset.X());
             longitudinalBias =
-                std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.02).to<double>(), -0.3, 0.3);
+                std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.015).to<double>(), -0.23, 0.23);
           } else {
             distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
                        field_points::grids::middleConeNodeDepth;
