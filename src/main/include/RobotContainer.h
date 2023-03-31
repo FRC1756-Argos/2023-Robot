@@ -32,6 +32,7 @@
 #include "subsystems/simple_led_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
 #include "subsystems/vision_subsystem.h"
+#include "subsystems/oui_oui_placer_subsystem.h"
 #include "utils/auto_selector.h"
 
 /**
@@ -85,6 +86,7 @@ class RobotContainer {
   BashGuardSubsystem m_bash;
   SimpleLedSubsystem m_ledSubSystem;
   VisionSubsystem m_visionSubSystem;
+  OuiOuiPlacerSubsystem m_ouiOuiPlacerSubsystem;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
   ScoreConeCommand m_scoreConeCommand;
 

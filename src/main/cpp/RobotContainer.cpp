@@ -54,6 +54,7 @@ RobotContainer::RobotContainer()
     , m_bash(m_instance)
     , m_ledSubSystem(m_instance)
     , m_visionSubSystem(m_instance, &m_swerveDrive)
+    , m_ouiOuiPlacerSubsystem(m_instance)
     , m_homeArmExtensionCommand(m_lifter)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}

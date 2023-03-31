@@ -222,7 +222,22 @@ namespace motorConfig {
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::bash_guard::extension::allowableError;
       };
     }  // namespace bash_guard
-  }    // namespace comp_bot
+    struct oui_oui_placer {
+      constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;  // @todo check on this
+      constexpr static bool sensorPhase = false;
+      constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
+      constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
+      constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
+      constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
+      constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::IntegratedSensor;
+      constexpr static auto pid0_kP = controlLoop::comp_bot::oui_oui_placer::kP;
+      constexpr static auto pid0_kI = controlLoop::comp_bot::oui_oui_placer::kI;
+      constexpr static auto pid0_kD = controlLoop::comp_bot::oui_oui_placer::kD;
+      constexpr static auto pid0_kF = controlLoop::comp_bot::oui_oui_placer::kF;
+      constexpr static auto pid0_iZone = controlLoop::comp_bot::oui_oui_placer::iZone;
+      constexpr static auto pid0_allowableError = controlLoop::comp_bot::oui_oui_placer::allowableError;
+    };  // namespace oui_oui_placer
+  }     // namespace comp_bot
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// @brief Motor configurations specific to practice robot
@@ -311,5 +326,7 @@ namespace motorConfig {
     namespace bash_guard {
       using extension = motorConfig::comp_bot::bash_guard::extension;
     }  // namespace bash_guard
-  }    // namespace practice_bot
+
+    using oui_oui_placer = comp_bot::oui_oui_placer;
+  }  // namespace practice_bot
 }  // namespace motorConfig

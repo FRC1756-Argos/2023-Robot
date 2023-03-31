@@ -73,6 +73,15 @@ namespace measure_up {
     constexpr auto minExtension = 4.5_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
+  namespace oui_oui_place {
+    // @todo get more accurate numbers from bradley come testing time
+    // Maximum oui oui can rotate outside the back of the robot
+    constexpr auto minAngle = 180_deg;
+    // Maximum oui oui can rotate inside the robot
+    constexpr auto maxAngle = 270_deg;
+    constexpr units::degree_t stowAngle = maxAngle;
+    constexpr units::degree_t placeAngle = minAngle;
+  }  // namespace oui_oui_place
   namespace camera {
     constexpr auto cameraX = 0_in;
     constexpr auto cameraZ = 8.375_in;
