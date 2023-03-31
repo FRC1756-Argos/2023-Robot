@@ -10,6 +10,10 @@
 
 CameraInterface::CameraInterface() = default;
 
+void CameraInterface::RequestTargetFilterReset() {
+  m_target.ResetOnNextTarget();
+}
+
 VisionSubsystem::VisionSubsystem(const argos_lib::RobotInstance instance, SwerveDriveSubsystem* pDriveSubsystem)
     : m_instance(instance), m_pDriveSubsystem(pDriveSubsystem) {}
 
@@ -93,8 +97,12 @@ bool VisionSubsystem::AimToPlaceCone() {
   return true;
 }
 
+void VisionSubsystem::RequestFilterReset() {
+  m_cameraInterface.RequestTargetFilterReset();
+}
+
 LimelightTarget::tValues VisionSubsystem::GetCameraTargetValues() {
-  return m_cameraInterface.m_target.GetTarget();
+  return m_cameraInterface.m_target.GetTarget(true);
 }
 
 void VisionSubsystem::Disable() {
@@ -103,7 +111,7 @@ void VisionSubsystem::Disable() {
 
 // LIMELIGHT TARGET MEMBER FUNCTIONS ===============================================================
 
-LimelightTarget::tValues LimelightTarget::GetTarget() {
+LimelightTarget::tValues LimelightTarget::GetTarget(bool filter) {
   std::shared_ptr<nt::NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
 
   auto rawRobotPose = table->GetNumberArray("botpose", std::span<const double>({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
@@ -133,6 +141,28 @@ LimelightTarget::tValues LimelightTarget::GetTarget() {
   m_hasTargets = (table->GetNumber("tv", 0) == 1);
   m_yaw = units::make_unit<units::degree_t>(table->GetNumber("tx", 0.0));
   m_pitch = units::make_unit<units::degree_t>(table->GetNumber("ty", 0.0));
+
+  // REMOVEME debugging
+  frc::SmartDashboard::PutNumber("VisionSubsystem/RawPitch (deg)", m_pitch.to<double>());
+  frc::SmartDashboard::PutNumber("VisionSubsystem/RawYaw (deg)", m_yaw.to<double>());
+  // ! end debugging
+
+  // If filter needs to reset, reset filter
+  if (m_hasTargets && m_resetFilterFlag) {
+    ResetFilters();
+  }
+
+  // Filter incoming yaw & pitch if wanted
+  if (filter && m_hasTargets) {
+    m_yaw = m_txFilter.Calculate(m_yaw);
+    m_pitch = m_tyFilter.Calculate(m_pitch);
+
+    // REMOVEME debugging
+    frc::SmartDashboard::PutNumber("VisionSubsystem/FilteredPitch (deg)", m_pitch.to<double>());
+    frc::SmartDashboard::PutNumber("VisionSubsystem/FilteredYaw (deg)", m_yaw.to<double>());
+    // ! end debugging
+  }
+
   m_area = (table->GetNumber("ta", 0.0));
   m_totalLatency = units::make_unit<units::millisecond_t>(rawRobotPose.at(6));
 
@@ -142,4 +172,22 @@ LimelightTarget::tValues LimelightTarget::GetTarget() {
 
 bool LimelightTarget::HasTarget() {
   return m_hasTargets;
+}
+
+void LimelightTarget::ResetOnNextTarget() {
+  m_resetFilterFlag = true;
+}
+
+void LimelightTarget::ResetFilters() {
+  m_resetFilterFlag = false;
+  m_txFilter.Reset();
+  m_tyFilter.Reset();
+  LimelightTarget::tValues currentValue = GetTarget(false);
+  // Hackily rest filter with initial value
+  // TODO name the filter values
+  uint32_t samples = 0.7 / 0.02;
+  for (size_t i = 0; i < samples; i++) {
+    m_txFilter.Calculate(currentValue.m_yaw);
+    m_tyFilter.Calculate(currentValue.m_pitch);
+  }
 }

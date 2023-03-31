@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <frc/filter/LinearFilter.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
 #include <frc2/command/SubsystemBase.h>
@@ -25,9 +26,15 @@ class LimelightTarget {
   units::degree_t m_yaw;                ///< Yaw of target relative to camera -31.65 to 31.65 degrees
   double m_area;                        ///< Area of the target in percentage of total pixels
   units::millisecond_t m_totalLatency;  ///< Total latency
+  frc::LinearFilter<units::degree_t> m_txFilter;
+  frc::LinearFilter<units::degree_t> m_tyFilter;
+  bool m_resetFilterFlag;
 
  public:
-  LimelightTarget() = default;
+  LimelightTarget()
+      : m_txFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.7, 0.02_s)}
+      , m_tyFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.7, 0.02_s)}
+      , m_resetFilterFlag{false} {}
 
   /**
    * @brief Wraps members of LimelightTarget for use elsewhere
@@ -49,7 +56,7 @@ class LimelightTarget {
    *
    * @return tValues
    */
-  tValues GetTarget();
+  tValues GetTarget(bool filter);
 
   /**
    * @brief Does the camera see a target?
@@ -58,6 +65,10 @@ class LimelightTarget {
    * @return false - The camera does not see a target
    */
   bool HasTarget();
+
+  void ResetFilters();
+
+  void ResetOnNextTarget();
 };
 
 /**
@@ -83,6 +94,8 @@ class CameraInterface {
    * @param mode True is drive control. False is no drive control
    */
   void SetDriverMode(bool mode);
+
+  void RequestTargetFilterReset();
 };
 
 class VisionSubsystem : public frc2::SubsystemBase {
@@ -129,6 +142,8 @@ class VisionSubsystem : public frc2::SubsystemBase {
   void SetReflectiveVisionMode(bool mode);
 
   bool AimToPlaceCone();
+
+  void RequestFilterReset();
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
