@@ -35,6 +35,8 @@ class ScoreConeCommand : public frc2::CommandHelper<frc2::CommandBase, ScoreCone
 
   bool IsFinished() override;
 
+  frc2::Command::InterruptionBehavior GetInterruptionBehavior() const override;
+
  private:
   static frc::Translation2d GetRelativePose(const frc::Translation2d& initPosition,
                                             units::inch_t xOffset,

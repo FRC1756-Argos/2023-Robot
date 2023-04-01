@@ -79,3 +79,7 @@ void ScoreConeCommand::End(bool interrupted) {
 bool ScoreConeCommand::IsFinished() {
   return m_allCommands.get()->IsFinished();
 }
+
+frc2::Command::InterruptionBehavior ScoreConeCommand::GetInterruptionBehavior() const {
+  return frc2::Command::InterruptionBehavior::kCancelIncoming;
+}
