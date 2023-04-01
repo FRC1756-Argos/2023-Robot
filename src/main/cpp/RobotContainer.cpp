@@ -75,9 +75,9 @@ RobotContainer::RobotContainer()
                       &m_autoScorePickupBalanceCone,
                       &m_autoOnlyBalance},
                      &m_autoNothing}
-    , m_lateralNudgeRate{6 / 1_s}
+    , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
-    , m_distanceNudgeRate{6 / 1_s}
+    , m_distanceNudgeRate{12 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
@@ -139,7 +139,7 @@ RobotContainer::RobotContainer()
                        field_points::grids::middleConeNodeDepth;
           }
 
-          std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
+          std::optional<units::inch_t> gamePieceDepth = 0_in;  // m_intake.GetIntakeDistance();
 
           if (gamePieceDepth) {
             // invert distance if wrist is inverted
@@ -444,9 +444,13 @@ void RobotContainer::ConfigureBindings() {
   // VISION TRIGGERS
   auto reflectiveTargetTrigger =
       m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
-  reflectiveTargetTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
-          .ToPtr());
+  reflectiveTargetTrigger.OnTrue(frc2::InstantCommand(
+                                     [this]() {
+                                       m_visionSubSystem.SetReflectiveVisionMode(true);
+                                       m_visionSubSystem.RequestFilterReset();
+                                     },
+                                     {&m_visionSubSystem})
+                                     .ToPtr());
   reflectiveTargetTrigger.OnFalse(
       frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
           .ToPtr());
