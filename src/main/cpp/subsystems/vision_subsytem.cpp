@@ -73,7 +73,7 @@ std::optional<units::inch_t> VisionSubsystem::GetDistanceToPoleTape() {
                    std::tan(targetAngle.to<double>()) +
                measure_up::camera::cameraX;
 
-    frc::SmartDashboard::PutNumber("(GetDistanceToPoleTape) Vision Distance To LowerPole RetroReflective Tape (inches)",
+    frc::SmartDashboard::PutNumber("vision/Vision Distance To LowerPole RetroReflective Tape (inches)",
                                    distance.to<double>());
 
     return distance;

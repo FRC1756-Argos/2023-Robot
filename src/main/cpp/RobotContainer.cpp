@@ -75,9 +75,9 @@ RobotContainer::RobotContainer()
                       &m_autoScorePickupBalanceCone,
                       &m_autoOnlyBalance},
                      &m_autoNothing}
-    , m_lateralNudgeRate{6 / 1_s}
+    , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
-    , m_distanceNudgeRate{6 / 1_s}
+    , m_distanceNudgeRate{12 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
