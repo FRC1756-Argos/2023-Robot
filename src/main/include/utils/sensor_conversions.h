@@ -55,6 +55,9 @@ namespace sensor_conversions {
       constexpr double gearboxReduction = 1.0 / 12.0;
       constexpr double driveSprocketTeeth = 15.0;
       constexpr double extensionInchesPerTooth = 0.375 / 1;
+      constexpr double absEncoderReduction = 1.0 / 10;
+      constexpr units::inch_t extensionPerEncoderRevolution =
+          units::make_unit<units::inch_t>((extensionInchesPerTooth * driveSprocketTeeth) / absEncoderReduction);
 
       constexpr units::inch_t ToExtension(const double sensorUnit) {
         return units::make_unit<units::inch_t>(sensorUnit * sensorToMotorRevolution * gearboxReduction *
@@ -70,6 +73,16 @@ namespace sensor_conversions {
       }
       constexpr double ToSensorVelocity(const units::inches_per_second_t velocity) {
         return ToSensorUnit(velocity * units::decisecond_t{1});
+      }
+
+      // * David I'm sorry in advance for this math
+
+      /// @brief Find the travel of the extension given a rotation "angle" of the CANCoder
+      /// @param angle Rotation of the CANCoder
+      /// @return The travel of extension given a rotation of geared CANCoder
+      constexpr units::inch_t ExtensionFromRotation(const units::degree_t angle) {
+        return extensionPerEncoderRevolution *
+               units::make_unit<units::dimensionless::scalar_t>((angle.to<double>() / 360.0));
       }
     }  // namespace arm_extension
     namespace wrist {

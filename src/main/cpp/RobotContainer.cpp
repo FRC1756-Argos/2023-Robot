@@ -367,10 +367,6 @@ void RobotContainer::ConfigureBindings() {
 
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
-  auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
-
-  auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
-
   // Bashguard homing trigger
 
   auto bashGuardHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_bash.IsBashGuardHomed(); }});
@@ -531,8 +527,6 @@ void RobotContainer::ConfigureBindings() {
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
-
-  startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
   startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 

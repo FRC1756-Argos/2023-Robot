@@ -114,6 +114,9 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @brief Update arm home position
   void UpdateArmExtensionHome();
 
+  /// @brief Initializes the arm extension home from file system
+  void InitializeArmExtensionHome();
+
   /// @brief Initializes the homed shoulder value from FS
   void InitializeShoulderHome();
 
@@ -206,10 +209,12 @@ class LifterSubsystem : public frc2::SubsystemBase {
   WPI_TalonFX m_wrist;              ///< Motor that controls wrist movement
   CANCoder m_shoulderEncoder;       ///< Encoder that measures shoulder position
   CANCoder m_wristEncoder;          ///< Encoder for measuring wrist position
+  CANCoder m_extensionEncoder;      ///< Encoder for measuring extension of arm
   LifterKinematics m_kinematics;    ///< Kinematic model for solving arm joints & position
   argos_lib::ArgosLogger m_logger;  ///< Handles logging errors & info
-  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;  ///< File system homing for shoulder
-  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;   ///< File system homing for wrist
+  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;     ///< File system homing for shoulder
+  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;      ///< File system homing for wrist
+  argos_lib::FSHomingStorage<units::degree_t> m_extensionHomingStorage;  ///< File system homing for wrist
   argos_lib::NTMotorPIDTuner m_extensionTuner;  ///< TEMP network tables PID tuner for tuning extension
   argos_lib::NTMotorPIDTuner m_wristTuner;      ///< TEMP network tables PID tuner for tuning wrist
   argos_lib::NTMotorPIDTuner m_shoulderTuner;   ///< TEMP network tables PID tuner for tuning shoulder
