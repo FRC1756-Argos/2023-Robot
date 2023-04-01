@@ -36,18 +36,36 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
   m_coneRightIntakeSensor.SetRangeOfInterest(8, 8, 12, 12);
   m_cubeIntakeSensor.SetRangingMode(frc::TimeOfFlight::RangingMode::kShort, 24);
   m_cubeIntakeSensor.SetRangeOfInterest(8, 8, 12, 12);
+  units::inch_t left_average[] = {units::make_unit<units::millimeter_t>(0.1),
+                                  units::make_unit<units::millimeter_t>(0.1),
+                                  units::make_unit<units::millimeter_t>(0.1),
+                                  units::make_unit<units::millimeter_t>(0.1),
+                                  units::make_unit<units::millimeter_t>(0.1)};
+
+  units::inch_t right_average[] = {units::make_unit<units::millimeter_t>(0.1),
+                                   units::make_unit<units::millimeter_t>(0.1),
+                                   units::make_unit<units::millimeter_t>(0.1),
+                                   units::make_unit<units::millimeter_t>(0.1),
+                                   units::make_unit<units::millimeter_t>(0.1)};
 }
 
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {
   std::optional<units::inch_t> sensDistance = GetIntakeDistance();
   frc::SmartDashboard::PutNumber("SensorDistance", sensDistance ? sensDistance.value().to<double>() : -1);
+
+  units::inch_t leftSensorDistance = units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange());
+  frc::SmartDashboard::PutNumber("TOF Left", leftSensorDistance.value());
+  frc::SmartDashboard::PutNumber("TOF Left Averaged", CalAverage(leftSensorDistance, left_average).value());
+
+  units::inch_t rightSensorDistance = units::make_unit<units::millimeter_t>(m_coneRightIntakeSensor.GetRange());
+  frc::SmartDashboard::PutNumber("TOF Right", rightSensorDistance.value());
+  frc::SmartDashboard::PutNumber("TOF Right Averaged", CalAverage(rightSensorDistance, right_average).value());
+
+  frc::SmartDashboard::PutNumber("Intake Stator Current", m_intakeMotor.GetStatorCurrent());
+
   frc::SmartDashboard::PutNumber(
-      "TOF Left",
-      units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange()).convert<units::inch>().value());
-  frc::SmartDashboard::PutNumber(
-      "TOF Right",
-      units::make_unit<units::millimeter_t>(m_coneRightIntakeSensor.GetRange()).convert<units::inch>().value());
+      "TOF Cube", units::make_unit<units::millimeter_t>(m_cubeIntakeSensor.GetRange()).convert<units::inch>().value());
   frc::SmartDashboard::PutBoolean("ConeDetection", IsConeDetected());
   frc::SmartDashboard::PutBoolean("CubeDetection", IsCubeDetected());
 }
@@ -97,7 +115,9 @@ std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
   }
 
   units::inch_t leftSensorDistance = units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange());
+  leftSensorDistance = CalAverage(leftSensorDistance, left_average);
   units::inch_t rightSensorDistance = units::make_unit<units::millimeter_t>(m_coneRightIntakeSensor.GetRange());
+  rightSensorDistance = CalAverage(rightSensorDistance, right_average);
 
   auto sensorDistance = leftSensorDistance;
   // Sensors lose accuracy at very short distances, so if cone is closer to left sensor, use right sensor distance
@@ -126,7 +146,7 @@ bool IntakeSubsystem::TofCubeDetected() {
 }
 
 bool IntakeSubsystem::IsConeDetected() {
-  return TofConeDetected() && IsGamePieceDetected();
+  return TofConeDetected();  //&& IsGamePieceDetected();
 }
 
 bool IntakeSubsystem::IsCubeDetected() {
@@ -135,4 +155,21 @@ bool IntakeSubsystem::IsCubeDetected() {
 
 bool IntakeSubsystem::IsGamePieceDetected() {
   return std::abs(m_intakeMotor.GetStatorCurrent()) > 10.0;
+}
+
+units::inch_t IntakeSubsystem::CalAverage(units::inch_t new_val, units::inch_t average[5]) {
+  units::inch_t sum = units::make_unit<units::inch_t>(0);
+  for (int i = 0; i < 5; i++) {
+    if (i + 1 < 5) {
+      average[i] = average[i + 1];
+    } else {
+      average[i] = new_val;
+    }
+    sum += average[i];
+  }
+
+  if (sum == units::make_unit<units::inch_t>(0)) {
+    return units::make_unit<units::inch_t>(0);
+  }
+  return sum / 5;
 }

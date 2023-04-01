@@ -33,6 +33,8 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   void IntakeStop();
   void Disable();
 
+  units::inch_t CalAverage(units::inch_t new_val, units::inch_t average[]);
+
   /// @brief ToF stuff
   /// @return
   std::optional<units::inch_t> GetIntakeDistance();
@@ -53,6 +55,9 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   frc::TimeOfFlight m_cubeIntakeSensor;
   bool m_haveCone;
   bool m_haveCube;
+
+  units::inch_t left_average[5];
+  units::inch_t right_average[5];
 
   bool IsGamePieceDetected();
 };
