@@ -146,6 +146,7 @@ bool IntakeSubsystem::TofCubeDetected() {
 }
 
 bool IntakeSubsystem::IsConeDetected() {
+  //disabled due to not working
   return TofConeDetected();  //&& IsGamePieceDetected();
 }
 

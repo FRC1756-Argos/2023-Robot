@@ -139,7 +139,8 @@ RobotContainer::RobotContainer()
                        field_points::grids::middleConeNodeDepth;
           }
 
-          std::optional<units::inch_t> gamePieceDepth = 0_in;  // m_intake.GetIntakeDistance();
+          std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
+          frc::SmartDashboard::PutNumber("GamePieceDepth", gamePieceDepth ? gamePieceDepth.value().to<double>() : -1);
 
           if (gamePieceDepth) {
             // invert distance if wrist is inverted
