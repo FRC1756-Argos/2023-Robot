@@ -58,20 +58,24 @@ RobotContainer::RobotContainer()
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoDriveTuning{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoOnlyBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
+    , m_auto3gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoSelector{{&m_autoNothing,
+                      // &m_autoDriveTuning, // This is just for tuning auto path follower
                       &m_autoDriveForward,
                       &m_autoPlaceExit,
                       &m_autoCablePlaceExit,
                       &m_autoBalance,
                       &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
+                      &m_auto3gp,
                       &m_autoScorePickupBalanceCone,
                       &m_autoOnlyBalance},
                      &m_autoNothing}
