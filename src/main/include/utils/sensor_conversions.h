@@ -31,7 +31,7 @@ namespace sensor_conversions {
       constexpr auto wheelDiameter = 3.5_in;
       constexpr auto wheelCircumference = wheelDiameter * std::numbers::pi;
       constexpr double sensorUnitsPerMotorRevolution = 2048;
-      constexpr double driveGearRatio = 8.16;
+      constexpr double driveGearRatio = 36000.0 / 5880.0;
 
       constexpr units::inch_t ToDistance(const double sensorunit) {
         return wheelCircumference * (sensorunit / sensorUnitsPerMotorRevolution / driveGearRatio);
