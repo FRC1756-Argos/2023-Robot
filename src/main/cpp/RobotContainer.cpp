@@ -75,9 +75,9 @@ RobotContainer::RobotContainer()
                       &m_autoScorePickupBalanceCone,
                       &m_autoOnlyBalance},
                      &m_autoNothing}
-    , m_lateralNudgeRate{6 / 1_s}
+    , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
-    , m_distanceNudgeRate{6 / 1_s}
+    , m_distanceNudgeRate{12 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
@@ -114,7 +114,7 @@ RobotContainer::RobotContainer()
           if (rotationalError < 30_deg) {
             deadbandRotSpeed -=
                 m_rotationalNudgeRate
-                    .Calculate(std::clamp((robotYaw - nearestSquareAngle).to<double>() * 0.0376, -0.15, 0.15))
+                    .Calculate(std::clamp((robotYaw - nearestSquareAngle).to<double>() * 0.04, -0.15, 0.15))
                     .to<double>();
           } else {
             m_rotationalNudgeRate.Reset(0);
@@ -133,35 +133,33 @@ RobotContainer::RobotContainer()
                 distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
                                     measure_up::bumperExtension + scoring_positions::visionScoringAlignOffset.X());
             longitudinalBias =
-                std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.015).to<double>(), -0.23, 0.23);
+                std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.017).to<double>(), -0.23, 0.23);
           } else {
             distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
                        field_points::grids::middleConeNodeDepth;
           }
 
-          std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
+          auto gamePieceDepth = m_intake.GetIntakeDistance();
 
-          if (gamePieceDepth) {
-            // invert distance if wrist is inverted
-            if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
-              gamePieceDepth = gamePieceDepth.value() *= -1;
-            }
-
-            // ? Why is this inverted?
-            frc::SmartDashboard::PutNumber("vision/gamePieceDepth (in)", gamePieceDepth.value().to<double>());
-            frc::SmartDashboard::PutNumber("vision/distance (in)", distance.value().to<double>());
-            /// @todo Investigate why we always need an offset for one side (#207)
-            if (gamePieceDepth.value() > 0_in) {
-              gamePieceDepth = units::math::max(gamePieceDepth.value() - 2.5_in, 0_in);
-            }
-            units::degree_t intakeOffset = units::math::atan2(gamePieceDepth.value(), distance.value());
-            frc::SmartDashboard::PutNumber("vision/intakeOffset (deg)", intakeOffset.to<double>());
-            frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset initial (deg)",
-                                           visionHorizontalOffset.value().to<double>());
-            visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
-            frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset final (deg)",
-                                           visionHorizontalOffset.value().to<double>());
+          // invert distance if wrist is inverted
+          if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
+            gamePieceDepth = gamePieceDepth *= -1;
           }
+
+          // ? Why is this inverted?
+          frc::SmartDashboard::PutNumber("vision/gamePieceDepth (in)", gamePieceDepth.to<double>());
+          frc::SmartDashboard::PutNumber("vision/distance (in)", distance.value().to<double>());
+          /// @todo Investigate why we always need an offset for one side (#207)
+          if (gamePieceDepth > 0_in) {
+            gamePieceDepth = units::math::max(gamePieceDepth - 2.5_in, 0_in);
+          }
+          units::degree_t intakeOffset = units::math::atan2(gamePieceDepth, distance.value());
+          frc::SmartDashboard::PutNumber("vision/intakeOffset (deg)", intakeOffset.to<double>());
+          frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset initial (deg)",
+                                         visionHorizontalOffset.value().to<double>());
+          visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
+          frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset final (deg)",
+                                         visionHorizontalOffset.value().to<double>());
 
           units::degree_t robotYaw =
               m_swerveDrive.GetFieldCentricAngle();  // Gets the robots yaw relative to field-centric home
@@ -444,9 +442,13 @@ void RobotContainer::ConfigureBindings() {
   // VISION TRIGGERS
   auto reflectiveTargetTrigger =
       m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
-  reflectiveTargetTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
-          .ToPtr());
+  reflectiveTargetTrigger.OnTrue(frc2::InstantCommand(
+                                     [this]() {
+                                       m_visionSubSystem.SetReflectiveVisionMode(true);
+                                       m_visionSubSystem.RequestFilterReset();
+                                     },
+                                     {&m_visionSubSystem})
+                                     .ToPtr());
   reflectiveTargetTrigger.OnFalse(
       frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
           .ToPtr());

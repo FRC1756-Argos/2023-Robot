@@ -51,7 +51,7 @@ void SimpleLedSubsystem::SetLedsConnectedBrightness(bool connected) {
   if (!m_CANdle) {
     return;  // Do nothing, because there is no CANdle on here anyway
   }
-  m_CANdle.value().ConfigBrightnessScalar(connected ? 0.8 : 0.25);
+  m_CANdle.value().ConfigBrightnessScalar(connected ? 0.8 : 0.1);
   if (connected) {
     m_hasBeenConnected = true;
   }
