@@ -1,0 +1,103 @@
+{
+  "tabPane": [
+    {
+      "title": "SmartDashboard",
+      "autoPopulate": false,
+      "autoPopulatePrefix": "SmartDashboard/",
+      "widgetPane": {
+        "gridSize": 128.0,
+        "showGrid": true,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "titleType": 0,
+        "tiles": {
+          "3,0": {
+            "size": [
+              3,
+              4
+            ],
+            "content": {
+              "_type": "Graph",
+              "_source0": "network_table:///SmartDashboard/intake/raw cone position",
+              "_source1": "network_table:///SmartDashboard/intake/filtered cone position",
+              "_title": "Graph",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Graph/Visible time": 20.0,
+              "Graph/X-axis auto scrolling": true,
+              "Y-axis/Automatic bounds": false,
+              "Y-axis/Upper bound": 8.0,
+              "Y-axis/Lower bound": -8.0,
+              "Y-axis/Unit": "ul",
+              "Visible data/SmartDashboard/intake/filtered cone position": true,
+              "Visible data/SmartDashboard/intake/raw cone position": true
+            }
+          },
+          "6,0": {
+            "size": [
+              3,
+              4
+            ],
+            "content": {
+              "_type": "Graph",
+              "_source0": "network_table:///SmartDashboard/VisionSubsystem/FilteredPitch (deg)",
+              "_source1": "network_table:///SmartDashboard/VisionSubsystem/RawPitch (deg)",
+              "_title": "Graph",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Graph/Visible time": 30.0,
+              "Graph/X-axis auto scrolling": true,
+              "Y-axis/Automatic bounds": true,
+              "Y-axis/Upper bound": 1.0,
+              "Y-axis/Lower bound": -1.0,
+              "Y-axis/Unit": "ul",
+              "Visible data/SmartDashboard/VisionSubsystem/FilteredPitch (deg)": true,
+              "Visible data/SmartDashboard/VisionSubsystem/RawPitch (deg)": true
+            }
+          },
+          "9,0": {
+            "size": [
+              3,
+              4
+            ],
+            "content": {
+              "_type": "Graph",
+              "_source0": "network_table:///SmartDashboard/VisionSubsystem/FilteredYaw (deg)",
+              "_source1": "network_table:///SmartDashboard/VisionSubsystem/RawYaw (deg)",
+              "_title": "Graph",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Graph/Visible time": 30.0,
+              "Graph/X-axis auto scrolling": true,
+              "Y-axis/Automatic bounds": true,
+              "Y-axis/Upper bound": 1.0,
+              "Y-axis/Lower bound": -1.0,
+              "Y-axis/Unit": "ul",
+              "Visible data/SmartDashboard/VisionSubsystem/FilteredYaw (deg)": true,
+              "Visible data/SmartDashboard/VisionSubsystem/RawYaw (deg)": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "LiveWindow",
+      "autoPopulate": false,
+      "autoPopulatePrefix": "LiveWindow/",
+      "widgetPane": {
+        "gridSize": 128.0,
+        "showGrid": true,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "titleType": 0,
+        "tiles": {}
+      }
+    }
+  ],
+  "windowGeometry": {
+    "x": 1857.0,
+    "y": -14.0,
+    "width": 1823.0,
+    "height": 1186.0
+  }
+}

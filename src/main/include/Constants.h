@@ -21,7 +21,7 @@
 
 namespace speeds {
   namespace drive {
-    constexpr double aimBotMaxBias = 0.5;
+    constexpr double aimBotMaxBias = 0.6;
     constexpr double aimBotThresh = 0.1;
     constexpr units::velocity::feet_per_second_t maxAngular = 12_fps;
   }  // namespace drive

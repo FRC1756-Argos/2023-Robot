@@ -32,8 +32,8 @@ class LimelightTarget {
 
  public:
   LimelightTarget()
-      : m_txFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.7, 0.02_s)}
-      , m_tyFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.7, 0.02_s)}
+      : m_txFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.01, 0.02_s)}
+      , m_tyFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.01, 0.02_s)}
       , m_resetFilterFlag{false} {}
 
   /**
