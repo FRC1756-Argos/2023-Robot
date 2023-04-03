@@ -26,6 +26,7 @@ class LimelightTarget {
   units::degree_t m_yaw;                ///< Yaw of target relative to camera -31.65 to 31.65 degrees
   double m_area;                        ///< Area of the target in percentage of total pixels
   units::millisecond_t m_totalLatency;  ///< Total latency
+  int m_tid;                            ///< Id of the primary april tag in view
   frc::LinearFilter<units::degree_t> m_txFilter;
   frc::LinearFilter<units::degree_t> m_tyFilter;
   bool m_resetFilterFlag;
@@ -49,6 +50,7 @@ class LimelightTarget {
     units::degree_t m_yaw;              ///< @copydoc LimelightTarget::m_yaw
     double m_area;                      ///< @copydoc LimelightTarget::m_area
     units::millisecond_t totalLatency;  ///< @copydoc LimelightTarget::m_totalLatency
+    int tid;                            ///< @copydoc LimelightTarget::m_tid
   };
 
   /**

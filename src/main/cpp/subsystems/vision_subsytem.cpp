@@ -165,9 +165,10 @@ LimelightTarget::tValues LimelightTarget::GetTarget(bool filter) {
 
   m_area = (table->GetNumber("ta", 0.0));
   m_totalLatency = units::make_unit<units::millisecond_t>(rawRobotPose.at(6));
+  m_tid = (table->GetNumber("tid", 0));
 
   return tValues{
-      m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_pitch, m_yaw, m_area, m_totalLatency};
+      m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_pitch, m_yaw, m_area, m_totalLatency, m_tid};
 }
 
 bool LimelightTarget::HasTarget() {
