@@ -16,15 +16,15 @@
 
 #include <string>
 
-class AutonomousCableProtectorScorePickup
-    : public frc2::CommandHelper<frc2::CommandBase, AutonomousCableProtectorScorePickup>
+class AutonomousCableProtector2Gp
+    : public frc2::CommandHelper<frc2::CommandBase, AutonomousCableProtector2Gp>
     , public AutonomousCommand {
  public:
-  AutonomousCableProtectorScorePickup(SwerveDriveSubsystem& drive,
-                                      BashGuardSubsystem& bash,
-                                      LifterSubsystem& lifter,
-                                      IntakeSubsystem& intake,
-                                      SimpleLedSubsystem& leds);
+  AutonomousCableProtector2Gp(SwerveDriveSubsystem& drive,
+                              BashGuardSubsystem& bash,
+                              LifterSubsystem& lifter,
+                              IntakeSubsystem& intake,
+                              SimpleLedSubsystem& leds);
 
   void Initialize() override;
 
