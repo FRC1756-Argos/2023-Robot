@@ -162,7 +162,7 @@ namespace sensor_conversions {
   namespace oui_oui_place {
 
     constexpr double sensorConversionFactor = 360.0 / 2048;  ///< multiply to convert raw sensor units to module degrees
-    constexpr double gearboxReduction = 1.0 / 9;
+    constexpr double gearboxReduction = 1.0 / 15.0;
 
     constexpr double ToSensorUnit(const units::degree_t angle) {
       return angle.to<double>() / sensorConversionFactor / gearboxReduction;
