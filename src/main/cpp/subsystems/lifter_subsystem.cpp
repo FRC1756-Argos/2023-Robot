@@ -145,6 +145,10 @@ void LifterSubsystem::SetArmExtensionSpeed(double speed) {
   m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
 }
 
+bool LifterSubsystem::IsExtensionAt(units::inch_t extension) {
+  return units::math::abs(GetArmExtension() - extension) < measure_up::lifter::arm_extension::acceptErr;
+}
+
 void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   if (!IsArmExtensionHomed()) {
     m_logger.Log(argos_lib::LogLevel::ERR, "Arm extension commanded while not home\n");
@@ -153,12 +157,12 @@ void LifterSubsystem::SetArmExtension(units::inch_t extension) {
 
   SetExtensionManualOverride(false);
 
-  // guard against out of bounds commandds by clamping to min and max
+  // guard against out of bounds commands by clamping to min and max
   extension = std::clamp<units::inch_t>(
       extension, measure_up::lifter::arm_extension::minExtension, measure_up::lifter::arm_extension::maxExtension);
 
-  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::arm_extension::ToSensorVelocity(20_ips));
-  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::arm_extension::ToSensorVelocity(20_ips));
+  m_armExtensionMotor.ConfigMotionAcceleration(sensor_conversions::lifter::arm_extension::ToSensorVelocity(225_ips));
+  m_armExtensionMotor.ConfigMotionCruiseVelocity(sensor_conversions::lifter::arm_extension::ToSensorVelocity(225_ips));
   m_armExtensionMotor.Set(phoenix::motorcontrol::ControlMode::MotionMagic,
                           sensor_conversions::lifter::arm_extension::ToSensorUnit(extension));
 }
@@ -169,12 +173,16 @@ void LifterSubsystem::StopArmExtension() {
 }
 
 void LifterSubsystem::SetWristSpeed(double speed) {
-  m_wrist.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    m_wrist.Set(phoenix::motorcontrol::ControlMode::PercentOutput, speed);
+  }
 }
 
 void LifterSubsystem::StopWrist() {
-  m_wrist.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
-  m_wrist.Set(0.0);
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    m_wrist.SetNeutralMode(phoenix::motorcontrol::NeutralMode::Brake);
+    m_wrist.Set(0.0);
+  }
 }
 
 bool LifterSubsystem::IsShoulderManualOverride() {
@@ -194,31 +202,43 @@ void LifterSubsystem::SetExtensionManualOverride(bool overrideState) {
 }
 
 bool LifterSubsystem::IsWristManualOverride() {
-  return m_wristManualOverride;
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    return m_wristManualOverride;
+  } else {
+    return false;
+  }
 }
 
 void LifterSubsystem::SetWristManualOverride(bool overrideState) {
-  m_wristManualOverride = overrideState;
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    m_wristManualOverride = overrideState;
+  }
 }
 
 void LifterSubsystem::SetWristAngle(units::degree_t wristAngle) {
-  if (!m_wristHomed) {
-    Disable();
-    return;
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    if (!m_wristHomed) {
+      Disable();
+      return;
+    }
+
+    SetWristManualOverride(false);
+
+    // Guard against out of bounds commands by clamping to min and max
+    wristAngle = std::clamp<units::degree_t>(
+        wristAngle, measure_up::lifter::wrist::minAngle, measure_up::lifter::wrist::maxAngle);
+
+    m_wrist.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
+                sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
   }
-
-  SetWristManualOverride(false);
-
-  // Guard against out of bounds commands by clamping to min and max
-  wristAngle =
-      std::clamp<units::degree_t>(wristAngle, measure_up::lifter::wrist::minAngle, measure_up::lifter::wrist::maxAngle);
-
-  m_wrist.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
-              sensor_conversions::lifter::wrist::ToSensorUnit(wristAngle));
 }
 
 units::degree_t LifterSubsystem::GetWristAbsoluteAngle() {
-  return units::degree_t(m_wristEncoder.GetAbsolutePosition());
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    return units::degree_t(m_wristEncoder.GetAbsolutePosition());
+  } else {
+    return 0_deg;
+  }
 }
 
 double LifterSubsystem::GetLastWristTimestamp() {
@@ -227,8 +247,12 @@ double LifterSubsystem::GetLastWristTimestamp() {
 
 // This method will be called once per scheduler run
 void LifterSubsystem::Periodic() {
-  if (!m_wristHomed && m_wristHomingStorage.Load()) {
-    InitializeWristHomes();
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    if (!m_wristHomed && m_wristHomingStorage.Load()) {
+      InitializeWristHomes();
+    }
+  } else {
+    m_wristHomed = true;
   }
   if (!m_shoulderHomed && m_shoulderHomeStorage.Load()) {
     InitializeShoulderHome();
@@ -243,6 +267,10 @@ bool LifterSubsystem::IsArmExtensionMoving() {
   return std::abs(m_armExtensionMotor.GetSelectedSensorVelocity()) > 10;
 }
 
+bool LifterSubsystem::IsShoulderMoving() {
+  return std::abs(m_shoulderDrive.GetSelectedSensorVelocity()) > 10;
+}
+
 void LifterSubsystem::UpdateArmExtensionHome() {
   m_armExtensionMotor.SetSelectedSensorPosition(
       sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
@@ -251,43 +279,49 @@ void LifterSubsystem::UpdateArmExtensionHome() {
 }
 
 void LifterSubsystem::InitializeWristHomes() {
-  const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
-  frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  // Testing
-  if (wristHomes) {
-    units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    const std::optional<units::degree_t> wristHomes = m_wristHomingStorage.Load();
+    frc::SmartDashboard::PutNumber("wristHomesValue", wristHomes.value().to<double>());  // Testing
+    if (wristHomes) {
+      units::degree_t currentencoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
 
-    frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
+      frc::SmartDashboard::PutNumber("currentencoderValue", currentencoder.to<double>());  // Testing
 
-    frc::SmartDashboard::PutNumber("currentencoderValue - home",
-                                   (currentencoder - wristHomes.value()).to<double>());  // Testing
-    frc::SmartDashboard::PutNumber(
-        "currentencoderValue - home constrained",
-        units::degree_t(argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg))
-            .to<double>());  // Testing
-    units::degree_t calcValue =
-        argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
+      frc::SmartDashboard::PutNumber("currentencoderValue - home",
+                                     (currentencoder - wristHomes.value()).to<double>());  // Testing
+      frc::SmartDashboard::PutNumber(
+          "currentencoderValue - home constrained",
+          units::degree_t(argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg))
+              .to<double>());  // Testing
+      units::degree_t calcValue =
+          argos_lib::angle::ConstrainAngle(currentencoder - wristHomes.value(), -180_deg, 180_deg);
 
-    m_wristEncoder.SetPosition(calcValue.to<double>());
+      m_wristEncoder.SetPosition(calcValue.to<double>());
+      m_wrist.SetSelectedSensorPosition(sensor_conversions::lifter::wrist::ToSensorUnit(calcValue));
 
-    m_wristHomed = true;
+      m_wristHomed = true;
 
-    EnableWristSoftLimits();
+      EnableWristSoftLimits();
+    } else {
+      m_wristHomed = false;
+    }
   } else {
-    m_wristHomed = false;
+    m_wristHomed = true;
   }
 }
 
 void LifterSubsystem::UpdateWristHome() {
-  const auto homeAngle = measure_up::lifter::wrist::homeAngle;
-  units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
-  auto valToSave = argos_lib::angle::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg);
-  bool saved = m_wristHomingStorage.Save(valToSave);
-  if (!saved) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Wrist homes failed to save to to file system\n");
-    m_wristHomed = false;
-    return;
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    const auto homeAngle = measure_up::lifter::wrist::homeAngle;
+    units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_wristEncoder.GetAbsolutePosition());
+    auto valToSave = argos_lib::angle::ConstrainAngle(currentEncoder - homeAngle, 0_deg, 360_deg);
+    bool saved = m_wristHomingStorage.Save(valToSave);
+    if (!saved) {
+      m_logger.Log(argos_lib::LogLevel::ERR, "Wrist homes failed to save to to file system\n");
+      m_wristHomed = false;
+      return;
+    }
   }
-
   InitializeWristHomes();
 }
 
@@ -355,11 +389,15 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
                  measure_up::lifter::shoulder::minAngle.to<double>());
   }
 
-  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(10_ips));
-  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(10_ips));
+  m_shoulderDrive.ConfigMotionAcceleration(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(50_ips));
+  m_shoulderDrive.ConfigMotionCruiseVelocity(sensor_conversions::lifter::shoulder_actuator::ToSensorVelocity(50_ips));
   m_shoulderDrive.Set(
       motorcontrol::ControlMode::MotionMagic,
       sensor_conversions::lifter::shoulder_actuator::ToSensorUnit(m_kinematics.ShoulderAngleToBoomExtension(angle)));
+}
+
+bool LifterSubsystem::IsShoulderAt(units::degree_t angle) {
+  return units::math::abs(GetShoulderBoomAngle() - angle) < measure_up::lifter::shoulder::acceptErr;
 }
 
 frc::Translation2d LifterSubsystem::GetEffectorPose(const WristPosition wristPosition) {
@@ -420,19 +458,27 @@ bool LifterSubsystem::IsArmExtensionHomed() {
 }
 
 units::degree_t LifterSubsystem::GetWristAngle() {
-  return sensor_conversions::lifter::wrist::ToAngle(m_wrist.GetSelectedSensorPosition());
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    return sensor_conversions::lifter::wrist::ToAngle(m_wrist.GetSelectedSensorPosition());
+  } else {
+    return 0_deg;
+  }
 }
 
 WristPosition LifterSubsystem::GetWristPosition() {
-  if (!m_wristHomed) {
-    return WristPosition::Unknown;
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    if (!m_wristHomed) {
+      return WristPosition::Unknown;
+    }
+    auto angle = GetWristAngle();
+    if (units::math::abs(argos_lib::angle::ConstrainAngle(
+            angle - measure_up::lifter::wrist::invertedAngle, -180_deg, 180_deg)) < 90_deg) {
+      return WristPosition::RollersDown;
+    }
+    return WristPosition::RollersUp;
+  } else {
+    return WristPosition::RollersUp;
   }
-  auto angle = GetWristAngle();
-  if (units::math::abs(argos_lib::angle::ConstrainAngle(
-          angle - measure_up::lifter::wrist::invertedAngle, -180_deg, 180_deg)) < 90_deg) {
-    return WristPosition::RollersDown;
-  }
-  return WristPosition::RollersUp;
 }
 
 units::inch_t LifterSubsystem::GetArmExtension() {
@@ -481,7 +527,11 @@ bool LifterSubsystem::IsExtensionMPComplete() {
   return m_armExtensionMotor.IsMotionProfileFinished();
 }
 bool LifterSubsystem::IsWristMPComplete() {
-  return m_wrist.IsMotionProfileFinished();
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    return m_wrist.IsMotionProfileFinished();
+  } else {
+    return true;
+  }
 }
 
 ctre::phoenix::motion::BufferedTrajectoryPointStream& LifterSubsystem::GetShoulderMPStream() {
@@ -502,7 +552,9 @@ void LifterSubsystem::StopMotionProfile() {
   StopWrist();
   StopArmExtension();
   m_shoulderDrive.ClearMotionProfileTrajectories();
-  m_wrist.ClearMotionProfileTrajectories();
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    m_wrist.ClearMotionProfileTrajectories();
+  }
   m_armExtensionMotor.ClearMotionProfileTrajectories();
 }
 
@@ -519,21 +571,25 @@ void LifterSubsystem::StartMotionProfile(size_t shoulderStreamSize,
                                          ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
 }
 void LifterSubsystem::EnableWristSoftLimits() {
-  if (!m_wristHomed) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable wrist soft limits without homes\n");
-    return;
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    if (!m_wristHomed) {
+      m_logger.Log(argos_lib::LogLevel::ERR, "Attempted to enable wrist soft limits without homes\n");
+      return;
+    }
+    m_wrist.ConfigForwardSoftLimitThreshold(
+        sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::maxAngle));
+    m_wrist.ConfigReverseSoftLimitThreshold(
+        sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::minAngle));
+    m_wrist.ConfigForwardSoftLimitEnable(true);
+    m_wrist.ConfigReverseSoftLimitEnable(true);
   }
-  m_wrist.ConfigForwardSoftLimitThreshold(
-      sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::maxAngle));
-  m_wrist.ConfigReverseSoftLimitThreshold(
-      sensor_conversions::lifter::wrist::ToSensorUnit(measure_up::lifter::wrist::minAngle));
-  m_wrist.ConfigForwardSoftLimitEnable(true);
-  m_wrist.ConfigReverseSoftLimitEnable(true);
 }
 
 void LifterSubsystem::DisableWristSoftLimits() {
-  m_wrist.ConfigForwardSoftLimitEnable(false);
-  m_wrist.ConfigReverseSoftLimitEnable(false);
+  if constexpr (warning::nuclear::option::wristEnabled) {
+    m_wrist.ConfigForwardSoftLimitEnable(false);
+    m_wrist.ConfigReverseSoftLimitEnable(false);
+  }
 }
 
 void LifterSubsystem::EnableArmExtensionSoftLimits() {

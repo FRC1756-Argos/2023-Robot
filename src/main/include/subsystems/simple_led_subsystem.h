@@ -29,6 +29,8 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
   void Enable();
   void Disable();
 
+  void SetLedsConnectedBrightness(bool connected);
+
   void SetDisableAnimation(std::function<void()> animationFunction);
 
   /// @brief Sets group of leds to given color
@@ -82,9 +84,10 @@ class SimpleLedSubsystem : public frc2::SubsystemBase {
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
-  CANdle m_CANdle;
+  std::optional<CANdle> m_CANdle;
   argos_lib::ArgosLogger m_log;
   bool m_enabled;
+  bool m_hasBeenConnected;
 
   std::function<void()> m_disableUpdateFunction;
   std::function<void()> m_ledUpdateFunction;

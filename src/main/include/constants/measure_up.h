@@ -35,6 +35,7 @@ namespace measure_up {
       constexpr auto homeExtension = 37.50_in;
       constexpr auto maxExtension = 68.00_in;
       constexpr auto minExtension = 38.00_in;
+      constexpr auto acceptErr = 0.5_in;
 
     }  // namespace arm_extension
     namespace wrist {
@@ -43,12 +44,13 @@ namespace measure_up {
       constexpr auto invertedAngle = -180_deg;
       constexpr auto nominalAngle = 0_deg;
       constexpr auto maxAngle = 10_deg;
-      constexpr auto wristWidth = 18.5_in;
+      constexpr auto wristWidth = 17.0_in;
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 0_deg;
       constexpr auto minAngle = -59_deg;
-      constexpr auto maxAngle = 11_deg;
+      constexpr auto maxAngle = 5_deg;
+      constexpr auto acceptErr = 2_deg;
       constexpr auto fixedBoomActuatorPosition =
           frc::Translation2d{-14.75_in, 4.5_in};  ///< Linear actuator mount point relative to robot origin
       constexpr auto actuatedBoomActuatorPosition =
@@ -65,13 +67,27 @@ namespace measure_up {
     }  // namespace effector
   }    // namespace lifter
   namespace bash {
-    constexpr auto homeExtension = 2_in;
-    constexpr auto retractedExtension = 2.75_in;
+    constexpr auto homeExtension = 4.25_in;
+    constexpr auto retractedExtension = 4.5_in;
     constexpr auto deployedExtension = 24.5_in;
-    constexpr auto minExtension = 2.25_in;
+    constexpr auto minExtension = 4.5_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
-  // namespace wrist {
+  namespace camera {
+    constexpr auto cameraX = 0_in;
+    /// @todo why is this not 7.88 in?
+    constexpr auto cameraZ = 7.25_in;
+    constexpr auto cameraMountAngle = 13.5_deg;
+    constexpr auto vFov = 24.85_deg * 2;
+    constexpr auto hFov = 29.8_deg * 2;
+    constexpr auto bottomPoleTapeCenter = 24.125_in;
+    constexpr auto bottomPoleTapeBottom = 22.125_in;
+    constexpr auto upperPoleTapeCenter = 43.875_in;
+    constexpr auto upperPoleTapeBottom = 41.875_in;
+    constexpr auto offsetBetweenPoles = 17.0_in;
+    constexpr auto upperPoleTargetAreaThreshold = 0.03;
+    constexpr auto upperPoleTargetPitchThreshold = 3.0_deg;
+  }  // namespace camera
   //   constexpr auto
   constexpr std::array<path_planning::ArmPathPoint, 13> PathPlanningKeepOutZone = {
       path_planning::ArmPathPoint{-chassis::length / 2 - bumperExtension, 0_in},

@@ -13,13 +13,14 @@
 #include "subsystems/lifter_subsystem.h"
 #include "utils/custom_units.h"
 
-enum class PathType { unmodified, concaveDown, concaveUp };
+enum class PathType { unmodified, concaveDown, concaveUp, componentWise };
 
 class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPoseCommand> {
  public:
   SetArmPoseCommand(LifterSubsystem* lifter,
                     BashGuardSubsystem* bashGuard,
                     std::function<ScoringPosition()> scoringPositionCb,
+                    frc::Translation2d scoringPositionOffset,
                     std::function<bool()> bashGuardModeCb,
                     std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
@@ -30,6 +31,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   SetArmPoseCommand(LifterSubsystem* lifter,
                     BashGuardSubsystem* bashGuard,
                     ScoringPosition scoringPosition,
+                    frc::Translation2d scoringPositionOffset,
                     std::function<bool()> bashGuardModeCb,
                     std::function<bool()> placeGamePieceInvertedCb,
                     PathType pathType = PathType::unmodified,
@@ -40,6 +42,7 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   SetArmPoseCommand(LifterSubsystem* lifter,
                     BashGuardSubsystem* bashGuard,
                     frc::Translation2d targetPose,
+                    frc::Translation2d scoringPositionOffset,
                     BashGuardPosition desiredBashGuardPosition,
                     WristPosition desiredWristPosition = WristPosition::Unknown,
                     PathType pathType = PathType::unmodified,
@@ -62,21 +65,29 @@ class SetArmPoseCommand : public frc2::CommandHelper<frc2::CommandBase, SetArmPo
   LifterSubsystem* m_lifter;
   BashGuardSubsystem* m_bashGuard;
   std::optional<std::function<ScoringPosition()>> m_scoringPositionCb;
+  frc::Translation2d m_scoringPositionOffset;
   std::optional<std::function<bool()>> m_bashGuardModeCb;
   std::optional<std::function<bool()>> m_placeGamePieceInvertedCb;
   frc::Translation2d m_targetPose;
   BashGuardPosition m_bashGuardTarget;
+  units::degree_t m_targetShoulder;
+  units::inch_t m_targetExtension;
   units::velocity::inches_per_second_t m_maxVelocity;
   units::acceleration::inches_per_second_squared_t m_maxAcceleration;
   bool m_isTunable;
 
   ScoringPosition m_latestScoringPosition;
+  bool m_lastInversion;
   PathType m_pathType;
   WristPosition m_endingWristPosition;
 
   bool m_hasShoulderMotion;
   bool m_hasExtensionMotion;
   bool m_hasBashGuardMotion;
+  bool m_isExtending;
+
+  constexpr static auto m_wristSafeZoneMaxExtension = measure_up::lifter::arm_extension::minExtension + 6_in;
+  const units::degree_t m_wristSafeZoneMinAngle;
 
   unsigned m_id;
 };

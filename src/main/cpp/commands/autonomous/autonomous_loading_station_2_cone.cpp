@@ -62,7 +62,7 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                     path_constraints::translation::loadingStationBackOut,
                                     path_constraints::rotation::loadingStationBackOut,
                                     0_fps,
-                                    path_constraints::translation::loadingStationGridToGp0.maxVelocity}
+                                    path_constraints::translation::loadingStationBackOut.maxVelocity}
                         .ToPtr()
                         .AndThen(DriveToPosition{&m_drive,
                                                  interimWaypoint,
@@ -77,6 +77,7 @@ void AutonomousLoadingStation2Cone::Initialize() {
                        .AlongWith((SetArmPoseCommand{&m_lifter,
                                                      &m_bashGuard,
                                                      ScoringPosition{ScoringColumn::leftGrid_leftCone, ScoringRow::low},
+                                                     frc::Translation2d{0_in, 0_in},
                                                      []() { return false; },
                                                      []() { return false; },
                                                      PathType::concaveDown,
@@ -87,6 +88,7 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                           &m_lifter,
                                           &m_bashGuard,
                                           ScoringPosition{ScoringColumn::coneIntake, ScoringRow::invalid},
+                                          frc::Translation2d{0_in, 0_in},
                                           []() { return false; },
                                           []() { return false; },
                                           PathType::concaveDown,
@@ -102,7 +104,7 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                    path_constraints::translation::gp0ToScore,
                                    path_constraints::rotation::gp0ToScore,
                                    0_fps,
-                                   path_constraints::translation::loadingStationPullIn.maxVelocity}
+                                   path_constraints::translation::gp0ToScore.maxVelocity}
                        .ToPtr()
                        .AndThen(DriveToPosition{&m_drive,
                                                 interimWaypoint,
@@ -117,6 +119,7 @@ void AutonomousLoadingStation2Cone::Initialize() {
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bashGuard,
                                                     ScoringPosition{ScoringColumn::leftGrid_leftCone, ScoringRow::low},
+                                                    frc::Translation2d{0_in, 0_in},
                                                     []() { return false; },
                                                     []() { return false; },
                                                     PathType::concaveDown,
@@ -134,7 +137,7 @@ void AutonomousLoadingStation2Cone::Initialize() {
                                     path_constraints::translation::loadingStationBackOut,
                                     path_constraints::rotation::loadingStationBackOut,
                                     0_fps,
-                                    path_constraints::translation::loadingStationGridToGp0.maxVelocity}
+                                    path_constraints::translation::loadingStationBackOut.maxVelocity}
                         .ToPtr()
                         .AndThen(DriveToPosition{&m_drive,
                                                  interimWaypoint,
@@ -149,6 +152,7 @@ void AutonomousLoadingStation2Cone::Initialize() {
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bashGuard,
                                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                    frc::Translation2d{0_in, 0_in},
                                                     []() { return false; },
                                                     []() { return false; },
                                                     PathType::unmodified,

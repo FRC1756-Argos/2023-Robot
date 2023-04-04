@@ -176,22 +176,20 @@ namespace motorConfig {
       struct wrist {
         constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
         constexpr static bool sensorPhase = true;
-        constexpr static double peakOutputForward = 0.7;
-        constexpr static double peakOutputReverse = -0.7;
+        constexpr static double peakOutputForward = 0.4;
+        constexpr static double peakOutputReverse = -0.4;
         constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
         constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::LeaderFX;
-        constexpr static auto remoteFilter0_addr = address::comp_bot::encoders::wristEncoder;
-        constexpr static auto remoteFilter0_type =
-            ctre::phoenix::motorcontrol::RemoteSensorSource::RemoteSensorSource_CANCoder;
-        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::RemoteSensor0;
+        constexpr static auto pid0_selectedSensor = ctre::phoenix::motorcontrol::FeedbackDevice::IntegratedSensor;
         constexpr static auto pid0_kP = controlLoop::comp_bot::lifter::wrist::kP;
         constexpr static auto pid0_kI = controlLoop::comp_bot::lifter::wrist::kI;
         constexpr static auto pid0_kD = controlLoop::comp_bot::lifter::wrist::kD;
         constexpr static auto pid0_kF = controlLoop::comp_bot::lifter::wrist::kF;
         constexpr static auto pid0_iZone = controlLoop::comp_bot::lifter::wrist::iZone;
         constexpr static auto pid0_allowableError = controlLoop::comp_bot::lifter::wrist::allowableError;
+        constexpr static auto statorCurrentLimit = 20_A;
       };
     }  // namespace lifter
     namespace intake {
@@ -202,7 +200,9 @@ namespace motorConfig {
         constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;
         constexpr static auto voltCompSat = motorConfig::common::voltCompSat;
         constexpr static auto statusFrameMotorMode = argos_lib::status_frame_config::MotorPresetMode::BasicFX;
-        constexpr static auto continuousCurrentLimit = 20_A;
+        constexpr static auto continuousCurrentLimit = 10_A;
+        constexpr static auto peakCurrentLimit = 20_A;
+        constexpr static auto peakCurrentDuration = 1_s;
       };
     }  // namespace intake
     namespace bash_guard {

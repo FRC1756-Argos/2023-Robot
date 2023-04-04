@@ -19,11 +19,13 @@
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
+#include <frc2/command/WaitUntilCommand.h>
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
 
 // Include GamePiece enum
 #include <constants/field_points.h>
+#include <constants/scoring_positions.h>
 #include <Constants.h>
 
 #include <cmath>
@@ -56,20 +58,32 @@ RobotContainer::RobotContainer()
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
     , m_autoDriveForward{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoDriveTuning{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoOnlyBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
+    , m_auto3gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoCableProtectorCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
+    , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
+    , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoSelector{{&m_autoNothing,
+                      // &m_autoDriveTuning, // This is just for tuning auto path follower
                       &m_autoDriveForward,
                       &m_autoPlaceExit,
+                      &m_autoCablePlaceExit,
                       &m_autoBalance,
                       &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
-                      &m_autoCableProtectorCone},
+                      &m_autoCableProtectorCone,
+                      &m_auto3gp,
+                      &m_autoScorePickupBalanceCone,
+                      &m_autoOnlyBalance},
                      &m_autoNothing}
-    , m_nudgeRate{1 / 1_s}
+    , m_lateralNudgeRate{12 / 1_s}
+    , m_rotationalNudgeRate{4 / 1_s}
+    , m_distanceNudgeRate{12 / 1_s}
     , m_alignLedDebouncer{50_ms} {
   // Initialize all of your commands and subsystems here
 
@@ -95,59 +109,88 @@ RobotContainer::RobotContainer()
         // Read offset from vision subsystem
         std::optional<units::degree_t> visionHorizontalOffset = m_visionSubSystem.GetHorizontalOffsetToTarget();
 
+        units::degree_t rotationalError = 0_deg;
+
+        // Rotate robot to square toward target
+        if (isAimBotEngaged) {
+          const auto robotYaw = m_swerveDrive.GetContinuousOdometryAngle().Degrees();
+          const auto nearestSquareAngle = m_swerveDrive.GetNearestSquareAngle().Degrees();
+          // Limit squaring to when robot is already close to aligned
+          rotationalError = units::math::abs(robotYaw - nearestSquareAngle);
+          if (rotationalError < 30_deg) {
+            deadbandRotSpeed -=
+                m_rotationalNudgeRate
+                    .Calculate(std::clamp((robotYaw - nearestSquareAngle).to<double>() * 0.04, -0.15, 0.15))
+                    .to<double>();
+          } else {
+            m_rotationalNudgeRate.Reset(0);
+          }
+        } else {
+          m_rotationalNudgeRate.Reset(0);
+        }
+
         // If aim bot is engaged and there is a degree error
-        if (isAimBotEngaged && visionHorizontalOffset) {
-          std::optional<units::inch_t> gamePieceDepth = m_intake.GetIntakeDistance();
-
-          if (gamePieceDepth) {
-            /// Get distance to the target
-            auto distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
-                            field_points::grids::middleConeNodeDepth;
-
-            // invert distance if wrist is inverted
-            if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
-              gamePieceDepth = gamePieceDepth.value() *= -1;
-            }
-
-            // * Constant scalar for game piece depth influlence
-            gamePieceDepth = gamePieceDepth.value() *= 0.7;
-
-            // ? Why is this inverted?
-            units::degree_t intakeOffset = units::math::asin(gamePieceDepth.value() / distance);
-            visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
+        if (isAimBotEngaged && visionHorizontalOffset && rotationalError < 3_deg) {
+          // Distance
+          double longitudinalBias = 0;
+          auto distance = m_visionSubSystem.GetDistanceToPoleTape();
+          if (distance) {
+            auto distanceError =
+                distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
+                                    measure_up::bumperExtension + scoring_positions::visionScoringAlignOffset.X());
+            longitudinalBias =
+                std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.017).to<double>(), -0.23, 0.23);
+          } else {
+            distance = measure_up::chassis::length / 2 + measure_up::bumperExtension +
+                       field_points::grids::middleConeNodeDepth;
           }
 
+          auto gamePieceDepth = m_intake.GetIntakeDistance();
+
+          // invert distance if wrist is inverted
+          if (m_lifter.GetWristPosition() == WristPosition::RollersDown) {
+            gamePieceDepth = gamePieceDepth *= -1;
+          }
+
+          // ? Why is this inverted?
+          frc::SmartDashboard::PutNumber("vision/gamePieceDepth (in)", gamePieceDepth.to<double>());
+          frc::SmartDashboard::PutNumber("vision/distance (in)", distance.value().to<double>());
+          /// @todo Investigate why we always need an offset for one side (#207)
+          if (gamePieceDepth > 0_in) {
+            gamePieceDepth = units::math::max(gamePieceDepth - 2.5_in, 0_in);
+          }
+          units::degree_t intakeOffset = units::math::atan2(gamePieceDepth, distance.value());
+          frc::SmartDashboard::PutNumber("vision/intakeOffset (deg)", intakeOffset.to<double>());
+          frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset initial (deg)",
+                                         visionHorizontalOffset.value().to<double>());
+          visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
+          frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset final (deg)",
+                                         visionHorizontalOffset.value().to<double>());
+
           units::degree_t robotYaw =
-              argos_lib::angle::ConstrainAngle(m_swerveDrive.GetFieldCentricAngle(),
-                                               0_deg,
-                                               360_deg);  // Gets the robots yaw relative to field-centric home
+              m_swerveDrive.GetFieldCentricAngle();  // Gets the robots yaw relative to field-centric home
           // ? Why is this negated?
           units::degree_t error = -visionHorizontalOffset.value();
-          // Angle of lateral bias velocity velocity vector relative to field home
-          units::degree_t lateralBiasFieldAngle =
-              argos_lib::angle::ConstrainAngle(robotYaw + (error < 0_deg ? -90_deg : 90_deg), 0_deg, 360_deg);
 
           // Calculate the lateral bias
           double lateralBias_r =
-              speeds::drive::aimBotMaxBias *
-              units::math::abs<units::degree_t>(error / camera::halfhorizontalAngleResolution.to<double>())
-                  .to<double>();
+              speeds::drive::aimBotMaxBias * (error / camera::halfhorizontalAngleResolution).to<double>();
 
-          units::scalar_t filteredLateralBias_r = m_nudgeRate.Calculate(units::scalar_t(lateralBias_r));
+          units::scalar_t filteredLateralBias_r = m_lateralNudgeRate.Calculate(units::scalar_t(lateralBias_r));
 
           // Calculate the x and y components to obtain a robot-centric velocity in field-centric mode
-          double lateralBias_x =
-              filteredLateralBias_r.to<double>() * std::sin(units::radian_t{lateralBiasFieldAngle}.to<double>());
-          double lateralBias_y =
-              filteredLateralBias_r.to<double>() * std::cos(units::radian_t{lateralBiasFieldAngle}.to<double>());
+          double lateralBias_x = filteredLateralBias_r.to<double>() * std::cos(units::radian_t{robotYaw}.to<double>()) +
+                                 longitudinalBias * std::sin(units::radian_t{robotYaw}.to<double>());
+          double lateralBias_y = filteredLateralBias_r.to<double>() * std::sin(units::radian_t{robotYaw}.to<double>()) +
+                                 longitudinalBias * std::cos(units::radian_t{robotYaw}.to<double>());
 
           // Actually apply the lateral bias
           deadbandTranslationSpeeds.leftSpeedPct += lateralBias_x;
           deadbandTranslationSpeeds.forwardSpeedPct += lateralBias_y;
 
-          // frc::SmartDashboard::PutNumber("(AimBot) LateralTranslationSpeed", deadbandTranslationSpeeds.leftSpeedPct);
         } else {
-          m_nudgeRate.Reset(0);
+          m_lateralNudgeRate.Reset(0);
+          m_distanceNudgeRate.Reset(0);
           m_alignLedDebouncer.Reset(AlignLedStatus::NoTarget);
         }
 
@@ -171,6 +214,7 @@ RobotContainer::RobotContainer()
                     m_ledSubSystem.SetLedStripColor(LedStrip::FrontRight, argos_lib::colors::kReallyRed, false);
                   },
                   100_ms);
+
               break;
             case AlignLedStatus::Aligned:
               m_ledSubSystem.TemporaryAnimate(
@@ -291,11 +335,12 @@ void RobotContainer::ConfigureBindings() {
   /* ———————————————————————— CONFIGURE DEBOUNCING ——————————————————————— */
 
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
+  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperLeft, {50_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBumperRight, {50_ms, 0_ms});
-  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
+  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kRight, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kX, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
@@ -348,6 +393,9 @@ void RobotContainer::ConfigureBindings() {
         {argos_lib::XboxController::Button::kX, argos_lib::XboxController::Button::kY});
   }});
 
+  auto reinitializeWrist =
+      m_controllers.OperatorController().TriggerDebounced(argos_lib::XboxController::Button::kRight);
+
   // BUTTON BOX
   auto newTargetTrigger = m_buttonBox.TriggerScoringPositionUpdated();
   auto stowPositionTrigger = m_buttonBox.TriggerStowPosition();
@@ -385,8 +433,6 @@ void RobotContainer::ConfigureBindings() {
       m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger) &&
       cubeSelectedTrigger;
 
-  auto exclusiveAutoIntakeTrigger = argos_lib::triggers::OneOf({intakeConeTrigger, intakeCubeTrigger});
-
   // Swap controllers config
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kBack, {1500_ms, 0_ms});
   m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kStart, {1500_ms, 0_ms});
@@ -402,9 +448,13 @@ void RobotContainer::ConfigureBindings() {
   // VISION TRIGGERS
   auto reflectiveTargetTrigger =
       m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kLeftTrigger);
-  reflectiveTargetTrigger.OnTrue(
-      frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(true); }, {&m_visionSubSystem})
-          .ToPtr());
+  reflectiveTargetTrigger.OnTrue(frc2::InstantCommand(
+                                     [this]() {
+                                       m_visionSubSystem.SetReflectiveVisionMode(true);
+                                       m_visionSubSystem.RequestFilterReset();
+                                     },
+                                     {&m_visionSubSystem})
+                                     .ToPtr());
   reflectiveTargetTrigger.OnFalse(
       frc2::InstantCommand([this]() { m_visionSubSystem.SetReflectiveVisionMode(false); }, {&m_visionSubSystem})
           .ToPtr());
@@ -412,7 +462,8 @@ void RobotContainer::ConfigureBindings() {
   /* ————————————————————————— TRIGGER ACTIVATION ———————————————————————— */
 
   // WRIST HOME TRIGGER ACTIVATION
-  homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {&m_lifter}).ToPtr());
+  homeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateWristHome(); }, {}).ToPtr());
+  reinitializeWrist.OnTrue(frc2::InstantCommand([this]() { m_lifter.InitializeWristHomes(); }, {}).ToPtr());
   // SHOULDER HOME TRIGGER ACTIVATION
   homeShoulder.OnTrue(frc2::InstantCommand([this]() { m_lifter.UpdateShoulderHome(); }, {&m_lifter}).ToPtr());
 
@@ -439,44 +490,46 @@ void RobotContainer::ConfigureBindings() {
       .OnTrue(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}).ToPtr());
   exclusiveManualIntakeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
 
-  (intakeConeTrigger && exclusiveAutoIntakeTrigger)
-      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
-                                         SetArmPoseCommand(
-                                             &m_lifter,
-                                             &m_bash,
-                                             ScoringPosition{.column = ScoringColumn::coneIntake},
-                                             [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                                             []() { return false; },
-                                             PathType::concaveDown,
-                                             speeds::armKinematicSpeeds::effectorFastVelocity,
-                                             speeds::armKinematicSpeeds::effectorFastAcceleration))
-                  .ToPtr());
-  (intakeCubeTrigger && exclusiveAutoIntakeTrigger)
-      .OnTrue(frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
-                                         SetArmPoseCommand(
-                                             &m_lifter,
-                                             &m_bash,
-                                             ScoringPosition{.column = ScoringColumn::cubeIntake},
-                                             [this]() { return m_buttonBox.GetBashGuardStatus(); },
-                                             []() { return false; },
-                                             PathType::concaveDown,
-                                             speeds::armKinematicSpeeds::effectorFastVelocity,
-                                             speeds::armKinematicSpeeds::effectorFastAcceleration))
-                  .ToPtr());
-  exclusiveAutoIntakeTrigger.OnFalse(
-      frc2::ParallelCommandGroup(
-          frc2::SequentialCommandGroup(frc2::WaitCommand(750_ms),
-                                       frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake})),
-          SetArmPoseCommand(
-              &m_lifter,
-              &m_bash,
-              ScoringPosition{.column = ScoringColumn::stow},
-              [this]() { return m_buttonBox.GetBashGuardStatus(); },
-              []() { return false; },
-              PathType::concaveDown,
-              speeds::armKinematicSpeeds::effectorFastVelocity,
-              speeds::armKinematicSpeeds::effectorFastAcceleration))
+  intakeConeTrigger.OnTrue(
+      frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCone(); }, {&m_intake}),
+                                 SetArmPoseCommand(
+                                     &m_lifter,
+                                     &m_bash,
+                                     ScoringPosition{.column = ScoringColumn::coneIntake},
+                                     frc::Translation2d{0_in, 0_in},
+                                     [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                     []() { return false; },
+                                     PathType::componentWise,
+                                     speeds::armKinematicSpeeds::effectorFastVelocity,
+                                     speeds::armKinematicSpeeds::effectorFastAcceleration))
           .ToPtr());
+  intakeCubeTrigger.OnTrue(
+      frc2::ParallelCommandGroup(frc2::InstantCommand([this]() { m_intake.IntakeCube(); }, {&m_intake}),
+                                 SetArmPoseCommand(
+                                     &m_lifter,
+                                     &m_bash,
+                                     ScoringPosition{.column = ScoringColumn::cubeIntake},
+                                     frc::Translation2d{0_in, 0_in},
+                                     [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                     []() { return false; },
+                                     PathType::componentWise,
+                                     speeds::armKinematicSpeeds::effectorFastVelocity,
+                                     speeds::armKinematicSpeeds::effectorFastAcceleration))
+          .ToPtr());
+  (intakeConeTrigger || intakeCubeTrigger)
+      .OnFalse((frc2::WaitCommand(2000_ms).ToPtr().AndThen(
+                    frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr()))
+                   .AlongWith(SetArmPoseCommand(
+                                  &m_lifter,
+                                  &m_bash,
+                                  []() {
+                                    return ScoringPosition{.column = ScoringColumn::stow};
+                                  },  // Function instead of constant value so we know this was commanded by button box
+                                  frc::Translation2d{0_in, 0_in},
+                                  [this]() { return m_buttonBox.GetBashGuardStatus(); },
+                                  []() { return false; },
+                                  PathType::componentWise)
+                                  .ToPtr()));
 
   scoreConeTrigger.OnTrue(&m_scoreConeCommand);
   scoreConeTrigger.OnFalse(frc2::InstantCommand([this]() { m_intake.IntakeStop(); }, {&m_intake}).ToPtr());
@@ -489,11 +542,7 @@ void RobotContainer::ConfigureBindings() {
 
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
-  startupBashGuardHomeTrigger.OnTrue(
-      frc2::SequentialCommandGroup(BashGuardHomingCommand(m_bash), frc2::InstantCommand([this]() {
-                                     m_bash.SetExtensionLength(measure_up::bash::retractedExtension);
-                                   }))
-          .ToPtr());
+  startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
   frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);
@@ -501,29 +550,33 @@ void RobotContainer::ConfigureBindings() {
   frc::SmartDashboard::PutNumber("MPTesting/TargetZ (in)", 18.0);
   frc::SmartDashboard::PutNumber("MPTesting/BashGuard", 0);
 
-  (!exclusiveAutoIntakeTrigger && newTargetTrigger)
+  (!intakeConeTrigger && !intakeCubeTrigger && newTargetTrigger)
       .OnTrue(SetArmPoseCommand(
                   &m_lifter,
                   &m_bash,
                   [this]() { return m_buttonBox.GetScoringPosition(); },
+                  scoring_positions::visionScoringPlacementOffset,
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   [this]() { return m_buttonBox.GetSpareSwitchStatus(); },
-                  PathType::concaveDown)
+                  PathType::componentWise)
                   .ToPtr());
-  (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
+  (!intakeConeTrigger && !intakeCubeTrigger && stowPositionTrigger)
       .OnTrue(SetArmPoseCommand(
                   &m_lifter,
                   &m_bash,
-                  ScoringPosition{.column = ScoringColumn::stow},
+                  []() {
+                    return ScoringPosition{.column = ScoringColumn::stow};
+                  },  // Function instead of constant value so we know this was commanded by button box
+                  frc::Translation2d{0_in, 0_in},
                   [this]() { return m_buttonBox.GetBashGuardStatus(); },
                   []() { return false; },
-                  PathType::concaveDown)
+                  PathType::componentWise)
                   .ToPtr());
-  (!exclusiveAutoIntakeTrigger && stowPositionTrigger)
+  (!intakeConeTrigger && !intakeCubeTrigger && stowPositionTrigger)
       .OnTrue(frc2::InstantCommand([this]() { m_buttonBox.Update(); }, {}).ToPtr());
 
-  ((coneDetectedTrigger.Debounce(100_ms) && intakeConeTrigger && exclusiveAutoIntakeTrigger) ||
-   (cubeDetectedTrigger.Debounce(100_ms) && intakeCubeTrigger && exclusiveAutoIntakeTrigger))
+  ((coneDetectedTrigger.Debounce(100_ms) && intakeConeTrigger) ||
+   (cubeDetectedTrigger.Debounce(100_ms) && intakeCubeTrigger))
       .OnTrue(
           frc2::InstantCommand([this]() {
             m_controllers.DriverController().SetVibration(
@@ -582,6 +635,10 @@ void RobotContainer::AllianceChanged() {
   // If disabled, set alliance colors
   m_ledSubSystem.SetAllGroupsAllianceColor(true, true, [this]() { return m_buttonBox.GetGamePiece(); });
   m_ledSubSystem.SetDisableAnimation([this]() { m_ledSubSystem.SetAllGroupsAllianceColor(false, false); });
+}
+
+void RobotContainer::SetLedsConnectedBrightness(bool connected) {
+  m_ledSubSystem.SetLedsConnectedBrightness(connected);
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {

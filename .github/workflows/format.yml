@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install wpiformat
-        run: pip3 install wpiformat==2022.21 clang-format
+        run: pip3 install wpiformat==2022.21 clang-format==15.0.7 # todo: update everything to clang-format v16
       - name: Create main branch
         # This is only necessary because wpiformat refuses to run without a main branch
         if: ${{ github.ref != 'refs/heads/main' }}
@@ -27,7 +27,7 @@ jobs:
       - name: Run
         run: wpiformat
       - name: Check for modified files
-        uses: tj-actions/verify-changed-files@v13
+        uses: tj-actions/verify-changed-files@v14
         id: verify-changed-files
         with:
           files: |

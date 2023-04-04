@@ -83,6 +83,10 @@ When commissioning a new robot, you should set the instance type to either "Comp
 
 See [vision readme](vision/README.md) for information on which pipelines to use and which indices to install these pipelines on.
 
+### Playing With Fusion Addressing
+
+Go to http://10.17.56.2:5812 while connected to the robot to update firmware or change addresses.
+
 ## Project Setup
 
 ### Pre-Commit
@@ -156,7 +160,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | X               | Home Wrist (hold with <kbd>Y</kbd>) |
 | Y               | Home Wrist (hold with <kbd>X</kbd>) |
 | DPad Up         | Request cone |
-| DPad Right      | Unused |
+| DPad Right      | Reinitialize wrist from absolute position (hold alone) |
 | DPad Down       | Request cube |
 | DPad Left       | Unused |
 | LB              | Intake Reverse |

@@ -17,12 +17,17 @@
 
 #include "Constants.h"
 #include "commands/autonomous/autonomous_balance.h"
+#include "commands/autonomous/autonomous_cable_protector_place_exit.h"
 #include "commands/autonomous/autonomous_cable_protector_score_pickup.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
+#include "commands/autonomous/autonomous_drive_tuning.h"
 #include "commands/autonomous/autonomous_loading_station_2_cone.h"
+#include "commands/autonomous/autonomous_loading_station_3gp.h"
 #include "commands/autonomous/autonomous_loading_station_cone_cube_score.h"
 #include "commands/autonomous/autonomous_nothing.h"
+#include "commands/autonomous/autonomous_only_balance.h"
 #include "commands/autonomous/autonomous_place_exit.h"
+#include "commands/autonomous/autonomous_score_cone_pickup_balance.h"
 #include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
@@ -53,6 +58,8 @@ class RobotContainer {
 
   /// @brief Called when the alliance is changed
   void AllianceChanged();
+
+  void SetLedsConnectedBrightness(bool connected);
 
  private:
   // Interpolation of controller inputs. Used for making the inputs non-linear, allowing finer control of how the robot responds to the joystick.
@@ -87,11 +94,16 @@ class RobotContainer {
   // Autonomous
   AutonomousNothing m_autoNothing;
   AutonomousDriveForward m_autoDriveForward;
+  AutonomousDriveTuning m_autoDriveTuning;
   AutonomousBalance m_autoBalance;
+  AutonomousOnlyBalance m_autoOnlyBalance;
   AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
   AutonomousLoadingStationConeCubeScore m_autoConeCubeScore;
+  AutonomousLoadingStation3GP m_auto3gp;
   AutonomousPlaceExit m_autoPlaceExit;
   AutonomousCableProtectorScorePickup m_autoCableProtectorCone;
+  AutonomousCableProtectorPlaceExit m_autoCablePlaceExit;
+  AutonomousScoreConePickupBalance m_autoScorePickupBalanceCone;
 
   AutoSelector m_autoSelector;
 
@@ -100,6 +112,8 @@ class RobotContainer {
   /* —————————————————— PID TESTING SETPOINT NT OBJECTS —————————————————— */
 
   nt::GenericEntry* p_wristSetpoint;
-  frc::SlewRateLimiter<units::scalar> m_nudgeRate;
+  frc::SlewRateLimiter<units::scalar> m_lateralNudgeRate;
+  frc::SlewRateLimiter<units::scalar> m_rotationalNudgeRate;
+  frc::SlewRateLimiter<units::scalar> m_distanceNudgeRate;
   argos_lib::GenericDebouncer<AlignLedStatus> m_alignLedDebouncer;
 };

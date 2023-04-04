@@ -18,6 +18,7 @@
 
 #include "argos_lib/config/config_types.h"
 #include "argos_lib/general/nt_motor_pid_tuner.h"
+#include "argos_lib/general/nt_subscriber.h"
 #include "argos_lib/homing/fs_homing.h"
 #include "ctre/Phoenix.h"
 #include "frc/StateSpaceUtil.h"
@@ -116,7 +117,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
 
   frc::Rotation2d GetContinuousOdometryAngle();
 
-  frc::Rotation2d GetContinuousPoseEstAngle();
+  frc::Rotation2d GetNearestSquareAngle();
 
   frc::Pose2d GetContinuousOdometry();
 
@@ -175,6 +176,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    *
    * @param constraints Rotational velocity and acceleration constraints
    */
+  void UpdateFollowerRotationalPIDConstraints(frc::TrapezoidProfile<units::radians>::Constraints constraints);
   void UpdateFollowerRotationalPIDConstraints(frc::TrapezoidProfile<units::degrees>::Constraints constraints);
 
   /**
@@ -274,12 +276,21 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   bool m_manualOverride;
   std::unique_ptr<SwerveTrapezoidalProfileSegment> m_pActiveSwerveProfile;      ///< Profile to execute
   std::chrono::time_point<std::chrono::steady_clock> m_swerveProfileStartTime;  ///< Time when active profile began
+  frc::ProfiledPIDController<units::radians>::Constraints m_rotationalPIDConstraints;
   frc2::PIDController m_linearPID;  ///< Correction parameters for x/y error when following drive profile
   frc::ProfiledPIDController<units::radians>
       m_rotationalPID;  ///< Correction parameters for rotational error when following drive profile
   frc::HolonomicDriveController m_followerController;  ///< Controller to follow drive profile
 
   argos_lib::NTMotorPIDTuner m_driveMotorPIDTuner;  ///< Utility to tune drive motors
+  argos_lib::NTSubscriber m_linearFollowerTuner_P;
+  argos_lib::NTSubscriber m_linearFollowerTuner_I;
+  argos_lib::NTSubscriber m_linearFollowerTuner_D;
+  argos_lib::NTSubscriber m_rotationalFollowerTuner_P;
+  argos_lib::NTSubscriber m_rotationalFollowerTuner_I;
+  argos_lib::NTSubscriber m_rotationalFollowerTuner_D;
+  argos_lib::NTSubscriber m_rotationalFollowerConstraintTuner_vel;
+  argos_lib::NTSubscriber m_rotationalFollowerConstraintTuner_accel;
 
   /**
  * @brief Get the Raw Module States object and switch between robot-centric and field-centric

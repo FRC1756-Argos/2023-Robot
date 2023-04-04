@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <frc/filter/LinearFilter.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
 #include <frc2/command/SubsystemBase.h>
@@ -23,10 +24,17 @@ class LimelightTarget {
   bool m_hasTargets;                    ///< True if the camera has a target it can read
   units::degree_t m_pitch;              ///< Pitch of target relative to camera -24.85 to 24.85 degrees
   units::degree_t m_yaw;                ///< Yaw of target relative to camera -31.65 to 31.65 degrees
+  double m_area;                        ///< Area of the target in percentage of total pixels
   units::millisecond_t m_totalLatency;  ///< Total latency
+  frc::LinearFilter<units::degree_t> m_txFilter;
+  frc::LinearFilter<units::degree_t> m_tyFilter;
+  bool m_resetFilterFlag;
 
  public:
-  LimelightTarget() = default;
+  LimelightTarget()
+      : m_txFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.01, 0.02_s)}
+      , m_tyFilter{frc::LinearFilter<units::degree_t>::SinglePoleIIR(0.01, 0.02_s)}
+      , m_resetFilterFlag{false} {}
 
   /**
    * @brief Wraps members of LimelightTarget for use elsewhere
@@ -39,6 +47,7 @@ class LimelightTarget {
     bool hasTargets;                    ///< @copydoc LimelightTarget::m_hasTargets
     units::degree_t m_pitch;            ///< @copydoc LimelightTarget::m_pitch
     units::degree_t m_yaw;              ///< @copydoc LimelightTarget::m_yaw
+    double m_area;                      ///< @copydoc LimelightTarget::m_area
     units::millisecond_t totalLatency;  ///< @copydoc LimelightTarget::m_totalLatency
   };
 
@@ -47,7 +56,7 @@ class LimelightTarget {
    *
    * @return tValues
    */
-  tValues GetTarget();
+  tValues GetTarget(bool filter);
 
   /**
    * @brief Does the camera see a target?
@@ -56,6 +65,10 @@ class LimelightTarget {
    * @return false - The camera does not see a target
    */
   bool HasTarget();
+
+  void ResetFilters();
+
+  void ResetOnNextTarget();
 };
 
 /**
@@ -81,6 +94,8 @@ class CameraInterface {
    * @param mode True is drive control. False is no drive control
    */
   void SetDriverMode(bool mode);
+
+  void RequestTargetFilterReset();
 };
 
 class VisionSubsystem : public frc2::SubsystemBase {
@@ -116,9 +131,19 @@ class VisionSubsystem : public frc2::SubsystemBase {
    */
   std::optional<units::degree_t> GetHorizontalOffsetToTarget();
 
+  /**
+   * @brief Get the longitudinal distance to the retroreflective tape
+   * @note For now assume we are always seeing the lower pole
+   *
+   * @return units::inch_t
+   */
+  std::optional<units::inch_t> GetDistanceToPoleTape();
+
   void SetReflectiveVisionMode(bool mode);
 
   bool AimToPlaceCone();
+
+  void RequestFilterReset();
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.

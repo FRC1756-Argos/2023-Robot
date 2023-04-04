@@ -111,8 +111,11 @@ namespace field_points {
   }  // namespace grids
 
   namespace charge_station {
+    /// @brief Side closest to the driver station
     constexpr units::inch_t innerEdgeX = 115.894_in;
+    /// @brief Side closest to the game pieces
     constexpr units::inch_t outerEdgeX = 190.105_in;
+
   }  // namespace charge_station
 
   namespace blue_alliance {
@@ -123,6 +126,10 @@ namespace field_points {
       constexpr auto gp_2 = frc::Translation3d{278.25_in, 84_in, 0_in};
       constexpr auto gp_3 = frc::Translation3d{278.25_in, 36_in, 0_in};
     }  // namespace game_pieces
+
+    namespace charge_station {
+      constexpr frc::Translation3d chargeStationCenter = frc::Translation3d{153_in, 108_in, 9_in};
+    }  // namespace charge_station
 
     // Blue Alliance Y-Positions for nodes
     // Columns are named left, middle, right as if you are facing them from inside the field
@@ -254,6 +261,11 @@ namespace field_points {
       constexpr auto gp_3 = utils::ReflectFieldPoint(blue_alliance::game_pieces::gp_3);
     }  // namespace game_pieces
 
+    namespace charge_station {
+      constexpr frc::Translation3d chargeStationCenter =
+          utils::ReflectFieldPoint(field_points::blue_alliance::charge_station::chargeStationCenter);
+    }  // namespace charge_station
+
     // Red Alliance Y-Positions for nodes
     // Columns are named left, middle, right as if you are facing them from inside the field
     // Same as documented picture in /docs
@@ -350,5 +362,5 @@ namespace field_points {
 }  // namespace field_points
 
 namespace cone {
-  constexpr auto coneWidth = 8.5_in;
+  constexpr auto coneWidth = 6_in;  ///< Does not include square rim
 }  // namespace cone

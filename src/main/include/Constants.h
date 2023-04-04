@@ -21,7 +21,7 @@
 
 namespace speeds {
   namespace drive {
-    constexpr double aimBotMaxBias = 1.0;
+    constexpr double aimBotMaxBias = 0.6;
     constexpr double aimBotThresh = 0.1;
     constexpr units::velocity::feet_per_second_t maxAngular = 12_fps;
   }  // namespace drive
@@ -81,3 +81,14 @@ namespace camera {
 
 /// @brief Designate the threshold approach direction
 enum class ApproachDirection { Increasing, Decreasing };
+
+/// @brief This is a bad idea...
+namespace warning {
+  /// @brief Are you sure you want to change this?!?!
+  namespace nuclear {
+    /// @brief Turn back now!
+    namespace option {
+      constexpr bool wristEnabled = true;  ///< @warning Only set to false if wrist is broken beyond repair :(
+    }                                      // namespace option
+  }                                        // namespace nuclear
+}  // namespace warning

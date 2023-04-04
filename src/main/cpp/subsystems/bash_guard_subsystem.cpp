@@ -25,7 +25,10 @@ BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
                   argos_lib::ClosedLoopSensorConversions{
                       argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToExtension),
                       argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToVelocity),
-                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToExtension)}} {
+                      argos_lib::GetSensorConversionFactor(sensor_conversions::bashguard::ToExtension)}}
+    , m_bashGuardManualOverride{false}
+    , m_bashGuardHomed{false}
+    , m_bashHomeFailed{false} {
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::bash_guard::extension,
                                          motorConfig::practice_bot::bash_guard::extension>(
       m_bashGuard, 100_ms, instance);
@@ -36,8 +39,21 @@ bool BashGuardSubsystem::IsBashGuardMoving() {
 }
 
 bool BashGuardSubsystem::IsBashGuardMPComplete() {
+  if (GetHomeFailed()) {
+    return true;
+  }
+
   return m_bashGuard.IsMotionProfileFinished();
 }
+
+void BashGuardSubsystem::SetHomeFailed(bool failed) {
+  m_bashHomeFailed = failed;
+}
+
+bool BashGuardSubsystem::GetHomeFailed() {
+  return m_bashHomeFailed;
+}
+
 ctre::phoenix::motion::BufferedTrajectoryPointStream& BashGuardSubsystem::GetMPStream() {
   return m_bashStream;
 }
@@ -49,6 +65,10 @@ void BashGuardSubsystem::StopMotionProfile() {
 }
 
 void BashGuardSubsystem::StartMotionProfile(size_t streamSize) {
+  if (GetHomeFailed()) {
+    return;
+  }
+
   SetBashGuardManualOverride(false);
   m_bashGuard.StartMotionProfile(
       m_bashStream, std::min<size_t>(5, streamSize), ctre::phoenix::motorcontrol::ControlMode::MotionProfile);
@@ -85,7 +105,7 @@ units::inch_t BashGuardSubsystem::DecomposeBashExtension(const BashGuardPosition
 }
 
 void BashGuardSubsystem::SetExtensionLength(units::inch_t length) {
-  if (!IsBashGuardHomed()) {
+  if (!IsBashGuardHomed() || GetHomeFailed()) {
     return;
   }
 
@@ -95,7 +115,7 @@ void BashGuardSubsystem::SetExtensionLength(units::inch_t length) {
 }
 
 bool BashGuardSubsystem::IsBashGuardHomed() {
-  return m_bashGuardHomed;
+  return m_bashGuardHomed || m_bashHomeFailed;
 }
 
 void BashGuardSubsystem::SetBashGuardManualOverride(bool overrideState) {
@@ -113,6 +133,7 @@ bool BashGuardSubsystem::IsBashGuardManualOverride() {
 void BashGuardSubsystem::UpdateBashGuardHome() {
   m_bashGuard.SetSelectedSensorPosition(sensor_conversions::bashguard::ToSensorUnit(measure_up::bash::homeExtension));
   m_bashGuardHomed = true;
+  m_bashHomeFailed = false;
   EnableBashGuardSoftLimits();
 }
 

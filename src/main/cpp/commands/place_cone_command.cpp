@@ -45,6 +45,7 @@ void PlaceConeCommand::Initialize() {
           .AndThen(SetArmPoseCommand{m_lifter,
                                      m_bashGuard,
                                      m_scoringPosition,
+                                     frc::Translation2d{0_in, 0_in},
                                      []() { return true; },
                                      []() { return false; },
                                      PathType::concaveDown}
@@ -65,7 +66,9 @@ void PlaceConeCommand::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool PlaceConeCommand::IsFinished() {
-  return m_allCommands.get()->IsFinished();
+  bool isFinished = m_allCommands.get()->IsFinished();
+  frc::SmartDashboard::PutBoolean("Place Cone Command Is Finished: ", isFinished);
+  return isFinished;
 }
 
 std::string PlaceConeCommand::GetName() const {

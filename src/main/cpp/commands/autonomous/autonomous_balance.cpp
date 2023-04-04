@@ -41,6 +41,7 @@ AutonomousBalance::AutonomousBalance(SwerveDriveSubsystem& drive,
               .AndThen(SetArmPoseCommand{&lifter,
                                          &bash,
                                          ScoringPosition{.column = ScoringColumn::stow},
+                                         frc::Translation2d{0_in, 0_in},
                                          []() { return false; },
                                          []() { return false; },
                                          PathType::concaveDown}
@@ -74,7 +75,7 @@ bool AutonomousBalance::IsFinished() {
 }
 
 std::string AutonomousBalance::GetName() const {
-  return "Balance";
+  return "Mobility Balance";
 }
 
 frc2::Command* AutonomousBalance::GetCommand() {

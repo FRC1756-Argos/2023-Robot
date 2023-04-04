@@ -10,6 +10,10 @@
 
 CameraInterface::CameraInterface() = default;
 
+void CameraInterface::RequestTargetFilterReset() {
+  m_target.ResetOnNextTarget();
+}
+
 VisionSubsystem::VisionSubsystem(const argos_lib::RobotInstance instance, SwerveDriveSubsystem* pDriveSubsystem)
     : m_instance(instance), m_pDriveSubsystem(pDriveSubsystem) {}
 
@@ -21,6 +25,8 @@ void VisionSubsystem::Periodic() {
       (targetValues.robotPose.ToPose2d().X() != 0_in && targetValues.robotPose.ToPose2d().Y() != 0_in)) {
     // m_pDriveSubsystem->GetPoseEstimate(targetValues.robotPoseWPI.ToPose2d(), targetValues.totalLatency);
   }
+
+  GetDistanceToPoleTape();
 
   if (targetValues.hasTargets) {
     frc::SmartDashboard::PutBoolean("(Vision - Periodic) Is Target Present?", targetValues.hasTargets);
@@ -40,9 +46,37 @@ std::optional<units::degree_t> VisionSubsystem::GetHorizontalOffsetToTarget() {
 
   // add more target validation after testing e.g. area, margin, skew etc
   // for now has target is enough as we will be fairly close to target
-  // and will tune the pipeline not to combine detctions and choose the highest area
+  // and will tune the pipeline not to combine detections and choose the highest area
   if (targetValues.hasTargets) {
     return targetValues.m_yaw;
+  }
+
+  return std::nullopt;
+}
+
+std::optional<units::inch_t> VisionSubsystem::GetDistanceToPoleTape() {
+  const auto targets = GetCameraTargetValues();
+  if (targets.hasTargets) {
+    units::inch_t distance;
+
+    // first of all, change the pipeline to sort the targets "closest" and distance we return should always be to the bottom pole
+    // if we determine target we are seeing is the upper pole based on the properties, then calculate accordingly
+    // else assume we are seeing lower target all the time
+
+    const units::radian_t targetAngle =
+        measure_up::camera::cameraMountAngle - (measure_up::camera::vFov / 2) + targets.m_pitch;
+
+    // Assume we're seeing the low node, because robot can quickly drive away from grid if it
+    // incorrectly assumes high node
+    distance = units::math::cos(targets.m_yaw).to<double>() *
+                   (measure_up::camera::bottomPoleTapeCenter - measure_up::camera::cameraZ) /
+                   std::tan(targetAngle.to<double>()) +
+               measure_up::camera::cameraX;
+
+    frc::SmartDashboard::PutNumber("vision/Vision Distance To LowerPole RetroReflective Tape (inches)",
+                                   distance.to<double>());
+
+    return distance;
   }
 
   return std::nullopt;
@@ -63,8 +97,12 @@ bool VisionSubsystem::AimToPlaceCone() {
   return true;
 }
 
+void VisionSubsystem::RequestFilterReset() {
+  m_cameraInterface.RequestTargetFilterReset();
+}
+
 LimelightTarget::tValues VisionSubsystem::GetCameraTargetValues() {
-  return m_cameraInterface.m_target.GetTarget();
+  return m_cameraInterface.m_target.GetTarget(true);
 }
 
 void VisionSubsystem::Disable() {
@@ -73,7 +111,7 @@ void VisionSubsystem::Disable() {
 
 // LIMELIGHT TARGET MEMBER FUNCTIONS ===============================================================
 
-LimelightTarget::tValues LimelightTarget::GetTarget() {
+LimelightTarget::tValues LimelightTarget::GetTarget(bool filter) {
   std::shared_ptr<nt::NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
 
   auto rawRobotPose = table->GetNumberArray("botpose", std::span<const double>({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
@@ -103,11 +141,53 @@ LimelightTarget::tValues LimelightTarget::GetTarget() {
   m_hasTargets = (table->GetNumber("tv", 0) == 1);
   m_yaw = units::make_unit<units::degree_t>(table->GetNumber("tx", 0.0));
   m_pitch = units::make_unit<units::degree_t>(table->GetNumber("ty", 0.0));
+
+  // REMOVEME debugging
+  frc::SmartDashboard::PutNumber("VisionSubsystem/RawPitch (deg)", m_pitch.to<double>());
+  frc::SmartDashboard::PutNumber("VisionSubsystem/RawYaw (deg)", m_yaw.to<double>());
+  // ! end debugging
+
+  // If filter needs to reset, reset filter
+  if (m_hasTargets && m_resetFilterFlag) {
+    ResetFilters();
+  }
+
+  // Filter incoming yaw & pitch if wanted
+  if (filter && m_hasTargets) {
+    m_yaw = m_txFilter.Calculate(m_yaw);
+    m_pitch = m_tyFilter.Calculate(m_pitch);
+
+    // REMOVEME debugging
+    frc::SmartDashboard::PutNumber("VisionSubsystem/FilteredPitch (deg)", m_pitch.to<double>());
+    frc::SmartDashboard::PutNumber("VisionSubsystem/FilteredYaw (deg)", m_yaw.to<double>());
+    // ! end debugging
+  }
+
+  m_area = (table->GetNumber("ta", 0.0));
   m_totalLatency = units::make_unit<units::millisecond_t>(rawRobotPose.at(6));
 
-  return tValues{m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_pitch, m_yaw, m_totalLatency};
+  return tValues{
+      m_robotPose, m_robotPoseWPI, m_robotPoseTagSpace, m_hasTargets, m_pitch, m_yaw, m_area, m_totalLatency};
 }
 
 bool LimelightTarget::HasTarget() {
   return m_hasTargets;
+}
+
+void LimelightTarget::ResetOnNextTarget() {
+  m_resetFilterFlag = true;
+}
+
+void LimelightTarget::ResetFilters() {
+  m_resetFilterFlag = false;
+  m_txFilter.Reset();
+  m_tyFilter.Reset();
+  LimelightTarget::tValues currentValue = GetTarget(false);
+  // Hackily rest filter with initial value
+  // TODO name the filter values
+  uint32_t samples = 0.7 / 0.02;
+  for (size_t i = 0; i < samples; i++) {
+    m_txFilter.Calculate(currentValue.m_yaw);
+    m_tyFilter.Calculate(currentValue.m_pitch);
+  }
 }

@@ -6,6 +6,7 @@
 
 #include <argos_lib/general/angle_utils.h>
 #include <frc2/command/InstantCommand.h>
+#include <frc2/command/WaitCommand.h>
 
 #include "commands/drive_until_pitch.h"
 #include "commands/drive_until_pitch_rate.h"
@@ -48,6 +49,18 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
                                       m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                       2_s}
                       .ToPtr())
+              .AndThen(
+                  DriveUntilPitch{m_pDrive,
+                                  m_approachAngle,
+                                  0.2,
+                                  0.2,
+                                  6_deg * m_initialPitchSign,
+                                  m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
+                                  2_s}
+                      .ToPtr())
+              .AndThen(
+                  frc2::InstantCommand([this, drive]() { drive->SwerveDrive(180_deg + m_approachAngle, 0.1); }).ToPtr())
+              .AndThen(frc2::WaitCommand(250_ms).ToPtr())
               .AndThen(frc2::InstantCommand([this, drive]() {
                          drive->StopDrive();
                          drive->LockWheels();
