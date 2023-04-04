@@ -31,10 +31,10 @@
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
+#include "subsystems/oui_oui_placer_subsystem.h"
 #include "subsystems/simple_led_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
 #include "subsystems/vision_subsystem.h"
-#include "subsystems/oui_oui_placer_subsystem.h"
 #include "utils/auto_selector.h"
 
 /**
