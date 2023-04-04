@@ -32,6 +32,8 @@ OuiOuiPlacerSubsystem::OuiOuiPlacerSubsystem(argos_lib::RobotInstance instance)
   // Configure oui oui motor
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::oui_oui_placer,
                                          motorConfig::practice_bot::oui_oui_placer>(m_ouiOuiDrive, 100_ms, instance);
+  m_ouiOuiDrive.Set(sensor_conversions::oui_oui_place::ToSensorUnit(measure_up::oui_oui_place::maxAngle));
+  EnablePlacerSoftLimits();
 }
 
 void OuiOuiPlacerSubsystem::TakeManualControl() {
@@ -66,6 +68,19 @@ void OuiOuiPlacerSubsystem::SetOuiOuiAngle(units::degree_t angle) {
   m_ouiOuiDrive.ConfigMotionCruiseVelocity(sensor_conversions::oui_oui_place::ToSensorVelocity(10_deg_per_s));
   m_ouiOuiDrive.Set(phoenix::motorcontrol::ControlMode::MotionMagic,
                     sensor_conversions::oui_oui_place::ToSensorUnit(angle));
+}
+void OuiOuiPlacerSubsystem::EnablePlacerSoftLimits() {
+  m_ouiOuiDrive.ConfigForwardSoftLimitThreshold(
+      sensor_conversions::oui_oui_place::ToSensorUnit(measure_up::oui_oui_place::maxAngle));
+  m_ouiOuiDrive.ConfigReverseSoftLimitThreshold(
+      sensor_conversions::oui_oui_place::ToSensorUnit(measure_up::oui_oui_place::minAngle));
+  m_ouiOuiDrive.ConfigForwardSoftLimitEnable(true);
+  m_ouiOuiDrive.ConfigReverseSoftLimitEnable(true);
+}
+
+void OuiOuiPlacerSubsystem::DisablePlacerSoftLimits() {
+  m_ouiOuiDrive.ConfigForwardSoftLimitEnable(false);
+  m_ouiOuiDrive.ConfigReverseSoftLimitEnable(false);
 }
 
 // This method will be called once per scheduler run

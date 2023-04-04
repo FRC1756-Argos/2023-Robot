@@ -161,26 +161,23 @@ namespace sensor_conversions {
 
   namespace oui_oui_place {
 
-    constexpr double sensorConversionFactor = 360.0 / 4096;  ///< multiply to convert raw sensor units to module degrees
+    constexpr double sensorConversionFactor = 360.0 / 2048;  ///< multiply to convert raw sensor units to module degrees
+    constexpr double gearboxReduction = 1.0 / 9;
 
     constexpr double ToSensorUnit(const units::degree_t angle) {
-      return angle.to<double>() / sensorConversionFactor;
-      // @todo fill in with any gearing
+      return angle.to<double>() / sensorConversionFactor / gearboxReduction;
     }
 
     constexpr units::degree_t ToAngle(const double sensorUnits) {
-      return units::degree_t(sensorUnits * sensorConversionFactor);
-      // @todo fill in with any gearing
+      return units::degree_t(sensorUnits * sensorConversionFactor * gearboxReduction);
     }
 
     constexpr units::degrees_per_second_t ToVelocity(const double sensorVelocity) {
       return units::degrees_per_second_t{ToAngle(sensorVelocity) / units::decisecond_t{1}};
-      // @todo fill in with any gearing
     }
 
     constexpr double ToSensorVelocity(const units::degrees_per_second_t velocity) {
       return ToSensorUnit(velocity * units::decisecond_t{1});
-      // @todo fill in with any gearing
     }
   }  // namespace oui_oui_place
 }  // namespace sensor_conversions

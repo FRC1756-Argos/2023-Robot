@@ -223,7 +223,7 @@ namespace motorConfig {
       };
     }  // namespace bash_guard
     struct oui_oui_placer {
-      constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::None;  // @todo check on this
+      constexpr static auto inverted = ctre::phoenix::motorcontrol::InvertType::InvertMotorOutput;
       constexpr static bool sensorPhase = false;
       constexpr static auto neutralDeadband = motorConfig::common::neutralDeadband;
       constexpr static auto neutralMode = ctre::phoenix::motorcontrol::NeutralMode::Brake;

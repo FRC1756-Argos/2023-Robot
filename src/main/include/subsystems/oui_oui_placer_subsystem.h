@@ -38,6 +38,12 @@ class OuiOuiPlacerSubsystem : public frc2::SubsystemBase {
   /// @param angle The angle to set placer to, angle has respect to robot y and follows WPI convention
   void SetOuiOuiAngle(units::degree_t angle);
 
+  /// @brief Turns on soft limits of placer
+  void EnablePlacerSoftLimits();
+
+  /// @brief Turns off soft limits of placer
+  void DisablePlacerSoftLimits();
+
  private:
   argos_lib::RobotInstance m_instance;
   bool m_manualOverride;

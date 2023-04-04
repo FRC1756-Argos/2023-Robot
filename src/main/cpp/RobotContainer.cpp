@@ -370,6 +370,12 @@ void RobotContainer::ConfigureBindings() {
 
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
+  // REMOVEME DEBUGGING
+  robotEnableTrigger.OnTrue(
+      frc2::InstantCommand([this] { m_ouiOuiPlacerSubsystem.SetOuiOuiSpeed(-0.25); }, {&m_ouiOuiPlacerSubsystem})
+          .ToPtr());
+  // ! end
+
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
 
   auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;

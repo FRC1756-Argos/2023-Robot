@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <argos_lib/general/angle_utils.h>
 #include <frc/geometry/Translation2d.h>
 #include <units/angle.h>
 #include <units/length.h>
@@ -74,11 +75,10 @@ namespace measure_up {
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
   namespace oui_oui_place {
-    // @todo get more accurate numbers from bradley come testing time
     // Maximum oui oui can rotate outside the back of the robot
-    constexpr auto minAngle = 180_deg;
+    constexpr auto minAngle = -257_deg;
     // Maximum oui oui can rotate inside the robot
-    constexpr auto maxAngle = 270_deg;
+    constexpr auto maxAngle = -126_deg;
     constexpr units::degree_t stowAngle = maxAngle;
     constexpr units::degree_t placeAngle = minAngle;
   }  // namespace oui_oui_place
