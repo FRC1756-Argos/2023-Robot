@@ -8,6 +8,7 @@
 #include <argos_lib/controller/trigger_composition.h>
 #include <argos_lib/general/angle_utils.h>
 #include <argos_lib/general/color.h>
+#include <argos_lib/general/general.h>
 #include <argos_lib/general/swerve_utils.h>
 #include <frc/DriverStation.h>
 #include <frc/RobotState.h>
@@ -136,6 +137,22 @@ RobotContainer::RobotContainer()
             auto distanceError =
                 distance.value() - (field_points::grids::middleConeNodeDepth + 0.5 * measure_up::chassis::length +
                                     measure_up::bumperExtension + scoring_positions::visionScoringAlignOffset.X());
+
+            // REMOVEME debugging
+            frc::SmartDashboard::PutNumber("vision/distanceError (in)", distanceError.to<double>());
+            // ! end
+
+            // If distance error is acceptable, set to zero
+            if (units::math::abs(distanceError) <= aimBot::longitudinalAcceptError) {
+              // REMOVEME debugging
+              frc::SmartDashboard::PutBoolean("vision/longitudinalDeadbandEngaged", true);
+              // ! end
+              distanceError = 0_in;
+            }
+            // REMOVEME debugging
+            frc::SmartDashboard::PutBoolean("vision/longitudinalDeadbandEngaged", false);
+            // ! end
+
             longitudinalBias =
                 std::clamp(m_distanceNudgeRate.Calculate(distanceError.to<double>() * 0.017).to<double>(), -0.23, 0.23);
           } else {
@@ -164,6 +181,35 @@ RobotContainer::RobotContainer()
           visionHorizontalOffset = visionHorizontalOffset.value() + intakeOffset;
           frc::SmartDashboard::PutNumber("vision/visionHorizontalOffset final (deg)",
                                          visionHorizontalOffset.value().to<double>());
+
+          units::degree_t intakeOffset_left =
+              units::math::atan2(gamePieceDepth + aimBot::lateralAcceptError, distance.value());
+          units::degree_t intakeOffset_right =
+              units::math::atan2(gamePieceDepth + aimBot::lateralAcceptError, distance.value());
+
+          units::degree_t visionHorizontalOffset_left = visionHorizontalOffset.value() + intakeOffset_left;
+          units::degree_t visionHorizontalOffset_right = visionHorizontalOffset.value() + intakeOffset_right;
+
+          // REMOVEME debugging
+          frc::SmartDashboard::PutNumber("vision/IntakeOffsetLeft (in)", intakeOffset_left.to<double>());
+          frc::SmartDashboard::PutNumber("vision/IntakeOffsetRight (in)", intakeOffset_right.to<double>());
+          frc::SmartDashboard::PutNumber("vision/VisionHorizontalOffset_right (in)",
+                                         visionHorizontalOffset_right.to<double>());
+          frc::SmartDashboard::PutNumber("vision/VisionHorizontalOffset_left (in)",
+                                         visionHorizontalOffset_left.to<double>());
+          // ! end
+
+          // Check if vision horizontal offset is within acceptable values
+          if (std::signbit(visionHorizontalOffset_left.to<double>()) !=
+              std::signbit(visionHorizontalOffset_right.to<double>())) {
+            // REMOVEME debugging
+            frc::SmartDashboard::PutBoolean("vision/lateralDeadbandEngaged", true);
+            // ! end
+            visionHorizontalOffset.value() = 0_deg;
+          }
+          // REMOVEME debugging
+          frc::SmartDashboard::PutBoolean("vision/lateralDeadbandEngaged", false);
+          // ! end
 
           units::degree_t robotYaw =
               m_swerveDrive.GetFieldCentricAngle();  // Gets the robots yaw relative to field-centric home

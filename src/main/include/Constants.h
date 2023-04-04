@@ -79,6 +79,11 @@ namespace camera {
   constexpr auto verticalAngleResolution = 49.7_deg;
 }  // namespace camera
 
+namespace aimBot {
+  constexpr auto lateralAcceptError = 0.5_in;
+  constexpr auto longitudinalAcceptError = 0.5_in;
+}  // namespace aimBot
+
 /// @brief Designate the threshold approach direction
 enum class ApproachDirection { Increasing, Decreasing };
 

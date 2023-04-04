@@ -27,7 +27,7 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
                              address::practice_bot::sensors::tofCubeIntake)
     , m_haveCone(false)
     , m_haveCube(false)
-    , m_coneOffsetFilter{frc::LinearFilter<units::inch_t>::SinglePoleIIR(0.2, 0.02_s)}
+    , m_coneOffsetFilter{frc::LinearFilter<units::inch_t>::SinglePoleIIR(1, 0.02_s)}
     , m_filteredConeOffset{0_in} {
   argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
                                              motorConfig::practice_bot::intake::intake>(
