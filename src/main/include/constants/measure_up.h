@@ -84,7 +84,8 @@ namespace measure_up {
   }  // namespace oui_oui_place
   namespace camera {
     constexpr auto cameraX = 0_in;
-    constexpr auto cameraZ = 8.375_in;
+    /// @todo why is this not 7.88 in?
+    constexpr auto cameraZ = 7.25_in;
     constexpr auto cameraMountAngle = 13.5_deg;
     constexpr auto vFov = 24.85_deg * 2;
     constexpr auto hFov = 29.8_deg * 2;
