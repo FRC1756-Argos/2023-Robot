@@ -37,7 +37,7 @@ namespace place_positions {
         frc::Translation3d{
             field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
     constexpr auto loadingStationCube = frc::Pose2d{{place_positions::blue_alliance::loadingStationCube3d.X(),
-                                                     place_positions::blue_alliance::loadingStationCube3d.Y() - 6_in},
+                                                     place_positions::blue_alliance::loadingStationCube3d.Y()},
                                                     180_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
@@ -57,7 +57,9 @@ namespace starting_positions {
     constexpr auto loadingStationConeReverse3d =
         field_points::blue_alliance::inner_grid::middleRowLeft.m_position +
         frc::Translation3d{
-            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
+            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension,
+            -measure_up::oui_oui_place::lateralOffset,
+            0_m};
     constexpr auto loadingStationConeReverse =
         frc::Pose2d{{starting_positions::blue_alliance::loadingStationConeReverse3d.X(),
                      starting_positions::blue_alliance::loadingStationConeReverse3d.Y()},
@@ -89,9 +91,14 @@ namespace interim_waypoints {
                     starting_positions::blue_alliance::loadingStationConeReverse.Rotation()};
 
     constexpr auto backAwayFromLoadingStationCube =
-        frc::Pose2d{{place_positions::blue_alliance::loadingStationCube.X() + 120_in,
+        frc::Pose2d{{place_positions::blue_alliance::loadingStationCube.X() + 72_in,
                      interim_waypoints::blue_alliance::backAwayFromLoadingStationCone.Y()},
                     place_positions::blue_alliance::loadingStationCube.Rotation()};
+
+    constexpr auto approachSecondCube =
+        frc::Pose2d{{interim_waypoints::blue_alliance::backAwayFromLoadingStationCube.X(),
+                     interim_waypoints::blue_alliance::backAwayFromLoadingStationCube.Y() - 8_in},
+                    interim_waypoints::blue_alliance::backAwayFromLoadingStationCube.Rotation()};
 
     // Center of robot when staging for dock, outside of the community
     constexpr auto chargingStationStage =
@@ -103,10 +110,12 @@ namespace interim_waypoints {
   namespace red_alliance {
     static const auto backAwayFromLoadingStationCone =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCone);
-    static const auto backAwayFromLoadingStationCube =
-        utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCube);
     static const auto backAwayFromLoadingStationConeReverse =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationConeReverse);
+    static const auto backAwayFromLoadingStationCube =
+        utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCube);
+    static const auto approachSecondCube =
+        utils::ReflectFieldPoint(interim_waypoints::blue_alliance::approachSecondCube);
     static const auto chargingStationStage =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::chargingStationStage);
   }  // namespace red_alliance
@@ -120,12 +129,18 @@ namespace game_piece_pickup {
     constexpr auto gamePiece0 = frc::Pose2d{
         {game_piece_pickup::blue_alliance::gamePiece0_3d.X(), game_piece_pickup::blue_alliance::gamePiece0_3d.Y()},
         0_deg};
-    constexpr auto gamePiece1_3d =
-        field_points::blue_alliance::game_pieces::gp_1 -
+    constexpr auto gamePiece0rev_3d =
+        field_points::blue_alliance::game_pieces::gp_0 -
         frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
-    constexpr auto gamePiece1 = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece1_3d.X(),
-                                             game_piece_pickup::blue_alliance::gamePiece1_3d.Y() + 6_in},
-                                            -20_deg};
+    constexpr auto gamePiece0rev = frc::Pose2d{
+        {game_piece_pickup::blue_alliance::gamePiece0_3d.X(), game_piece_pickup::blue_alliance::gamePiece0_3d.Y()},
+        0_deg};
+    constexpr auto gamePiece1_3d =
+        field_points::blue_alliance::game_pieces::gp_1 +
+        frc::Translation3d{16_in, measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m};
+    constexpr auto gamePiece1 = frc::Pose2d{
+        {game_piece_pickup::blue_alliance::gamePiece1_3d.X(), game_piece_pickup::blue_alliance::gamePiece1_3d.Y()},
+        -90_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto gamePiece0 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece0);
@@ -136,6 +151,7 @@ namespace game_piece_pickup {
 namespace path_constraints {
   namespace translation {
     static const auto loadingStationBackOut = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 8_fps_sq};
+    static const auto loadingStationReverseBackOut = frc::TrapezoidProfile<units::inches>::Constraints{8_fps, 8_fps_sq};
     static const auto stageChargeStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{4_fps, 8_fps_sq};
     static const auto loadingStationGridToGp0 = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 8_fps_sq};
     static const auto gp0ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
@@ -149,6 +165,8 @@ namespace path_constraints {
   }  // namespace translation
   namespace rotation {
     static const auto loadingStationBackOut =
+        frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
+    static const auto loadingStationReverseBackOut =
         frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
     static const auto stageChargeStationPullIn =
         frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};

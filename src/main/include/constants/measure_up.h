@@ -73,6 +73,9 @@ namespace measure_up {
     constexpr auto minExtension = 4.5_in;
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
+  namespace oui_oui_place {
+    constexpr auto lateralOffset = 7_in;
+  }  // namespace oui_oui_place
   namespace camera {
     constexpr auto cameraX = 0_in;
     /// @todo why is this not 7.88 in?

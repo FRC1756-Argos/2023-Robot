@@ -10,7 +10,7 @@
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/WaitCommand.h>
 
-#include "commands/drive_to_position.h"
+#include "commands/drive_to_position_absolute.h"
 #include "commands/initialize_odometry_command.h"
 #include "commands/place_cone_command.h"
 #include "commands/set_arm_pose_command.h"
@@ -32,8 +32,6 @@ void AutonomousLoadingStation3GP::Initialize() {
   auto blueAlliance = frc::DriverStation::GetAlliance() == frc::DriverStation::Alliance::kBlue;
   auto startingPosition = blueAlliance ? starting_positions::blue_alliance::loadingStationConeReverse :
                                          starting_positions::red_alliance::loadingStationConeReverse;
-  auto interimWaypoint1 = blueAlliance ? interim_waypoints::blue_alliance::backAwayFromLoadingStationConeReverse :
-                                         interim_waypoints::red_alliance::backAwayFromLoadingStationConeReverse;
   auto pickupPosition1 =
       blueAlliance ? game_piece_pickup::blue_alliance::gamePiece0 : game_piece_pickup::red_alliance::gamePiece0;
   auto interimWaypoint2 = blueAlliance ? interim_waypoints::blue_alliance::backAwayFromLoadingStationCone :
@@ -42,6 +40,8 @@ void AutonomousLoadingStation3GP::Initialize() {
                                       place_positions::red_alliance::loadingStationCube;
   auto interimWaypoint3 = blueAlliance ? interim_waypoints::blue_alliance::backAwayFromLoadingStationCube :
                                          interim_waypoints::red_alliance::backAwayFromLoadingStationCube;
+  auto interimWaypoint4 = blueAlliance ? interim_waypoints::blue_alliance::approachSecondCube :
+                                         interim_waypoints::red_alliance::approachSecondCube;
   auto pickupPosition2 =
       blueAlliance ? game_piece_pickup::blue_alliance::gamePiece1 : game_piece_pickup::red_alliance::gamePiece1;
 
@@ -50,65 +50,40 @@ void AutonomousLoadingStation3GP::Initialize() {
   m_allCommands =
       InitializeOdometryCommand{&m_drive, {startingPosition}}
           .ToPtr()
-          // Drive forward to waypoint
-          .AndThen(DriveToPosition{&m_drive,
-                                   startingPosition,
-                                   startingPosition.Rotation().Degrees(),
-                                   interimWaypoint1,
-                                   interimWaypoint1.Rotation().Degrees(),
-                                   path_constraints::translation::loadingStationBackOut_3gp,
-                                   path_constraints::rotation::loadingStationBackOut_3gp,
-                                   0_fps,
-                                   path_constraints::translation::loadingStationBackOut_3gp.maxVelocity}
+          // Drive forward to game piece 0
+          .AndThen(DriveToPositionAbsolute{&m_drive,
+                                           pickupPosition1,
+                                           pickupPosition1.Rotation().Degrees(),
+                                           path_constraints::translation::loadingStationReverseBackOut,
+                                           path_constraints::rotation::loadingStationReverseBackOut,
+                                           0_fps,
+                                           0_fps}
                        .ToPtr()
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bashGuard,
-                                                    ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                    ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
                                                     frc::Translation2d{0_in, 0_in},
                                                     []() { return false; },
                                                     []() { return false; },
                                                     PathType::componentWise,
                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                      .ToPtr()))
-          // Drive forward to game piece 0
-          .AndThen(DriveToPosition{&m_drive,
-                                   interimWaypoint1,
-                                   interimWaypoint1.Rotation().Degrees(),
-                                   pickupPosition1,
-                                   pickupPosition1.Rotation().Degrees(),
-                                   path_constraints::translation::loadingStationGridToGp0_3gp,
-                                   path_constraints::rotation::loadingStationGridToGp0_3gp,
-                                   path_constraints::translation::loadingStationBackOut_3gp.maxVelocity,
-                                   0_fps}
-                       .ToPtr()
-                       .AlongWith((SetArmPoseCommand{&m_lifter,
-                                                     &m_bashGuard,
-                                                     ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
-                                                     frc::Translation2d{0_in, 0_in},
-                                                     []() { return false; },
-                                                     []() { return false; },
-                                                     PathType::componentWise,
-                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
-                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                       .ToPtr()))
+                                      .ToPtr())
                        .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr()))
           // Drive back to place (and turn)
           .AndThen(
               // Drive back to waypoint with turn
-              (DriveToPosition{&m_drive,
-                               pickupPosition1,
-                               pickupPosition1.Rotation().Degrees(),
-                               interimWaypoint2,
-                               interimWaypoint2.Rotation().Degrees(),
-                               path_constraints::translation::gp0ToScore_3gp,
-                               path_constraints::rotation::gp0ToScore_3gp,
-                               0_fps,
-                               path_constraints::translation::gp0ToScore_3gp.maxVelocity}
+              (DriveToPositionAbsolute{&m_drive,
+                                       interimWaypoint2,
+                                       interimWaypoint2.Rotation().Degrees(),
+                                       path_constraints::translation::gp0ToScore_3gp,
+                                       path_constraints::rotation::gp0ToScore_3gp,
+                                       0_fps,
+                                       path_constraints::translation::gp0ToScore_3gp.maxVelocity}
                    .ToPtr()
                    .AlongWith(SetArmPoseCommand{&m_lifter,
                                                 &m_bashGuard,
-                                                ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                ScoringPosition{ScoringColumn::leftGrid_leftCone, ScoringRow::low},
                                                 frc::Translation2d{0_in, 0_in},
                                                 []() { return false; },
                                                 []() { return false; },
@@ -117,15 +92,13 @@ void AutonomousLoadingStation3GP::Initialize() {
                                                 speeds::armKinematicSpeeds::effectorAcceleration}
                                   .ToPtr()))
                   // Drive to place
-                  .AndThen(DriveToPosition{&m_drive,
-                                           interimWaypoint2,
-                                           interimWaypoint2.Rotation().Degrees(),
-                                           placePosition,
-                                           placePosition.Rotation().Degrees(),
-                                           path_constraints::translation::loadingStationPullIn_3gp,
-                                           path_constraints::rotation::loadingStationPullIn_3gp,
-                                           path_constraints::translation::gp0ToScore_3gp.maxVelocity,
-                                           0_fps}
+                  .AndThen(DriveToPositionAbsolute{&m_drive,
+                                                   placePosition,
+                                                   placePosition.Rotation().Degrees(),
+                                                   path_constraints::translation::loadingStationPullIn_3gp,
+                                                   path_constraints::rotation::loadingStationPullIn_3gp,
+                                                   path_constraints::translation::gp0ToScore_3gp.maxVelocity,
+                                                   0_fps}
                                .ToPtr()
                                .AlongWith(SetArmPoseCommand{
                                    &m_lifter,
@@ -141,40 +114,39 @@ void AutonomousLoadingStation3GP::Initialize() {
                   // Stop intake
                   .AlongWith(frc2::WaitCommand{750_ms}.ToPtr().AndThen(
                       frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())))
-          // Place cube
-          .AndThen(frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}.ToPtr().AlongWith(
-              frc2::WaitCommand{500_ms}.ToPtr()))
           // Drive back to waypoint
-          .AndThen(DriveToPosition{&m_drive,
-                                   placePosition,
-                                   placePosition.Rotation().Degrees(),
-                                   interimWaypoint3,
-                                   interimWaypoint3.Rotation().Degrees(),
-                                   path_constraints::translation::loadingStationBackOut_3gp,
-                                   path_constraints::rotation::loadingStationBackOut_3gp,
-                                   0_fps,
-                                   path_constraints::translation::loadingStationBackOut_3gp.maxVelocity}
-                       .ToPtr()
-                       .AlongWith(SetArmPoseCommand{&m_lifter,
-                                                    &m_bashGuard,
-                                                    ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
-                                                    frc::Translation2d{0_in, 0_in},
-                                                    []() { return false; },
-                                                    []() { return false; },
-                                                    PathType::componentWise,
-                                                    speeds::armKinematicSpeeds::effectorFastVelocity,
-                                                    speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                      .ToPtr()))
+          .AndThen(
+              DriveToPositionAbsolute{&m_drive,
+                                      interimWaypoint3,
+                                      interimWaypoint3.Rotation().Degrees(),
+                                      path_constraints::translation::loadingStationBackOut_3gp,
+                                      path_constraints::rotation::loadingStationBackOut_3gp,
+                                      0_fps,
+                                      path_constraints::translation::loadingStationBackOut_3gp.maxVelocity}
+                  .ToPtr()
+                  // Place cube
+                  .AlongWith(frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}
+                                 .ToPtr()
+                                 .AlongWith(frc2::WaitCommand{500_ms}.ToPtr())
+                                 .AndThen(frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())
+                                 .AndThen(SetArmPoseCommand{&m_lifter,
+                                                            &m_bashGuard,
+                                                            ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                            frc::Translation2d{0_in, 0_in},
+                                                            []() { return false; },
+                                                            []() { return false; },
+                                                            PathType::componentWise,
+                                                            speeds::armKinematicSpeeds::effectorFastVelocity,
+                                                            speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                              .ToPtr())))
           // Drive to game piece 1 pickup with turn
-          .AndThen(DriveToPosition{&m_drive,
-                                   interimWaypoint3,
-                                   interimWaypoint3.Rotation().Degrees(),
-                                   pickupPosition2,
-                                   pickupPosition2.Rotation().Degrees(),
-                                   path_constraints::translation::loadingStationGridToGp0_3gp,
-                                   path_constraints::rotation::loadingStationGridToGp0_3gp,
-                                   path_constraints::translation::loadingStationBackOut_3gp.maxVelocity,
-                                   0_fps}
+          .AndThen(DriveToPositionAbsolute{&m_drive,
+                                           pickupPosition2,
+                                           pickupPosition2.Rotation().Degrees(),
+                                           path_constraints::translation::loadingStationGridToGp0_3gp,
+                                           path_constraints::rotation::loadingStationGridToGp0_3gp,
+                                           path_constraints::translation::loadingStationBackOut_3gp.maxVelocity,
+                                           0_fps}
                        .ToPtr()
                        .AlongWith((SetArmPoseCommand{&m_lifter,
                                                      &m_bashGuard,
@@ -190,15 +162,13 @@ void AutonomousLoadingStation3GP::Initialize() {
           // Drive back to place second game piece
           .AndThen(
               // Drive back to waypoint with turn
-              (DriveToPosition{&m_drive,
-                               pickupPosition2,
-                               pickupPosition2.Rotation().Degrees(),
-                               interimWaypoint3,
-                               interimWaypoint3.Rotation().Degrees(),
-                               path_constraints::translation::gp0ToScore_3gp,
-                               path_constraints::rotation::gp0ToScore_3gp,
-                               0_fps,
-                               path_constraints::translation::gp0ToScore_3gp.maxVelocity}
+              (DriveToPositionAbsolute{&m_drive,
+                                       interimWaypoint4,
+                                       interimWaypoint4.Rotation().Degrees(),
+                                       path_constraints::translation::gp0ToScore_3gp,
+                                       path_constraints::rotation::gp0ToScore_3gp,
+                                       0_fps,
+                                       4_fps}
                    .ToPtr()
                    .AlongWith(SetArmPoseCommand{&m_lifter,
                                                 &m_bashGuard,
@@ -211,15 +181,13 @@ void AutonomousLoadingStation3GP::Initialize() {
                                                 speeds::armKinematicSpeeds::effectorAcceleration}
                                   .ToPtr()))
                   // Drive to placing position
-                  .AndThen(DriveToPosition{&m_drive,
-                                           interimWaypoint3,
-                                           interimWaypoint3.Rotation().Degrees(),
-                                           placePosition,
-                                           placePosition.Rotation().Degrees(),
-                                           path_constraints::translation::loadingStationPullIn_3gp,
-                                           path_constraints::rotation::loadingStationPullIn_3gp,
-                                           path_constraints::translation::gp0ToScore_3gp.maxVelocity,
-                                           0_fps}
+                  .AndThen(DriveToPositionAbsolute{&m_drive,
+                                                   placePosition,
+                                                   placePosition.Rotation().Degrees(),
+                                                   path_constraints::translation::loadingStationPullIn_3gp,
+                                                   path_constraints::rotation::loadingStationPullIn_3gp,
+                                                   4_fps,
+                                                   0_fps}
                                .ToPtr()
 
                                .AlongWith(SetArmPoseCommand{
@@ -259,7 +227,7 @@ bool AutonomousLoadingStation3GP::IsFinished() {
   return m_allCommands.get()->IsFinished();
 }
 
-/* Autonomous Command Meathods */
+/* Autonomous Command Methods */
 std::string AutonomousLoadingStation3GP::GetName() const {
   return "Loading Station 3 Game Piece";
 }
