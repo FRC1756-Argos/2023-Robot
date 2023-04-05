@@ -76,6 +76,8 @@ class RobotContainer {
       m_wristSpeed;
   argos_lib::InterpolationMap<decltype(controllerMap::bashSpeed.front().inVal), controllerMap::bashSpeed.size()>
       m_bashSpeed;
+  argos_lib::InterpolationMap<decltype(controllerMap::ouiOuiSpeed.front().inVal), controllerMap::ouiOuiSpeed.size()>
+      m_ouiOuiSpeed;
 
   const argos_lib::RobotInstance m_instance;
 

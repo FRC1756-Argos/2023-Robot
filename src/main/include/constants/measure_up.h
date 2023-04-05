@@ -76,9 +76,9 @@ namespace measure_up {
   }  // namespace bash
   namespace oui_oui_place {
     // Maximum oui oui can rotate outside the back of the robot
-    constexpr auto minAngle = -257_deg;
+    constexpr auto minAngle = -283_deg;
     // Maximum oui oui can rotate inside the robot
-    constexpr auto maxAngle = -126_deg;
+    constexpr auto maxAngle = -36_deg;
     constexpr units::degree_t stowAngle = maxAngle;
     constexpr units::degree_t placeAngle = minAngle;
   }  // namespace oui_oui_place

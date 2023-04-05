@@ -45,6 +45,7 @@ RobotContainer::RobotContainer()
     , m_armExtenderSpeed(controllerMap::armExtensionSpeed)
     , m_wristSpeed(controllerMap::armExtensionSpeed)
     , m_bashSpeed(controllerMap::bashSpeed)
+    , m_ouiOuiSpeed(controllerMap::ouiOuiSpeed)
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
     , m_buttonBox(address::comp_bot::controllers::buttonBox)
@@ -312,6 +313,20 @@ RobotContainer::RobotContainer()
       },
       {&m_lifter}));
 
+  m_ouiOuiPlacerSubsystem.SetDefaultCommand(frc2::RunCommand(
+      [this] {
+        double ouiOuiSpeed = m_ouiOuiSpeed.Map(
+            m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kRightHand));
+
+        if (ouiOuiSpeed == 0.0) {
+          m_ouiOuiPlacerSubsystem.StopOuiOuiPlacer();
+        } else {
+          // Inverted so it's more intuitive for operator
+          m_ouiOuiPlacerSubsystem.SetOuiOuiSpeed(-ouiOuiSpeed);
+        }
+      },
+      {&m_ouiOuiPlacerSubsystem}));
+
   m_bash.SetDefaultCommand(frc2::RunCommand(
       [this] {
         double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
@@ -369,12 +384,6 @@ void RobotContainer::ConfigureBindings() {
   auto cubeDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsCubeDetected(); }});
 
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
-
-  // REMOVEME DEBUGGING
-  robotEnableTrigger.OnTrue(
-      frc2::InstantCommand([this] { m_ouiOuiPlacerSubsystem.SetOuiOuiSpeed(-0.25); }, {&m_ouiOuiPlacerSubsystem})
-          .ToPtr());
-  // ! end
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
 

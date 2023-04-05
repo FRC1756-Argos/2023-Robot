@@ -27,6 +27,8 @@ namespace thresholds {
 namespace timeouts {
   /// @brief The amount of time to wait before robot should abort trying to achieve target pitch on charge station
   constexpr units::second_t robotClimbStation = 5_s;
+  /// @brief The max ammount of time the robot is allowed to talk while slamming a cone using the oui oui placer
+  constexpr units::millisecond_t robotSlamCone = units::millisecond_t{1500};
   /// @todo add max time the robot should take to level the charge station
 }  // namespace timeouts
 

@@ -6,6 +6,7 @@
 
 #include <argos_lib/config/falcon_config.h>
 #include <argos_lib/general/angle_utils.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 
 #include <string>
 
@@ -32,43 +33,23 @@ OuiOuiPlacerSubsystem::OuiOuiPlacerSubsystem(argos_lib::RobotInstance instance)
   // Configure oui oui motor
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::oui_oui_placer,
                                          motorConfig::practice_bot::oui_oui_placer>(m_ouiOuiDrive, 100_ms, instance);
-  m_ouiOuiDrive.Set(sensor_conversions::oui_oui_place::ToSensorUnit(measure_up::oui_oui_place::maxAngle));
+  m_ouiOuiDrive.SetSelectedSensorPosition(
+      sensor_conversions::oui_oui_place::ToSensorUnit(measure_up::oui_oui_place::maxAngle));
   EnablePlacerSoftLimits();
 }
-
-void OuiOuiPlacerSubsystem::TakeManualControl() {
-  m_manualOverride = true;
-}
-
-void OuiOuiPlacerSubsystem::ReleaseManualControl() {
-  m_manualOverride = false;
-}
-
-bool OuiOuiPlacerSubsystem::ReadManualControl() {
-  return m_manualOverride;
-}
-
-// @todo validate this first, to get config right.
 void OuiOuiPlacerSubsystem::SetOuiOuiSpeed(double percentOutput) {
-  TakeManualControl();  // If we command using this function, there should be no closed loop control, right?
   std::clamp<double>(percentOutput, -1.0, 1.0);  // Enforce bounds
   m_ouiOuiDrive.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, percentOutput);
 }
 
-// @todo make sure to use motor tuner first before even dreaming of using this function
-void OuiOuiPlacerSubsystem::SetOuiOuiAngle(units::degree_t angle) {
-  if (ReadManualControl()) {
-    return;  // Subsystem is manually overriden, do nothing
-  }
-  argos_lib::angle::ConstrainAngle(angle, 0_deg, 360_deg);
-  // Bound to upper and lower angle limits
-  std::clamp<units::degree_t>(angle, measure_up::oui_oui_place::minAngle, measure_up::oui_oui_place::maxAngle);
-  // * Note units are misleading on accel config
-  m_ouiOuiDrive.ConfigMotionAcceleration(sensor_conversions::oui_oui_place::ToSensorVelocity(5_deg_per_s));
-  m_ouiOuiDrive.ConfigMotionCruiseVelocity(sensor_conversions::oui_oui_place::ToSensorVelocity(10_deg_per_s));
-  m_ouiOuiDrive.Set(phoenix::motorcontrol::ControlMode::MotionMagic,
-                    sensor_conversions::oui_oui_place::ToSensorUnit(angle));
+void OuiOuiPlacerSubsystem::StopOuiOuiPlacer() {
+  m_ouiOuiDrive.Set(0);
 }
+
+units::degree_t OuiOuiPlacerSubsystem::GetOuiOuiAngle() {
+  return sensor_conversions::oui_oui_place::ToAngle(m_ouiOuiDrive.GetSelectedSensorPosition());
+}
+
 void OuiOuiPlacerSubsystem::EnablePlacerSoftLimits() {
   m_ouiOuiDrive.ConfigForwardSoftLimitThreshold(
       sensor_conversions::oui_oui_place::ToSensorUnit(measure_up::oui_oui_place::maxAngle));

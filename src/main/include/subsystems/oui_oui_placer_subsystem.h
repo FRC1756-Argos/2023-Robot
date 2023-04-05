@@ -18,25 +18,16 @@ class OuiOuiPlacerSubsystem : public frc2::SubsystemBase {
    */
   void Periodic() override;
 
-  /// @brief Sets manual override to true, disabling closed loop control of any kind
-  void TakeManualControl();
-
-  /// @brief Sets manual override to false, giving control back to closed loop
-  void ReleaseManualControl();
-
-  /// @brief Gets the manual override status of subsystem
-  /// @return True -> Manual override engaged. False -> Manual override NOT engaged.
-  bool ReadManualControl();
-
   /// @brief Sets the speed of placer mechanism motor
   /// @param percentOutput Fration of max power to set motor to, bounded on [-1, 1]
   void SetOuiOuiSpeed(double percentOutput);
 
-  // * NOTE: Angle follows WPI standard, decreasing angle will result in moving the mechanism down out
-  // * the back of the robot, increasing will result in placer moving up back into the A-Frame
-  /// @brief Sets the desired angle of the placer, relative to robot 0° pitch
-  /// @param angle The angle to set placer to, angle has respect to robot y and follows WPI convention
-  void SetOuiOuiAngle(units::degree_t angle);
+  /// @brief Stops the oui oui placer, and sets to motor's neutural mode
+  void StopOuiOuiPlacer();
+
+  /// @brief Retrieves the current angle the oui oui placer
+  /// @return Angle of oui oui placer system relative to robot frame, specifically it's revolution around robot Y
+  units::degree_t GetOuiOuiAngle();
 
   /// @brief Turns on soft limits of placer
   void EnablePlacerSoftLimits();
