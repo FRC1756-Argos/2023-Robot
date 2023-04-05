@@ -175,8 +175,8 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 ## Cone Placer / Oui Oui Placer Startup
 
 In order for the robot to function correctly, the carbon fiber arm that holds the cone slamming
-mechanism must be started such that the cone is at the top of it's arc, with the carbon fiber rod
-pointing twords the sky, against the mechanical n-stop.
+mechanism must be started such that the cone is at the top of its arc with the carbon fiber rod
+pointing twords the sky against the mechanical n-stop.
 
 ## Software Checkout
 
