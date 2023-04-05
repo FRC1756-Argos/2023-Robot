@@ -373,7 +373,7 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
 
   SetShoulderManualOverride(false);
 
-  angle = argos_lib::angle::ConstrainAngle(angle, -180_deg, 180_deg);  // Constrain to 0 to 360
+  angle = argos_lib::angle::ConstrainAngle(angle, -180_deg, 180_deg);  // Constrain to -180 to 180
 
   if (angle < measure_up::lifter::shoulder::minAngle) {  // Handle angle below bound, clamp to min
     angle = measure_up::lifter::shoulder::minAngle;

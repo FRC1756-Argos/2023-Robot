@@ -74,7 +74,15 @@ namespace controlLoop {
         constexpr static double iZone = 0;
         constexpr static double allowableError = 0;
       };
-    }  // namespace bash_guard
+    }                           // namespace bash_guard
+    namespace oui_oui_placer {  /// @todo tune these
+      constexpr static double kP = 0;
+      constexpr static double kI = 0;
+      constexpr static double kD = 0;
+      constexpr static double kF = 0;
+      constexpr static double iZone = 0;
+      constexpr static double allowableError = 0;
+    }  // namespace oui_oui_placer
   }    // namespace comp_bot
   namespace practice_bot {
     namespace drive {
