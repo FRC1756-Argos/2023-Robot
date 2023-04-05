@@ -75,7 +75,7 @@ namespace controlLoop {
         constexpr static double allowableError = 0;
       };
     }                           // namespace bash_guard
-    namespace oui_oui_placer {  // @todo tune these
+    namespace oui_oui_placer {  /// @todo tune these
       constexpr static double kP = 0;
       constexpr static double kI = 0;
       constexpr static double kD = 0;
