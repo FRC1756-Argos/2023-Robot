@@ -453,7 +453,7 @@ void LifterSubsystem::SetShoulderAngle(units::degree_t angle) {
 }
 
 bool LifterSubsystem::IsShoulderAt(units::degree_t angle) {
-  return units::math::abs(GetShoulderAngle() - angle) < measure_up::lifter::shoulder::acceptErr;
+  return units::math::abs(GetShoulderBoomAngle() - angle) < measure_up::lifter::shoulder::acceptErr;
 }
 
 frc::Translation2d LifterSubsystem::GetEffectorPose(const WristPosition wristPosition) {

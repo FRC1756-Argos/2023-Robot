@@ -19,7 +19,9 @@
 #include "commands/autonomous/autonomous_balance.h"
 #include "commands/autonomous/autonomous_cable_protector_place_exit.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
+#include "commands/autonomous/autonomous_drive_tuning.h"
 #include "commands/autonomous/autonomous_loading_station_2_cone.h"
+#include "commands/autonomous/autonomous_loading_station_3gp.h"
 #include "commands/autonomous/autonomous_loading_station_cone_cube_score.h"
 #include "commands/autonomous/autonomous_nothing.h"
 #include "commands/autonomous/autonomous_only_balance.h"
@@ -91,10 +93,12 @@ class RobotContainer {
   // Autonomous
   AutonomousNothing m_autoNothing;
   AutonomousDriveForward m_autoDriveForward;
+  AutonomousDriveTuning m_autoDriveTuning;
   AutonomousBalance m_autoBalance;
   AutonomousOnlyBalance m_autoOnlyBalance;
   AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
   AutonomousLoadingStationConeCubeScore m_autoConeCubeScore;
+  AutonomousLoadingStation3GP m_auto3gp;
   AutonomousPlaceExit m_autoPlaceExit;
   AutonomousCableProtectorPlaceExit m_autoCablePlaceExit;
   AutonomousScoreConePickupBalance m_autoScorePickupBalanceCone;

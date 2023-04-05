@@ -31,7 +31,7 @@ namespace sensor_conversions {
       constexpr auto wheelDiameter = 3.5_in;
       constexpr auto wheelCircumference = wheelDiameter * std::numbers::pi;
       constexpr double sensorUnitsPerMotorRevolution = 2048;
-      constexpr double driveGearRatio = 8.16;
+      constexpr double driveGearRatio = 36000.0 / 5880.0;
 
       constexpr units::inch_t ToDistance(const double sensorunit) {
         return wheelCircumference * (sensorunit / sensorUnitsPerMotorRevolution / driveGearRatio);
@@ -129,7 +129,7 @@ namespace sensor_conversions {
       constexpr double sensorToMotorRev = 1.0 / 2048;
       constexpr double beltReduction = 30.0 / 18.0;
       constexpr double extensionMillimetersPerRevolution = 4.0;
-      constexpr double fudgeFactor = 1.0;
+      constexpr double fudgeFactor = 0.992;  ///< This seems to be due to some discrepancy on comp bot
 
       constexpr double ToSensorUnit(const units::inch_t extension) {
         return (units::millimeter_t(extension) / extensionMillimetersPerRevolution / beltReduction / sensorToMotorRev /

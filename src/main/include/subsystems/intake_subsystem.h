@@ -5,6 +5,7 @@
 #pragma once
 
 #include <ctre/Phoenix.h>
+#include <frc/filter/LinearFilter.h>
 #include <frc2/command/SubsystemBase.h>
 
 #include <TimeOfFlight.h>
@@ -33,9 +34,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   void IntakeStop();
   void Disable();
 
-  /// @brief ToF stuff
-  /// @return
-  std::optional<units::inch_t> GetIntakeDistance();
+  units::inch_t GetIntakeDistance();
   bool TofConeDetected();
   bool TofCubeDetected();
   bool IsConeDetected();  ///< For intake detection
@@ -47,12 +46,20 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   WPI_TalonSRX m_intakeMotor;
   argos_lib::RobotInstance m_robotInstance;
 
-  /// @brief ToF sensor thingy
-  frc::TimeOfFlight m_coneLeftIntakeSensor;
-  frc::TimeOfFlight m_coneRightIntakeSensor;
-  frc::TimeOfFlight m_cubeIntakeSensor;
+  frc::TimeOfFlight
+      m_coneLeftIntakeSensor;  ///< Time of flight distance sensor mounted on left side of intake (wheels up) to detect cone presence & location
+  frc::TimeOfFlight
+      m_coneRightIntakeSensor;  ///< Time of flight distance sensor mounted on right side of intake (wheels up) to detect cone presence & location
+  frc::TimeOfFlight
+      m_cubeIntakeSensor;  ///< Time of flight distance sensor mounted on left side of intake (wheels up) to detect cube presence & location
   bool m_haveCone;
   bool m_haveCube;
 
+  frc::LinearFilter<units::inch_t> m_coneOffsetFilter;
+  units::inch_t
+      m_filteredConeOffset;  ///< Location of cone relative to intake center filtered to reduce noise.  Positive is toward left side (wheels up)
+
   bool IsGamePieceDetected();
+  std::optional<units::inch_t> ReadSensorDistance(frc::TimeOfFlight& sensor);
+  std::optional<units::inch_t> GetRawConePosition();
 };

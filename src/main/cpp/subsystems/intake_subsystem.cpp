@@ -26,7 +26,9 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
                              address::comp_bot::sensors::tofCubeIntake :
                              address::practice_bot::sensors::tofCubeIntake)
     , m_haveCone(false)
-    , m_haveCube(false) {
+    , m_haveCube(false)
+    , m_coneOffsetFilter{frc::LinearFilter<units::inch_t>::SinglePoleIIR(0.2, 0.02_s)}
+    , m_filteredConeOffset{0_in} {
   argos_lib::talonsrx_config::TalonSRXConfig<motorConfig::comp_bot::intake::intake,
                                              motorConfig::practice_bot::intake::intake>(
       m_intakeMotor, 100_ms, instance);
@@ -40,16 +42,18 @@ IntakeSubsystem::IntakeSubsystem(argos_lib::RobotInstance instance)
 
 // This method will be called once per scheduler run
 void IntakeSubsystem::Periodic() {
-  std::optional<units::inch_t> sensDistance = GetIntakeDistance();
-  frc::SmartDashboard::PutNumber("SensorDistance", sensDistance ? sensDistance.value().to<double>() : -1);
-  frc::SmartDashboard::PutNumber(
-      "TOF Left",
-      units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange()).convert<units::inch>().value());
-  frc::SmartDashboard::PutNumber(
-      "TOF Right",
-      units::make_unit<units::millimeter_t>(m_coneRightIntakeSensor.GetRange()).convert<units::inch>().value());
-  frc::SmartDashboard::PutBoolean("ConeDetection", IsConeDetected());
-  frc::SmartDashboard::PutBoolean("CubeDetection", IsCubeDetected());
+  auto rawConePosition = GetRawConePosition();
+  frc::SmartDashboard::PutNumber("intake/raw cone position",
+                                 rawConePosition ? rawConePosition.value().to<double>() : -1);
+
+  m_filteredConeOffset = m_coneOffsetFilter.Calculate(rawConePosition ? rawConePosition.value() : m_filteredConeOffset);
+
+  frc::SmartDashboard::PutNumber("intake/filtered cone position", m_filteredConeOffset.to<double>());
+
+  frc::SmartDashboard::PutBoolean("intake/ConeDetection", IsConeDetected());
+  frc::SmartDashboard::PutBoolean("intake/CubeDetection", IsCubeDetected());
+
+  frc::SmartDashboard::PutNumber("intake/Stator Current", m_intakeMotor.GetStatorCurrent());
 }
 
 void IntakeSubsystem::IntakeCone() {
@@ -91,38 +95,17 @@ void IntakeSubsystem::Disable() {
   IntakeStop();
 }
 
-std::optional<units::inch_t> IntakeSubsystem::GetIntakeDistance() {
-  if (!TofConeDetected()) {
-    return std::nullopt;
-  }
-
-  units::inch_t leftSensorDistance = units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange());
-  units::inch_t rightSensorDistance = units::make_unit<units::millimeter_t>(m_coneRightIntakeSensor.GetRange());
-
-  auto sensorDistance = leftSensorDistance;
-  // Sensors lose accuracy at very short distances, so if cone is closer to left sensor, use right sensor distance
-  // but generate distance that left sensor should see
-  if (rightSensorDistance > leftSensorDistance) {
-    sensorDistance = measure_up::lifter::wrist::wristWidth - rightSensorDistance - cone::coneWidth;
-  }
-
-  // * useful for wrist positions
-  // if (m_robotInstance == argos_lib::RobotInstance::Competition) {
-  //   sensorDistance = measure_up::lifter::wrist::wristWidth - sensorDistance;
-  // }
-
-  // * removed 1.5 inch fudge
-  units::inch_t gamePieceDepth = (measure_up::lifter::wrist::wristWidth / 2) - (sensorDistance + cone::coneWidth / 2);
-
-  return gamePieceDepth;
+units::inch_t IntakeSubsystem::GetIntakeDistance() {
+  return m_filteredConeOffset;
 }
 
 bool IntakeSubsystem::TofConeDetected() {
-  return units::make_unit<units::millimeter_t>(m_coneLeftIntakeSensor.GetRange()) < 16_in;
+  return ReadSensorDistance(m_coneLeftIntakeSensor).has_value() &&
+         ReadSensorDistance(m_coneRightIntakeSensor).has_value();
 }
 
 bool IntakeSubsystem::TofCubeDetected() {
-  return units::make_unit<units::millimeter_t>(m_cubeIntakeSensor.GetRange()) < 16_in;
+  return ReadSensorDistance(m_cubeIntakeSensor).has_value();
 }
 
 bool IntakeSubsystem::IsConeDetected() {
@@ -135,4 +118,40 @@ bool IntakeSubsystem::IsCubeDetected() {
 
 bool IntakeSubsystem::IsGamePieceDetected() {
   return std::abs(m_intakeMotor.GetStatorCurrent()) > 10.0;
+}
+
+std::optional<units::inch_t> IntakeSubsystem::ReadSensorDistance(frc::TimeOfFlight& sensor) {
+  units::inch_t rawSensorDistance = units::make_unit<units::millimeter_t>(sensor.GetRange());
+  if (rawSensorDistance > 16_in || rawSensorDistance < 0_in) {
+    return std::nullopt;
+  }
+  return rawSensorDistance;
+}
+
+std::optional<units::inch_t> IntakeSubsystem::GetRawConePosition() {
+  auto leftSensorDistance = ReadSensorDistance(m_coneLeftIntakeSensor);
+  auto rightSensorDistance = ReadSensorDistance(m_coneRightIntakeSensor);
+
+  frc::SmartDashboard::PutNumber("intake/raw left", leftSensorDistance ? leftSensorDistance.value().to<double>() : -1);
+  frc::SmartDashboard::PutNumber("intake/raw right",
+                                 rightSensorDistance ? rightSensorDistance.value().to<double>() : -1);
+
+  auto sensorDistance = leftSensorDistance;
+  // Sensors lose accuracy at very short distances, so if cone is closer to left sensor, use right sensor distance
+  // but generate distance that left sensor should see
+  if (rightSensorDistance && (!leftSensorDistance || rightSensorDistance.value() > leftSensorDistance.value())) {
+    sensorDistance = measure_up::lifter::wrist::wristWidth - rightSensorDistance.value() - cone::coneWidth;
+  }
+
+  // * useful for wrist positions
+  // if (m_robotInstance == argos_lib::RobotInstance::Competition) {
+  //   sensorDistance = measure_up::lifter::wrist::wristWidth - sensorDistance;
+  // }
+
+  // * removed 1.5 inch fudge
+  if (sensorDistance) {
+    return (measure_up::lifter::wrist::wristWidth / 2) - (sensorDistance.value() + cone::coneWidth / 2);
+  }
+
+  return std::nullopt;
 }
