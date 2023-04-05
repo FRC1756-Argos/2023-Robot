@@ -56,49 +56,48 @@ void AutonomousCableProtector2Gp::Initialize() {
               ScoringPosition{.column = ScoringColumn::rightGrid_rightCone, .row = ScoringRow::high},
           }
                        .ToPtr())
-          .AndThen(
-              (DriveToPosition{&m_drive,
-                               startingPosition,
-                               startingPosition.Rotation().Degrees(),
-                               interimWaypoint,
-                               interimWaypoint.Rotation().Degrees(),
-                               path_constraints::translation::cableProtectorBackOut,
-                               path_constraints::rotation::cableProtectorBackOut,
-                               0_fps,
-                               path_constraints::translation::cableProtectorBackOut.maxVelocity}
-                   .ToPtr()
-                   .AndThen(DriveToPosition{&m_drive,
-                                            interimWaypoint,
-                                            interimWaypoint.Rotation().Degrees(),
-                                            pickupPosition,
-                                            pickupPosition.Rotation().Degrees(),
-                                            path_constraints::translation::cableProtectorGridToGp3,
-                                            path_constraints::rotation::cableProtectorGridToGp3,
-                                            path_constraints::translation::cableProtectorGridToGp3.maxVelocity,
-                                            0_fps}
-                                .ToPtr()))
-                  .AlongWith(
-                      (SetArmPoseCommand{&m_lifter,
-                                         &m_bashGuard,
-                                         ScoringPosition{ScoringColumn::rightGrid_rightCone, ScoringRow::low},
-                                         frc::Translation2d(0_in, 0_in),
-                                         []() { return false; },
-                                         []() { return false; },
-                                         PathType::concaveDown,
-                                         speeds::armKinematicSpeeds::effectorFastVelocity,
-                                         speeds::armKinematicSpeeds::effectorFastAcceleration}
-                           .ToPtr())
-                          .AndThen(SetArmPoseCommand{&m_lifter,
+          .AndThen((DriveToPosition{&m_drive,
+                                    startingPosition,
+                                    startingPosition.Rotation().Degrees(),
+                                    interimWaypoint,
+                                    interimWaypoint.Rotation().Degrees(),
+                                    path_constraints::translation::cableProtectorBackOut,
+                                    path_constraints::rotation::cableProtectorBackOut,
+                                    0_fps,
+                                    path_constraints::translation::cableProtectorBackOut.maxVelocity}
+                        .ToPtr()
+                        .AndThen(DriveToPosition{&m_drive,
+                                                 interimWaypoint,
+                                                 interimWaypoint.Rotation().Degrees(),
+                                                 pickupPosition,
+                                                 pickupPosition.Rotation().Degrees(),
+                                                 path_constraints::translation::cableProtectorGridToGp3,
+                                                 path_constraints::rotation::cableProtectorGridToGp3,
+                                                 path_constraints::translation::cableProtectorGridToGp3.maxVelocity,
+                                                 0_fps}
+                                     .ToPtr()))
+                       .AlongWith((SetArmPoseCommand{&m_lifter,
                                                      &m_bashGuard,
-                                                     ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
-                                                     frc::Translation2d{0_in, 0_in},
+                                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                     frc::Translation2d(0_in, 0_in),
                                                      []() { return false; },
                                                      []() { return false; },
                                                      PathType::concaveDown,
                                                      speeds::armKinematicSpeeds::effectorFastVelocity,
                                                      speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                       .ToPtr()))
-                  .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr()))
+                                       .ToPtr())
+                                      .AndThen(SetArmPoseCommand{
+                                          &m_lifter,
+                                          &m_bashGuard,
+                                          ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
+                                          frc::Translation2d{0_in, 0_in},
+                                          []() { return false; },
+                                          []() { return false; },
+                                          PathType::concaveDown,
+                                          speeds::armKinematicSpeeds::effectorFastVelocity,
+                                          speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                                   .ToPtr()))
+                       .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr()))
           .AndThen((DriveToPosition{&m_drive,
                                     pickupPosition,
                                     pickupPosition.Rotation().Degrees(),
