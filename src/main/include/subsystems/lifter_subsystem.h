@@ -111,6 +111,10 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @return True when shoulder is in motion
   bool IsShoulderMoving();
 
+  /// @brief Checks if home file for arm extension exists
+  /// @return True -> File exists, False otherwise
+  bool ArmExtensionHomeFileExists();
+
   /// @brief Update arm home position
   void UpdateArmExtensionHome();
 
@@ -199,6 +203,12 @@ class LifterSubsystem : public frc2::SubsystemBase {
   void ResetPathFaults();
   bool IsFatalPathFault();
 
+  /// @brief Turn off soft limits for arm extension
+  void DisableArmExtensionSoftLimits();
+
+  /// @brief Turn on soft limits for arm extension
+  void EnableArmExtensionSoftLimits();
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
@@ -234,12 +244,6 @@ class LifterSubsystem : public frc2::SubsystemBase {
 
   /// @brief Turn off soft limits for wrist
   void DisableWristSoftLimits();
-
-  /// @brief Turn on soft limits for arm extension
-  void EnableArmExtensionSoftLimits();
-
-  /// @brief Turn off soft limits for arm extension
-  void DisableArmExtensionSoftLimits();
 
   /// @brief Turn on soft limits for arm shoulder
   void EnableShoulderSoftLimits();

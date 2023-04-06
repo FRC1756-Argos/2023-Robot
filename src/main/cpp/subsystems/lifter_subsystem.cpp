@@ -275,6 +275,18 @@ void LifterSubsystem::Periodic() {
   if (!m_extensionHomed && m_extensionHomingStorage.Load()) {
     InitializeArmExtensionHome();
   }
+
+  // REMOVEME debugging
+  frc::SmartDashboard::PutNumber("extensionHoming/Position (in)", GetArmExtension().to<double>());
+  frc::SmartDashboard::PutNumber("extensionHoming/Sens Position (sens units)",
+                                 sensor_conversions::lifter::arm_extension::ToSensorUnit(GetArmExtension()));
+  frc::SmartDashboard::PutBoolean("extensionHoming/Is extension homed?", IsArmExtensionHomed());
+
+  std::optional<units::degree_t> savedArmExtension = m_extensionHomingStorage.Load();
+  if (savedArmExtension) {
+    frc::SmartDashboard::PutNumber("extensionHoming/saved home pos (deg)", savedArmExtension.value().to<double>());
+  }
+  // ! end debugging
 }
 
 void LifterSubsystem::Disable() {
@@ -289,6 +301,11 @@ bool LifterSubsystem::IsShoulderMoving() {
   return std::abs(m_shoulderDrive.GetSelectedSensorVelocity()) > 10;
 }
 
+bool LifterSubsystem::ArmExtensionHomeFileExists() {
+  // Check if file exists by attempting to get value
+  return m_extensionHomingStorage.Load() != std::nullopt;
+}
+
 void LifterSubsystem::UpdateArmExtensionHome() {
   // This process assumes the arm is all the way back at it's minimal possible extension, and that extension matches home extension in measure up
   const units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_extensionEncoder.GetAbsolutePosition());
@@ -298,8 +315,6 @@ void LifterSubsystem::UpdateArmExtensionHome() {
     m_extensionHomed = false;
     return;  // Breaking error, exit homing
   }
-
-  // ! @todo The homing extension in measure_up is smaller than the min_extension, which means operator can't command to homing position as of right now...
 
   // Assume since we homed, we are at the homing extension
   m_armExtensionMotor.SetSelectedSensorPosition(
@@ -327,6 +342,13 @@ void LifterSubsystem::InitializeArmExtensionHome() {
 
   // Get current extension from drift
   units::inch_t currentExtension = measure_up::lifter::arm_extension::homeExtension + extensionDrift;
+
+  // REMOVEME debugging
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Current encoder (deg)", currentEncoder.to<double>());
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Angular drift (deg)", angularDrift.to<double>());
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Extension drift (in)", extensionDrift.to<double>());
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Current extension (in)", currentExtension.to<double>());
+  // ! end
 
   m_armExtensionMotor.SetSelectedSensorPosition(
       sensor_conversions::lifter::arm_extension::ToSensorUnit(currentExtension));

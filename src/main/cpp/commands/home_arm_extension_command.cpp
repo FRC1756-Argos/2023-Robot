@@ -9,34 +9,38 @@
 using namespace std::chrono_literals;
 
 HomeArmExtensionCommand::HomeArmExtensionCommand(LifterSubsystem& subsystem)
-    : m_LifterSubsystem(subsystem), m_armMovingDebounce{{0_ms, 250_ms}, true} {}
+    : m_lifterSubsystem(subsystem), m_armMovingDebounce{{0_ms, 250_ms}, true} {}
 
 // Called when the command is initially scheduled.
 void HomeArmExtensionCommand::Initialize() {
-  m_LifterSubsystem.SetArmExtensionSpeed(-0.1);
-  m_LifterSubsystem.SetExtensionManualOverride(false);
+  m_lifterSubsystem.SetArmExtensionSpeed(-0.1);
+  m_lifterSubsystem.SetExtensionManualOverride(false);
   m_startTime = std::chrono::steady_clock::now();
   m_armMovingDebounce.Reset(true);
+  // Disable soft limits while trying to home
+  m_lifterSubsystem.DisableArmExtensionSoftLimits();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void HomeArmExtensionCommand::Execute() {
-  if (m_LifterSubsystem.IsExtensionManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 4.0s) {
+  if (m_lifterSubsystem.IsExtensionManualOverride() || (std::chrono::steady_clock::now() - m_startTime) > 4.0s) {
     Cancel();
   } else {
-    m_LifterSubsystem.SetArmExtensionSpeed(-0.1);
+    m_lifterSubsystem.SetArmExtensionSpeed(-0.1);
   }
 }
 
 // Called once the command ends or is interrupted.
 void HomeArmExtensionCommand::End(bool interrupted) {
   if (!interrupted) {
-    m_LifterSubsystem.UpdateArmExtensionHome();
+    m_lifterSubsystem.UpdateArmExtensionHome();
+    // Re-enable soft limits
+    m_lifterSubsystem.EnableArmExtensionSoftLimits();
   }
-  m_LifterSubsystem.SetArmExtensionSpeed(0.0);
+  m_lifterSubsystem.SetArmExtensionSpeed(0.0);
 }
 
 // Returns true when the command should end.
 bool HomeArmExtensionCommand::IsFinished() {
-  return !m_armMovingDebounce(m_LifterSubsystem.IsArmExtensionMoving());
+  return !m_armMovingDebounce(m_lifterSubsystem.IsArmExtensionMoving());
 }

@@ -16,7 +16,7 @@ namespace encoder_conf {
       constexpr static auto range = ctre::phoenix::sensors::AbsoluteSensorRange::Signed_PlusMinus180;
     };
     struct extensionEncoderConf {
-      constexpr static auto direction = false;  // @todo adjust this appropriately
+      constexpr static auto direction = true;
       constexpr static auto range = ctre::phoenix::sensors::AbsoluteSensorRange::Unsigned_0_to_360;
     };
   }  // namespace comp_bot
