@@ -24,6 +24,7 @@
 #include "frc/StateSpaceUtil.h"
 #include "frc/estimator/SwerveDrivePoseEstimator.h"
 #include "utils/swerve_trapezoidal_profile.h"
+#include "utils/swerve_trapezoidal_spline.h"
 
 class SwerveModule {
  public:
@@ -187,6 +188,13 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   void StartDrivingProfile(SwerveTrapezoidalProfileSegment newProfile);
 
   /**
+   * @brief Start driving a new profile.  This also resets the finished flag
+   *
+   * @param newProfile Profile to follow with t=0 being the time this function is called
+   */
+  void StartDrivingProfile(SwerveTrapezoidalSpline newProfile);
+
+  /**
    * @brief Cancel the current driving profile without marking it complete
    */
   void CancelDrivingProfile();
@@ -275,6 +283,7 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   bool m_profileComplete;   ///< True once a drive profile has been completed
   bool m_manualOverride;
   std::unique_ptr<SwerveTrapezoidalProfileSegment> m_pActiveSwerveProfile;      ///< Profile to execute
+  std::unique_ptr<SwerveTrapezoidalSpline> m_pActiveSwerveSplineProfile;        ///< Profile to execute
   std::chrono::time_point<std::chrono::steady_clock> m_swerveProfileStartTime;  ///< Time when active profile began
   frc::ProfiledPIDController<units::radians>::Constraints m_rotationalPIDConstraints;
   frc2::PIDController m_linearPID;  ///< Correction parameters for x/y error when following drive profile
