@@ -72,3 +72,11 @@ void DriveToPositionSpline::End(bool interrupted) {
 bool DriveToPositionSpline::IsFinished() {
   return m_pDrive->ProfileIsComplete();
 }
+
+frc::Spline<3>::ControlVector ConvertToControlVector(units::foot_t x,
+                                                     units::foot_t y,
+                                                     units::foot_t tangentX,
+                                                     units::foot_t tangentY) {
+  return frc::Spline<3>::ControlVector{.x = {units::meter_t{x}.to<double>(), units::meter_t{tangentX}.to<double>()},
+                                       .y = {units::meter_t{y}.to<double>(), units::meter_t{tangentY}.to<double>()}};
+}

@@ -39,7 +39,7 @@ namespace place_positions {
         frc::Translation3d{
             field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
     constexpr auto loadingStationCube = frc::Pose2d{{place_positions::blue_alliance::loadingStationCube3d.X(),
-                                                     place_positions::blue_alliance::loadingStationCube3d.Y()},
+                                                     place_positions::blue_alliance::loadingStationCube3d.Y() - 6_in},
                                                     180_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
@@ -131,18 +131,12 @@ namespace game_piece_pickup {
     constexpr auto gamePiece0 = frc::Pose2d{
         {game_piece_pickup::blue_alliance::gamePiece0_3d.X(), game_piece_pickup::blue_alliance::gamePiece0_3d.Y()},
         0_deg};
-    constexpr auto gamePiece0rev_3d =
-        field_points::blue_alliance::game_pieces::gp_0 -
-        frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
-    constexpr auto gamePiece0rev = frc::Pose2d{
-        {game_piece_pickup::blue_alliance::gamePiece0_3d.X(), game_piece_pickup::blue_alliance::gamePiece0_3d.Y()},
-        0_deg};
     constexpr auto gamePiece1_3d =
-        field_points::blue_alliance::game_pieces::gp_1 +
-        frc::Translation3d{16_in, measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m};
-    constexpr auto gamePiece1 = frc::Pose2d{
-        {game_piece_pickup::blue_alliance::gamePiece1_3d.X(), game_piece_pickup::blue_alliance::gamePiece1_3d.Y()},
-        -90_deg};
+        field_points::blue_alliance::game_pieces::gp_1 -
+        frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
+    constexpr auto gamePiece1 = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece1_3d.X(),
+                                             game_piece_pickup::blue_alliance::gamePiece1_3d.Y() + 6_in},
+                                            -20_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto gamePiece0 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece0);

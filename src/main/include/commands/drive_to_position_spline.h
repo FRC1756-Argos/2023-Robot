@@ -49,3 +49,8 @@ class DriveToPositionSpline : public frc2::CommandHelper<frc2::CommandBase, Driv
   const units::feet_per_second_t m_initialVelocity;
   const units::feet_per_second_t m_finalVelocity;
 };
+
+frc::Spline<3>::ControlVector ConvertToControlVector(units::foot_t x,
+                                                     units::foot_t y,
+                                                     units::foot_t tangentX,
+                                                     units::foot_t tangentY);

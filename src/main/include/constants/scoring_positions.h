@@ -21,7 +21,7 @@ struct SetpointPosition {
 namespace scoring_positions {
 
   constexpr static auto visionScoringAlignOffset =
-      frc::Translation2d{1_in, 0_in};  ///< @note Should only change x value
+      frc::Translation2d{0_in, 0_in};  ///< @note Should only change x value
   constexpr static auto visionScoringPlacementOffset =
       frc::Translation2d{5_in, 0_in};  ///< @note Should only change x value
 
