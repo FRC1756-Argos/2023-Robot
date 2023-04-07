@@ -15,10 +15,11 @@ SwerveTrapezoidalSpline::SwerveTrapezoidalSpline(
     const std::vector<frc::Translation2d>& waypoints,
     const frc::Spline<3>::ControlVector finalPosition,
     const units::degree_t finalAngle,
+    const units::second_t turnDelay,
     const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
     const units::feet_per_second_t initialVelocity,
     const units::feet_per_second_t finalVelocity)
-    : m_initialAngle{initialAngle}, m_finalAngle{finalAngle} {
+    : m_initialAngle{initialAngle}, m_finalAngle{finalAngle}, m_turnDelay{turnDelay} {
   frc::TrajectoryConfig config{linearConstraints.maxVelocity, linearConstraints.maxAcceleration};
   config.SetStartVelocity(initialVelocity);
   config.SetEndVelocity(finalVelocity);
@@ -29,12 +30,27 @@ frc::Trajectory::State SwerveTrapezoidalSpline::Calculate(units::second_t time) 
   return m_pathTrajectory.Sample(time);
 }
 
+units::degree_t SwerveTrapezoidalSpline::HeadingSetpoint(units::second_t time) const {
+  if (time >= m_turnDelay) {
+    return m_finalAngle;
+  }
+  return m_initialAngle;
+}
+
 bool SwerveTrapezoidalSpline::IsFinished(units::second_t time) const {
   return time >= m_pathTrajectory.TotalTime();
 }
 
 units::degree_t SwerveTrapezoidalSpline::GetEndAngle() const {
   return m_finalAngle;
+}
+
+units::second_t SwerveTrapezoidalSpline::GetDriveTime() const {
+  return m_pathTrajectory.TotalTime();
+}
+
+void SwerveTrapezoidalSpline::SetTurnDelay(units::second_t delay) {
+  m_turnDelay = delay;
 }
 
 units::feet_per_second_t SwerveTrapezoidalSpline::GetXVelocity(const frc::Trajectory::State& state) const {

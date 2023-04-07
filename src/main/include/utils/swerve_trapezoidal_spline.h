@@ -24,6 +24,7 @@ class SwerveTrapezoidalSpline {
                           const std::vector<frc::Translation2d>& waypoints,
                           const frc::Spline<3>::ControlVector finalPosition,
                           const units::degree_t finalAngle,
+                          const units::second_t turnDelay,
                           const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
                           const units::feet_per_second_t initialVelocity = 0_fps,
                           const units::feet_per_second_t finalVelocity = 0_fps);
@@ -34,9 +35,13 @@ class SwerveTrapezoidalSpline {
   SwerveTrapezoidalSpline& operator=(SwerveTrapezoidalSpline&&) = delete;
 
   frc::Trajectory::State Calculate(units::second_t time) const;
+  units::degree_t HeadingSetpoint(units::second_t time) const;
   bool IsFinished(units::second_t time) const;
   units::degree_t GetEndAngle() const;
   units::degree_t GetOdometryOffset() const;
+
+  units::second_t GetDriveTime() const;
+  void SetTurnDelay(units::second_t delay);
 
   units::feet_per_second_t GetXVelocity(const frc::Trajectory::State& state) const;
   units::feet_per_second_t GetYVelocity(const frc::Trajectory::State& state) const;
@@ -45,4 +50,5 @@ class SwerveTrapezoidalSpline {
   frc::Trajectory m_pathTrajectory;
   units::degree_t m_initialAngle;
   units::degree_t m_finalAngle;
+  units::second_t m_turnDelay;
 };

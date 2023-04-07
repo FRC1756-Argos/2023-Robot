@@ -25,6 +25,7 @@ class DriveToPositionSpline : public frc2::CommandHelper<frc2::CommandBase, Driv
                         const std::vector<frc::Translation2d>& waypoints,
                         const frc::Spline<3>::ControlVector finalPosition,
                         const units::degree_t finalAngle,
+                        const units::second_t turnDelay,
                         const frc::TrapezoidProfile<units::inches>::Constraints linearConstraints,
                         const frc::TrapezoidProfile<units::degrees>::Constraints rotationalConstraints,
                         const units::feet_per_second_t initialVelocity = 0_fps,

@@ -77,6 +77,7 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
     , m_profileComplete(false)
     , m_manualOverride(false)
     , m_pActiveSwerveProfile(nullptr)
+    , m_pActiveSwerveSplineProfile(nullptr)
     , m_swerveProfileStartTime()
     , m_rotationalPIDConstraints{instance == argos_lib::RobotInstance::Competition ?
                                      frc::TrapezoidProfile<units::radians>::Constraints(
@@ -280,14 +281,22 @@ void SwerveDriveSubsystem::SwerveDrive(const double fwVelocity, const double sid
   // SET MODULES BASED OFF OF CONTROL MODE
   auto moduleStates = GetCurrentModuleStates();
   frc::Trajectory::State desiredProfileState;
-  if (m_followingProfile && m_pActiveSwerveProfile) {
+  units::degree_t desiredAngle;
+  if (m_followingProfile && (m_pActiveSwerveProfile || m_pActiveSwerveSplineProfile)) {
     const auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                    m_swerveProfileStartTime);
     // frc::SmartDashboard::PutNumber("SwerveFollower/Elapsed Time", elapsedTime.count());
-    desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
 
-    const auto controllerChassisSpeeds = m_followerController.Calculate(
-        m_poseEstimator.GetEstimatedPosition(), desiredProfileState, m_pActiveSwerveProfile->GetEndAngle());
+    if (m_pActiveSwerveProfile) {
+      desiredProfileState = m_pActiveSwerveProfile->Calculate(elapsedTime);
+      desiredAngle = m_pActiveSwerveProfile->GetEndAngle();
+    } else {
+      desiredProfileState = m_pActiveSwerveSplineProfile->Calculate(elapsedTime);
+      desiredAngle = m_pActiveSwerveSplineProfile->HeadingSetpoint(elapsedTime);
+    }
+
+    const auto controllerChassisSpeeds =
+        m_followerController.Calculate(m_poseEstimator.GetEstimatedPosition(), desiredProfileState, desiredAngle);
     moduleStates = m_swerveDriveKinematics.ToSwerveModuleStates(controllerChassisSpeeds);
     frc::SmartDashboard::PutNumber("SwerveFollower/Desired X",
                                    units::inch_t{desiredProfileState.pose.X()}.to<double>());
@@ -299,7 +308,7 @@ void SwerveDriveSubsystem::SwerveDrive(const double fwVelocity, const double sid
         "SwerveFollower/Desired Curvature",
         units::unit_t<units::compound_unit<units::degrees, units::inverse<units::feet>>>{desiredProfileState.curvature}
             .to<double>());
-    frc::SmartDashboard::PutNumber("SwerveFollower/End Angle", m_pActiveSwerveProfile->GetEndAngle().to<double>());
+    frc::SmartDashboard::PutNumber("SwerveFollower/End Angle", desiredAngle.to<double>());
     frc::SmartDashboard::PutNumber("SwerveFollower/Desired Vel",
                                    units::feet_per_second_t{desiredProfileState.velocity}.to<double>());
     frc::SmartDashboard::PutNumber("SwerveFollower/Current X", units::inch_t{GetContinuousOdometry().X()}.to<double>());
@@ -340,7 +349,8 @@ void SwerveDriveSubsystem::SwerveDrive(const double fwVelocity, const double sid
         "SwerveFollower/Error AngularVelocity (deg/s)",
         units::degrees_per_second_t(m_followerController.getThetaController().GetVelocityError()).to<double>());
 
-    if (m_pActiveSwerveProfile->IsFinished(elapsedTime)) {
+    if ((m_pActiveSwerveProfile && m_pActiveSwerveProfile->IsFinished(elapsedTime)) ||
+        (m_pActiveSwerveSplineProfile && m_pActiveSwerveSplineProfile->IsFinished(elapsedTime))) {
       // Finished profile
       m_followingProfile = true;
       m_profileComplete = true;
@@ -738,6 +748,17 @@ void SwerveDriveSubsystem::StartDrivingProfile(SwerveTrapezoidalProfileSegment n
   m_profileComplete = false;
   m_manualOverride = false;
   m_pActiveSwerveProfile = std::make_unique<SwerveTrapezoidalProfileSegment>(newProfile);
+  m_pActiveSwerveSplineProfile.reset();
+  m_followerController = frc::HolonomicDriveController(m_linearPID, m_linearPID, m_rotationalPID);
+  m_swerveProfileStartTime = std::chrono::steady_clock::now();
+  m_followingProfile = true;
+}
+
+void SwerveDriveSubsystem::StartDrivingProfile(SwerveTrapezoidalSpline newProfile) {
+  m_profileComplete = false;
+  m_manualOverride = false;
+  m_pActiveSwerveSplineProfile = std::make_unique<SwerveTrapezoidalSpline>(newProfile);
+  m_pActiveSwerveProfile.reset();
   m_followerController = frc::HolonomicDriveController(m_linearPID, m_linearPID, m_rotationalPID);
   m_swerveProfileStartTime = std::chrono::steady_clock::now();
   m_followingProfile = true;
