@@ -154,7 +154,7 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Left JS X       | Extend/retract arm |
 | Left JS Y       | Raise/lower arm |
 | Right JS X      | Rotate wrist CW/CCW |
-| Right JS Y      | Unused |
+| Right JS Y      | Stick down articulates oui oui placer outside of robot, Stick up commands the opposite direction |
 | A               | Home Shoulder (hold with <kbd>B</kbd>) |
 | B               | Home Shoulder (hold with <kbd>A</kbd>) |
 | X               | Home Wrist (hold with <kbd>Y</kbd>) |
@@ -171,6 +171,12 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |
 | Right JS Button | Unused |
+
+## Cone Placer / Oui Oui Placer Startup
+
+In order for the robot to function correctly, the carbon fiber arm that holds the cone slamming
+mechanism must be started such that the cone is at the top of its arc with the carbon fiber rod
+pointing twords the sky against the mechanical n-stop.
 
 ## Software Checkout
 

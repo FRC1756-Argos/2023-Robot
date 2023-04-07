@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <argos_lib/general/angle_utils.h>
 #include <frc/geometry/Translation2d.h>
 #include <units/angle.h>
 #include <units/length.h>
@@ -75,6 +76,12 @@ namespace measure_up {
   }  // namespace bash
   namespace oui_oui_place {
     constexpr auto lateralOffset = 7_in;
+    // Maximum oui oui can rotate outside the back of the robot
+    constexpr auto minAngle = -283_deg;
+    // Maximum oui oui can rotate inside the robot
+    constexpr auto maxAngle = -36_deg;
+    constexpr units::degree_t stowAngle = maxAngle;
+    constexpr units::degree_t placeAngle = minAngle;
   }  // namespace oui_oui_place
   namespace camera {
     constexpr auto cameraX = 0_in;
