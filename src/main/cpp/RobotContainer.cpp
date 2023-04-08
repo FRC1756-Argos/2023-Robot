@@ -556,6 +556,8 @@ void RobotContainer::ConfigureBindings() {
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
 
+  startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+
   // * Uncomment this line to re-enable bash homing
   // startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
