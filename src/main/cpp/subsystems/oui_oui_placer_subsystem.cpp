@@ -38,7 +38,7 @@ OuiOuiPlacerSubsystem::OuiOuiPlacerSubsystem(argos_lib::RobotInstance instance)
   EnablePlacerSoftLimits();
 }
 void OuiOuiPlacerSubsystem::SetOuiOuiSpeed(double percentOutput) {
-  std::clamp<double>(percentOutput, -1.0, 1.0);  // Enforce bounds
+  percentOutput = std::clamp<double>(percentOutput, -1.0, 1.0);  // Enforce bounds
   m_ouiOuiDrive.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, percentOutput);
 }
 

@@ -24,5 +24,5 @@ class OuiOuiPlaceConeCommand : public frc2::CommandHelper<frc2::CommandBase, Oui
 
  private:
   OuiOuiPlacerSubsystem* m_ouiOuiPlacer;
-  std::chrono::_V2::steady_clock::time_point m_startTime;
+  std::chrono::steady_clock::time_point m_startTime;
 };

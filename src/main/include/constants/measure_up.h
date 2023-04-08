@@ -75,6 +75,7 @@ namespace measure_up {
     constexpr auto maxExtension = 25_in;
   }  // namespace bash
   namespace oui_oui_place {
+    constexpr auto lateralOffset = 7_in;
     // Maximum oui oui can rotate outside the back of the robot
     constexpr auto minAngle = -283_deg;
     // Maximum oui oui can rotate inside the robot

@@ -169,7 +169,7 @@ bool AutonomousLoadingStationConeCubeScore::IsFinished() {
   return m_allCommands.get()->IsFinished();
 }
 
-/* Autonomous Command Meathods */
+/* Autonomous Command Methods */
 std::string AutonomousLoadingStationConeCubeScore::GetName() const {
   return "Loading Station Cone Cube";
 }
