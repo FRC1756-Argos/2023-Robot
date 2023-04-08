@@ -33,11 +33,7 @@ BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
                                          motorConfig::practice_bot::bash_guard::extension>(
       m_bashGuard, 100_ms, instance);
 
-  // Assume bash guard always starts at home position
-  m_bashGuard.SetSelectedSensorPosition(sensor_conversions::bashguard::ToSensorUnit(measure_up::bash::homeExtension));
-  // Always constant true/false
-  m_bashGuardHomed = true;
-  m_bashHomeFailed = false;
+  UpdateBashGuardHome();
 }
 
 bool BashGuardSubsystem::IsBashGuardMoving() {
