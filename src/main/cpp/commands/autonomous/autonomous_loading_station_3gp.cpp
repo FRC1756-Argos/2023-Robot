@@ -75,28 +75,29 @@ void AutonomousLoadingStation3GP::Initialize() {
   m_allCommands =
       InitializeOdometryCommand{&m_drive, {startingPosition}}
           .ToPtr()
-          .AndThen(OuiOuiPlaceConeCommand{&m_placer}.ToPtr())
-          // Drive forward to game piece 0
-          .AlongWith(frc2::WaitCommand(300_ms).ToPtr().AndThen(
-              DriveToPositionAbsolute{&m_drive,
-                                      pickupPosition1,
-                                      pickupPosition1.Rotation().Degrees(),
-                                      path_constraints::translation::loadingStationReverseBackOut,
-                                      path_constraints::rotation::loadingStationReverseBackOut,
-                                      0_fps,
-                                      0_fps}
-                  .ToPtr()
-                  .AlongWith(SetArmPoseCommand{&m_lifter,
-                                               &m_bashGuard,
-                                               ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
-                                               frc::Translation2d{0_in, 0_in},
-                                               []() { return false; },
-                                               []() { return false; },
-                                               PathType::componentWise,
-                                               speeds::armKinematicSpeeds::effectorFastVelocity,
-                                               speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                 .ToPtr())
-                  .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr())))
+          .AndThen(
+              (OuiOuiPlaceConeCommand{&m_placer}.ToPtr())
+                  // Drive forward to game piece 0
+                  .AlongWith(frc2::WaitCommand(300_ms).ToPtr().AndThen(
+                      DriveToPositionAbsolute{&m_drive,
+                                              pickupPosition1,
+                                              pickupPosition1.Rotation().Degrees(),
+                                              path_constraints::translation::loadingStationReverseBackOut,
+                                              path_constraints::rotation::loadingStationReverseBackOut,
+                                              0_fps,
+                                              0_fps}
+                          .ToPtr()
+                          .AlongWith(SetArmPoseCommand{&m_lifter,
+                                                       &m_bashGuard,
+                                                       ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
+                                                       frc::Translation2d{0_in, 0_in},
+                                                       []() { return false; },
+                                                       []() { return false; },
+                                                       PathType::componentWise,
+                                                       speeds::armKinematicSpeeds::effectorFastVelocity,
+                                                       speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                         .ToPtr())
+                          .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr()))))
           // Drive back to place (and turn)
           .AndThen(
               // Drive back to waypoint with turn
@@ -137,36 +138,36 @@ void AutonomousLoadingStation3GP::Initialize() {
                   .AlongWith(frc2::WaitCommand{750_ms}.ToPtr().AndThen(
                       frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())))
           // Drive back to pickup second cube
-          .AndThen(
-              DriveToPositionSpline{&m_drive,
-                                    splineScoreToGp1Cp0,
-                                    placePosition.Rotation().Degrees(),
-                                    splineScoreToGp1Waypoints,
-                                    splineScoreToGp1Cp1,
-                                    pickupPosition2.Rotation().Degrees(),
-                                    1.5_s,
-                                    path_constraints::translation::loadingStationBackOut_3gp,
-                                    path_constraints::rotation::loadingStationBackOut_3gp,
-                                    0_fps,
-                                    0_fps}
-                  .ToPtr()
-                  // Place cube
-                  .AlongWith(
-                      frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}
-                          .ToPtr()
-                          .AlongWith(frc2::WaitCommand{500_ms}.ToPtr())
-                          .AndThen(frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())
-                          .AndThen(SetArmPoseCommand{&m_lifter,
-                                                     &m_bashGuard,
-                                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
-                                                     frc::Translation2d{0_in, 0_in},
-                                                     []() { return false; },
-                                                     []() { return false; },
-                                                     PathType::componentWise,
-                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
-                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                       .ToPtr())
-                          .AndThen((SetArmPoseCommand{&m_lifter,
+          .AndThen(DriveToPositionSpline{&m_drive,
+                                         splineScoreToGp1Cp0,
+                                         placePosition.Rotation().Degrees(),
+                                         splineScoreToGp1Waypoints,
+                                         splineScoreToGp1Cp1,
+                                         pickupPosition2.Rotation().Degrees(),
+                                         1.5_s,
+                                         path_constraints::translation::loadingStationBackOut_3gp,
+                                         path_constraints::rotation::loadingStationBackOut_3gp,
+                                         0_fps,
+                                         0_fps}
+                       .ToPtr()
+                       // Place cube
+                       .AlongWith(
+                           frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}
+                               .ToPtr()
+                               .AlongWith(frc2::WaitCommand{500_ms}.ToPtr())
+                               .AndThen(frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())
+                               .AndThen(SetArmPoseCommand{&m_lifter,
+                                                          &m_bashGuard,
+                                                          ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                          frc::Translation2d{0_in, 0_in},
+                                                          []() { return false; },
+                                                          []() { return false; },
+                                                          PathType::componentWise,
+                                                          speeds::armKinematicSpeeds::effectorFastVelocity,
+                                                          speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                            .ToPtr())
+                               .AndThen(
+                                   (SetArmPoseCommand{&m_lifter,
                                                       &m_bashGuard,
                                                       ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
                                                       frc::Translation2d{0_in, 0_in},
@@ -217,7 +218,17 @@ void AutonomousLoadingStation3GP::Initialize() {
                            frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())))
           // Place game piece
           .AndThen(frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}.ToPtr().AlongWith(
-              frc2::WaitCommand{500_ms}.ToPtr()));
+              frc2::WaitCommand{200_ms}.ToPtr().AndThen(
+                  SetArmPoseCommand{&m_lifter,
+                                    &m_bashGuard,
+                                    ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                    frc::Translation2d{0_in, 0_in},
+                                    []() { return false; },
+                                    []() { return false; },
+                                    PathType::componentWise,
+                                    speeds::armKinematicSpeeds::effectorFastVelocity,
+                                    speeds::armKinematicSpeeds::effectorFastAcceleration}
+                      .ToPtr())));
   m_allCommands.get()->Initialize();
 }
 

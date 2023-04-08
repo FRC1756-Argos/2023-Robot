@@ -36,7 +36,7 @@ bool OuiOuiPlaceConeCommand::IsFinished() {
   auto curTime = std::chrono::steady_clock::now();
   const auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime);
   if (timePassed.count() >= timeouts::robotSlamCone.to<double>()) {
-    Cancel();
+    return true;
   }
   if (m_ouiOuiPlacer->GetOuiOuiAngle() <= measure_up::oui_oui_place::minAngle) {
     return true;
