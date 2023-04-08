@@ -136,7 +136,7 @@ namespace game_piece_pickup {
         frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
     constexpr auto gamePiece1 = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece1_3d.X(),
                                              game_piece_pickup::blue_alliance::gamePiece1_3d.Y() + 6_in},
-                                            -20_deg};
+                                            -90_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto gamePiece0 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece0);

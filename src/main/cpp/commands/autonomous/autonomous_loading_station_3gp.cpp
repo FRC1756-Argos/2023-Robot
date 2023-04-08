@@ -42,7 +42,7 @@ void AutonomousLoadingStation3GP::Initialize() {
 
   std::vector<frc::Translation2d> splineGp0ToScoreWaypointsBlue{{14.203_ft, 15.664_ft}};
   auto splineGp0ToScoreCp0Blue = ConvertToControlVector(21.562_ft, 15.000_ft, -4.692_ft, 0_ft);
-  auto splineGp0ToScoreCp1Blue = ConvertToControlVector(6.129_ft, 14.515_ft, -6.587_ft, 0_ft);
+  auto splineGp0ToScoreCp1Blue = ConvertToControlVector(8.3_ft, 14.515_ft, -6.587_ft, 0_ft);
 
   auto splineGp0ToScoreCp0 = blueAlliance ? splineGp0ToScoreCp0Blue : utils::ReflectFieldPoint(splineGp0ToScoreCp0Blue);
   auto splineGp0ToScoreCp1 = blueAlliance ? splineGp0ToScoreCp1Blue : utils::ReflectFieldPoint(splineGp0ToScoreCp1Blue);
@@ -50,8 +50,8 @@ void AutonomousLoadingStation3GP::Initialize() {
       blueAlliance ? splineGp0ToScoreWaypointsBlue : utils::ReflectFieldPoint(splineGp0ToScoreWaypointsBlue);
 
   std::vector<frc::Translation2d> splineScoreToGp1WaypointsBlue{};
-  auto splineScoreToGp1Cp0Blue = ConvertToControlVector(6.129_ft, 14.515_ft, 6.573_ft, 0_ft);
-  auto splineScoreToGp1Cp1Blue = ConvertToControlVector(23.188_ft, 12.725_ft, 0_ft, -14.137_ft);
+  auto splineScoreToGp1Cp0Blue = ConvertToControlVector(8.3_ft, 14.515_ft, 6.573_ft, 0_ft);
+  auto splineScoreToGp1Cp1Blue = ConvertToControlVector(24_ft, 12.725_ft, 0_ft, -14.137_ft);
 
   auto splineScoreToGp1Cp0 = blueAlliance ? splineScoreToGp1Cp0Blue : utils::ReflectFieldPoint(splineScoreToGp1Cp0Blue);
   auto splineScoreToGp1Cp1 = blueAlliance ? splineScoreToGp1Cp1Blue : utils::ReflectFieldPoint(splineScoreToGp1Cp1Blue);
@@ -59,8 +59,8 @@ void AutonomousLoadingStation3GP::Initialize() {
       blueAlliance ? splineScoreToGp1WaypointsBlue : utils::ReflectFieldPoint(splineScoreToGp1WaypointsBlue);
 
   std::vector<frc::Translation2d> splineGp1ToScoreWaypointsBlue{};
-  auto splineGp1ToScoreCp0Blue = ConvertToControlVector(23.188_ft, 12.725_ft, 0_ft, 14.137_ft);
-  auto splineGp1ToScoreCp1Blue = ConvertToControlVector(6.129_ft, 14.515_ft, -6.573_ft, 0_ft);
+  auto splineGp1ToScoreCp0Blue = ConvertToControlVector(24_ft, 12.725_ft, 0_ft, 14.137_ft);
+  auto splineGp1ToScoreCp1Blue = ConvertToControlVector(8.3_ft, 13.5_ft, -6.573_ft, 0_ft);
 
   auto splineGp1ToScoreCp0 = blueAlliance ? splineGp1ToScoreCp0Blue : utils::ReflectFieldPoint(splineGp1ToScoreCp0Blue);
   auto splineGp1ToScoreCp1 = blueAlliance ? splineGp1ToScoreCp1Blue : utils::ReflectFieldPoint(splineGp1ToScoreCp1Blue);
