@@ -13,6 +13,7 @@
 #include "commands/drive_to_position_absolute.h"
 #include "commands/drive_to_position_spline.h"
 #include "commands/initialize_odometry_command.h"
+#include "commands/oui_oui_place_cone_command.h"
 #include "commands/place_cone_command.h"
 #include "commands/set_arm_pose_command.h"
 
@@ -20,12 +21,14 @@ AutonomousLoadingStation3GP::AutonomousLoadingStation3GP(SwerveDriveSubsystem& d
                                                          BashGuardSubsystem& bash,
                                                          LifterSubsystem& lifter,
                                                          IntakeSubsystem& intake,
-                                                         SimpleLedSubsystem& leds)
+                                                         SimpleLedSubsystem& leds,
+                                                         OuiOuiPlacerSubsystem& placer)
     : m_drive{drive}
     , m_bashGuard{bash}
     , m_lifter{lifter}
     , m_intake{intake}
     , m_leds{leds}
+    , m_placer{placer}
     , m_allCommands{frc2::InstantCommand{[]() {}}} {}
 
 // Called when the command is initially scheduled.
@@ -72,26 +75,28 @@ void AutonomousLoadingStation3GP::Initialize() {
   m_allCommands =
       InitializeOdometryCommand{&m_drive, {startingPosition}}
           .ToPtr()
+          .AndThen(OuiOuiPlaceConeCommand{&m_placer}.ToPtr())
           // Drive forward to game piece 0
-          .AndThen(DriveToPositionAbsolute{&m_drive,
-                                           pickupPosition1,
-                                           pickupPosition1.Rotation().Degrees(),
-                                           path_constraints::translation::loadingStationReverseBackOut,
-                                           path_constraints::rotation::loadingStationReverseBackOut,
-                                           0_fps,
-                                           0_fps}
-                       .ToPtr()
-                       .AlongWith(SetArmPoseCommand{&m_lifter,
-                                                    &m_bashGuard,
-                                                    ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
-                                                    frc::Translation2d{0_in, 0_in},
-                                                    []() { return false; },
-                                                    []() { return false; },
-                                                    PathType::componentWise,
-                                                    speeds::armKinematicSpeeds::effectorFastVelocity,
-                                                    speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                      .ToPtr())
-                       .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr()))
+          .AlongWith(frc2::WaitCommand(300_ms).ToPtr().AndThen(
+              DriveToPositionAbsolute{&m_drive,
+                                      pickupPosition1,
+                                      pickupPosition1.Rotation().Degrees(),
+                                      path_constraints::translation::loadingStationReverseBackOut,
+                                      path_constraints::rotation::loadingStationReverseBackOut,
+                                      0_fps,
+                                      0_fps}
+                  .ToPtr()
+                  .AlongWith(SetArmPoseCommand{&m_lifter,
+                                               &m_bashGuard,
+                                               ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
+                                               frc::Translation2d{0_in, 0_in},
+                                               []() { return false; },
+                                               []() { return false; },
+                                               PathType::componentWise,
+                                               speeds::armKinematicSpeeds::effectorFastVelocity,
+                                               speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                 .ToPtr())
+                  .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr())))
           // Drive back to place (and turn)
           .AndThen(
               // Drive back to waypoint with turn

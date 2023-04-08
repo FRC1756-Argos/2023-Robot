@@ -13,6 +13,7 @@
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
+#include "subsystems/oui_oui_placer_subsystem.h"
 #include "subsystems/simple_led_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
 
@@ -24,7 +25,8 @@ class AutonomousLoadingStation3GP
                               BashGuardSubsystem& bash,
                               LifterSubsystem& lifter,
                               IntakeSubsystem& intake,
-                              SimpleLedSubsystem& leds);
+                              SimpleLedSubsystem& leds,
+                              OuiOuiPlacerSubsystem& placer);
 
   void Initialize() override;
 
@@ -49,6 +51,7 @@ class AutonomousLoadingStation3GP
   LifterSubsystem& m_lifter;
   IntakeSubsystem& m_intake;
   SimpleLedSubsystem& m_leds;
+  OuiOuiPlacerSubsystem& m_placer;
 
   frc2::CommandPtr m_allCommands;
 };
