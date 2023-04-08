@@ -32,6 +32,8 @@ BashGuardSubsystem::BashGuardSubsystem(argos_lib::RobotInstance instance)
   argos_lib::falcon_config::FalconConfig<motorConfig::comp_bot::bash_guard::extension,
                                          motorConfig::practice_bot::bash_guard::extension>(
       m_bashGuard, 100_ms, instance);
+
+  UpdateBashGuardHome();
 }
 
 bool BashGuardSubsystem::IsBashGuardMoving() {
