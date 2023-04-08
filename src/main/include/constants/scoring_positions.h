@@ -27,6 +27,7 @@ namespace scoring_positions {
 
   namespace lifter_extension_end {
     constexpr static units::inch_t robotPlacingOffsetX = measure_up::chassis::length / 2 + measure_up::bumperExtension;
+    constexpr static auto floppyConeOffset = frc::Translation2d(0_in, 1.5_in);
 
     constexpr static SetpointPosition coneLow(frc::Translation2d(24.5_in, 19_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneLow_wristInverted(frc::Translation2d(24.5_in, 19_in),
@@ -37,6 +38,23 @@ namespace scoring_positions {
     constexpr static SetpointPosition coneHigh(frc::Translation2d(53_in, 54.5_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(51_in, 54_in),
                                                              BashGuardPosition::Retracted);
+
+    constexpr static SetpointPosition coneLow_Floppy(coneLow.lifterPosition + floppyConeOffset,
+                                                     coneLow.bashGuardPosition);
+    constexpr static SetpointPosition coneLow_wristInverted_Floppy(coneLow_wristInverted.lifterPosition +
+                                                                       floppyConeOffset,
+                                                                   coneLow_wristInverted.bashGuardPosition);
+    constexpr static SetpointPosition coneMid_Floppy(coneMid.lifterPosition + floppyConeOffset,
+                                                     coneMid.bashGuardPosition);
+    constexpr static SetpointPosition coneMid_wristInverted_Floppy(coneMid_wristInverted.lifterPosition +
+                                                                       floppyConeOffset,
+                                                                   coneMid_wristInverted.bashGuardPosition);
+    constexpr static SetpointPosition coneHigh_Floppy(coneHigh.lifterPosition + floppyConeOffset,
+                                                      coneHigh.bashGuardPosition);
+    constexpr static SetpointPosition coneHigh_wristInverted_Floppy(coneHigh_wristInverted.lifterPosition +
+                                                                        floppyConeOffset,
+                                                                    coneHigh_wristInverted.bashGuardPosition);
+
     constexpr static SetpointPosition cubeLow(frc::Translation2d(20.5_in, 23_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow_wristInverted(frc::Translation2d(20.5_in, 23_in),
                                                             BashGuardPosition::Retracted);
@@ -81,6 +99,10 @@ constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition grid
                                        scoring_positions::lifter_extension_end::coneHigh;
     } else {
       return std::nullopt;
+    }
+    if (gridPosition.column == ScoringColumn::rightGrid_leftCone) {
+      targetPosition.lifterPosition =
+          scoring_positions::lifter_extension_end::floppyConeOffset + targetPosition.lifterPosition;
     }
   } else if (gridPosition.column == ScoringColumn::leftGrid_middleCube ||
              gridPosition.column == ScoringColumn::middleGrid_middleCube ||
