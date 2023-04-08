@@ -142,10 +142,10 @@ LimelightTarget::tValues LimelightTarget::GetTarget(bool filter) {
   m_yaw = units::make_unit<units::degree_t>(table->GetNumber("tx", 0.0));
   m_pitch = units::make_unit<units::degree_t>(table->GetNumber("ty", 0.0));
 
-  // REMOVEME debugging
+  // * debugging
   frc::SmartDashboard::PutNumber("VisionSubsystem/RawPitch (deg)", m_pitch.to<double>());
   frc::SmartDashboard::PutNumber("VisionSubsystem/RawYaw (deg)", m_yaw.to<double>());
-  // ! end debugging
+  // * end debugging
 
   // If filter needs to reset, reset filter
   if (m_hasTargets && m_resetFilterFlag) {
@@ -157,10 +157,10 @@ LimelightTarget::tValues LimelightTarget::GetTarget(bool filter) {
     m_yaw = m_txFilter.Calculate(m_yaw);
     m_pitch = m_tyFilter.Calculate(m_pitch);
 
-    // REMOVEME debugging
+    // * debugging
     frc::SmartDashboard::PutNumber("VisionSubsystem/FilteredPitch (deg)", m_pitch.to<double>());
     frc::SmartDashboard::PutNumber("VisionSubsystem/FilteredYaw (deg)", m_yaw.to<double>());
-    // ! end debugging
+    // * end debugging
   }
 
   m_area = (table->GetNumber("ta", 0.0));

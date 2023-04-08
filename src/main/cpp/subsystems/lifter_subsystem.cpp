@@ -276,7 +276,7 @@ void LifterSubsystem::Periodic() {
     InitializeArmExtensionHome();
   }
 
-  // REMOVEME debugging
+  // * extension debugging
   frc::SmartDashboard::PutNumber("extensionHoming/Position (in)", GetArmExtension().to<double>());
   frc::SmartDashboard::PutNumber("extensionHoming/Sens Position (sens units)",
                                  sensor_conversions::lifter::arm_extension::ToSensorUnit(GetArmExtension()));
@@ -286,7 +286,7 @@ void LifterSubsystem::Periodic() {
   if (savedArmExtension) {
     frc::SmartDashboard::PutNumber("extensionHoming/saved home pos (deg)", savedArmExtension.value().to<double>());
   }
-  // ! end debugging
+  // * end debugging
 }
 
 void LifterSubsystem::Disable() {
@@ -343,12 +343,12 @@ void LifterSubsystem::InitializeArmExtensionHome() {
   // Get current extension from drift
   units::inch_t currentExtension = measure_up::lifter::arm_extension::homeExtension + extensionDrift;
 
-  // REMOVEME debugging
+  // * debugging
   frc::SmartDashboard::PutNumber("extensionHoming/init/Current encoder (deg)", currentEncoder.to<double>());
   frc::SmartDashboard::PutNumber("extensionHoming/init/Angular drift (deg)", angularDrift.to<double>());
   frc::SmartDashboard::PutNumber("extensionHoming/init/Extension drift (in)", extensionDrift.to<double>());
   frc::SmartDashboard::PutNumber("extensionHoming/init/Current extension (in)", currentExtension.to<double>());
-  // ! end
+  // * end
 
   m_armExtensionMotor.SetSelectedSensorPosition(
       sensor_conversions::lifter::arm_extension::ToSensorUnit(currentExtension));
