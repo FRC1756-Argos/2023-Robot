@@ -38,23 +38,6 @@ namespace scoring_positions {
     constexpr static SetpointPosition coneHigh(frc::Translation2d(53_in, 54.5_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneHigh_wristInverted(frc::Translation2d(51_in, 54_in),
                                                              BashGuardPosition::Retracted);
-
-    constexpr static SetpointPosition coneLow_Floppy(coneLow.lifterPosition + floppyConeOffset,
-                                                     coneLow.bashGuardPosition);
-    constexpr static SetpointPosition coneLow_wristInverted_Floppy(coneLow_wristInverted.lifterPosition +
-                                                                       floppyConeOffset,
-                                                                   coneLow_wristInverted.bashGuardPosition);
-    constexpr static SetpointPosition coneMid_Floppy(coneMid.lifterPosition + floppyConeOffset,
-                                                     coneMid.bashGuardPosition);
-    constexpr static SetpointPosition coneMid_wristInverted_Floppy(coneMid_wristInverted.lifterPosition +
-                                                                       floppyConeOffset,
-                                                                   coneMid_wristInverted.bashGuardPosition);
-    constexpr static SetpointPosition coneHigh_Floppy(coneHigh.lifterPosition + floppyConeOffset,
-                                                      coneHigh.bashGuardPosition);
-    constexpr static SetpointPosition coneHigh_wristInverted_Floppy(coneHigh_wristInverted.lifterPosition +
-                                                                        floppyConeOffset,
-                                                                    coneHigh_wristInverted.bashGuardPosition);
-
     constexpr static SetpointPosition cubeLow(frc::Translation2d(20.5_in, 23_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow_wristInverted(frc::Translation2d(20.5_in, 23_in),
                                                             BashGuardPosition::Retracted);
