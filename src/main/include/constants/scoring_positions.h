@@ -27,6 +27,7 @@ namespace scoring_positions {
 
   namespace lifter_extension_end {
     constexpr static units::inch_t robotPlacingOffsetX = measure_up::chassis::length / 2 + measure_up::bumperExtension;
+    constexpr static auto floppyConeOffset = frc::Translation2d(0_in, 1.5_in);
 
     constexpr static SetpointPosition coneLow(frc::Translation2d(24.5_in, 19_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneLow_wristInverted(frc::Translation2d(24.5_in, 19_in),
@@ -81,6 +82,10 @@ constexpr std::optional<SetpointPosition> GetTargetPosition(ScoringPosition grid
                                        scoring_positions::lifter_extension_end::coneHigh;
     } else {
       return std::nullopt;
+    }
+    if (gridPosition.column == ScoringColumn::rightGrid_leftCone) {
+      targetPosition.lifterPosition =
+          scoring_positions::lifter_extension_end::floppyConeOffset + targetPosition.lifterPosition;
     }
   } else if (gridPosition.column == ScoringColumn::leftGrid_middleCube ||
              gridPosition.column == ScoringColumn::middleGrid_middleCube ||

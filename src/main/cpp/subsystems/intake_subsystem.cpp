@@ -117,7 +117,11 @@ bool IntakeSubsystem::IsCubeDetected() {
 }
 
 bool IntakeSubsystem::IsGamePieceDetected() {
-  return std::abs(m_intakeMotor.GetStatorCurrent()) > 10.0;
+  return std::abs(m_intakeMotor.GetStatorCurrent()) > 7.0;
+}
+
+bool IntakeSubsystem::IsGamepieceLost() {
+  return (m_haveCone || m_haveCube) && !IsGamePieceDetected();
 }
 
 std::optional<units::inch_t> IntakeSubsystem::ReadSensorDistance(frc::TimeOfFlight& sensor) {

@@ -383,6 +383,8 @@ void RobotContainer::ConfigureBindings() {
   auto coneDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsConeDetected(); }});
   auto cubeDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsCubeDetected(); }});
 
+  auto gamepieceLostTrigger = (frc2::Trigger{[this]() { return m_intake.IsGamepieceLost(); }});
+
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
   auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
@@ -554,7 +556,8 @@ void RobotContainer::ConfigureBindings() {
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
 
-  startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
+  // * Uncomment this line to re-enable bash homing
+  // startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
   startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
@@ -599,6 +602,15 @@ void RobotContainer::ConfigureBindings() {
                 [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kReallyGreen, false); },
                 500_ms);
           }).ToPtr());
+  (gamepieceLostTrigger.Debounce(200_ms) && !intakeConeTrigger && !intakeCubeTrigger && !scoreConeTrigger &&
+   !scoreCubeTrigger)
+      .OnTrue(frc2::InstantCommand([this]() {
+                m_controllers.DriverController().SetVibration(
+                    argos_lib::TemporaryVibrationPattern(argos_lib::VibrationAlternatePulse(250_ms, 1.0), 500_ms));
+                m_ledSubSystem.TemporaryAnimate(
+                    [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kWhite, false); },
+                    500_ms);
+              }).ToPtr());
 
   ledMissileSwitchTrigger.OnTrue(frc2::InstantCommand(
                                      [this]() {
