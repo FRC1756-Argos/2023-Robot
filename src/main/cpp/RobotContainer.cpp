@@ -318,11 +318,13 @@ RobotContainer::RobotContainer()
         double ouiOuiSpeed = m_ouiOuiSpeed.Map(
             m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kRightHand));
 
-        if (ouiOuiSpeed == 0.0) {
-          m_ouiOuiPlacerSubsystem.StopOuiOuiPlacer();
-        } else {
-          // Inverted so it's more intuitive for operator
-          m_ouiOuiPlacerSubsystem.SetOuiOuiSpeed(-ouiOuiSpeed);
+        if (frc::DriverStation::IsTeleop()) {
+          if (ouiOuiSpeed == 0.0) {
+            m_ouiOuiPlacerSubsystem.StopOuiOuiPlacer();
+          } else {
+            // Inverted so it's more intuitive for operator
+            m_ouiOuiPlacerSubsystem.SetOuiOuiSpeed(-ouiOuiSpeed, true);
+          }
         }
       },
       {&m_ouiOuiPlacerSubsystem}));
@@ -391,7 +393,8 @@ void RobotContainer::ConfigureBindings() {
 
   auto bashGuardHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_bash.IsBashGuardHomed(); }});
 
-  auto extensionHomeRequiredTrigger = (frc2::Trigger{[this] { return !m_lifter.ArmExtensionHomeFileExists(); }});
+  auto extensionHomeRequiredTrigger =
+      (frc2::Trigger{[this] { return !m_lifter.IsArmExtensionHomed() && !m_lifter.ArmExtensionHomeFileExists(); }});
 
   auto startupBashGuardHomeTrigger = robotEnableTrigger && bashGuardHomeRequiredTrigger;
 

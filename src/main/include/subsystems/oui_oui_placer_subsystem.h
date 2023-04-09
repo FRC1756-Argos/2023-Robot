@@ -5,6 +5,7 @@
 #pragma once
 
 #include <argos_lib/config/config_types.h>
+#include <argos_lib/general/debouncer.h>
 #include <argos_lib/general/nt_motor_pid_tuner.h>
 #include <ctre/Phoenix.h>
 #include <frc2/command/SubsystemBase.h>
@@ -19,8 +20,9 @@ class OuiOuiPlacerSubsystem : public frc2::SubsystemBase {
   void Periodic() override;
 
   /// @brief Sets the speed of placer mechanism motor
-  /// @param percentOutput Fration of max power to set motor to, bounded on [-1, 1]
-  void SetOuiOuiSpeed(double percentOutput);
+  /// @param percentOutput Fraction of max power to set motor to, bounded on [-1, 1]
+  /// @param overrideSoftLimits True temporarily disables soft limits
+  void SetOuiOuiSpeed(double percentOutput, bool overrideSoftLimits = false);
 
   /// @brief Stops the oui oui placer, and sets to motor's neutural mode
   void StopOuiOuiPlacer();
@@ -35,9 +37,18 @@ class OuiOuiPlacerSubsystem : public frc2::SubsystemBase {
   /// @brief Turns off soft limits of placer
   void DisablePlacerSoftLimits();
 
+  bool ForwardSoftLimitExceeded();
+
+  bool ReverseSoftLimitExceeded();
+
+  bool IsStalled();
+
  private:
   argos_lib::RobotInstance m_instance;
   bool m_manualOverride;
   WPI_TalonFX m_ouiOuiDrive;
   argos_lib::NTMotorPIDTuner m_ouiOuiTuner;
+  argos_lib::Debouncer m_stallDebounce;
+  bool m_stalled;
+  bool m_softLimitsEnabled;
 };

@@ -277,15 +277,15 @@ void LifterSubsystem::Periodic() {
   }
 
   // * extension debugging
-  frc::SmartDashboard::PutNumber("extensionHoming/Position (in)", GetArmExtension().to<double>());
-  frc::SmartDashboard::PutNumber("extensionHoming/Sens Position (sens units)",
-                                 sensor_conversions::lifter::arm_extension::ToSensorUnit(GetArmExtension()));
-  frc::SmartDashboard::PutBoolean("extensionHoming/Is extension homed?", IsArmExtensionHomed());
+  // frc::SmartDashboard::PutNumber("extensionHoming/Position (in)", GetArmExtension().to<double>());
+  // frc::SmartDashboard::PutNumber("extensionHoming/Sens Position (sens units)",
+  //                                sensor_conversions::lifter::arm_extension::ToSensorUnit(GetArmExtension()));
+  // frc::SmartDashboard::PutBoolean("extensionHoming/Is extension homed?", IsArmExtensionHomed());
 
-  std::optional<units::degree_t> savedArmExtension = m_extensionHomingStorage.Load();
-  if (savedArmExtension) {
-    frc::SmartDashboard::PutNumber("extensionHoming/saved home pos (deg)", savedArmExtension.value().to<double>());
-  }
+  // std::optional<units::degree_t> savedArmExtension = m_extensionHomingStorage.Load();
+  // if (savedArmExtension) {
+  //   frc::SmartDashboard::PutNumber("extensionHoming/saved home pos (deg)", savedArmExtension.value().to<double>());
+  // }
   // * end debugging
 }
 

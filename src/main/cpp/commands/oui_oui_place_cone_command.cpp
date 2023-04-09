@@ -21,7 +21,11 @@ void OuiOuiPlaceConeCommand::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void OuiOuiPlaceConeCommand::Execute() {
-  m_ouiOuiPlacer->SetOuiOuiSpeed(-1.0);
+  if (m_ouiOuiPlacer->ReverseSoftLimitExceeded()) {
+    m_ouiOuiPlacer->SetOuiOuiSpeed(-0.15, true);
+  } else {
+    m_ouiOuiPlacer->SetOuiOuiSpeed(-1.0);
+  }
 }
 
 // Called once the command ends or is interrupted.
@@ -38,9 +42,6 @@ bool OuiOuiPlaceConeCommand::IsFinished() {
   if (timePassed.count() >= timeouts::robotSlamCone.to<double>()) {
     return true;
   }
-  if (m_ouiOuiPlacer->GetOuiOuiAngle() <= measure_up::oui_oui_place::minAngle) {
-    return true;
-  } else {
-    return false;
-  }
+  bool stalled = m_ouiOuiPlacer->IsStalled();
+  return stalled;
 }
