@@ -39,6 +39,7 @@ namespace argos_lib {
 
   namespace colors {
     constexpr static ArgosColor kOff = ArgosColor{0, 0, 0};
+    constexpr static ArgosColor kWhite = ArgosColor{120, 120, 120};
     constexpr static ArgosColor kReallyRed = ArgosColor{255, 0, 0};
     constexpr static ArgosColor kReallyGreen = ArgosColor{0, 255, 0};
     constexpr static ArgosColor kReallyBlue = ArgosColor{0, 0, 255};
@@ -54,6 +55,7 @@ namespace argos_lib {
   }
   namespace gamma_corrected_colors {
     constexpr static ArgosColor kOff = GammaCorrect(argos_lib::colors::kOff);
+    constexpr static ArgosColor kWhite = GammaCorrect(argos_lib::colors::kWhite);
     constexpr static ArgosColor kReallyRed = GammaCorrect(argos_lib::colors::kReallyRed);
     constexpr static ArgosColor kReallyGreen = GammaCorrect(argos_lib::colors::kReallyGreen);
     constexpr static ArgosColor kReallyBlue = GammaCorrect(argos_lib::colors::kReallyBlue);

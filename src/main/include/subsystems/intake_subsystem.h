@@ -39,6 +39,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   bool TofCubeDetected();
   bool IsConeDetected();  ///< For intake detection
   bool IsCubeDetected();  ///< For intake detection
+  bool IsGamepieceLost();
 
  private:
   // Components (e.g. motor controllers and sensors) should generally be

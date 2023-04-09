@@ -45,6 +45,7 @@ RobotContainer::RobotContainer()
     , m_armExtenderSpeed(controllerMap::armExtensionSpeed)
     , m_wristSpeed(controllerMap::armExtensionSpeed)
     , m_bashSpeed(controllerMap::bashSpeed)
+    , m_ouiOuiSpeed(controllerMap::ouiOuiSpeed)
     , m_instance(argos_lib::GetRobotInstance())
     , m_controllers(address::comp_bot::controllers::driver, address::comp_bot::controllers::secondary)
     , m_buttonBox(address::comp_bot::controllers::buttonBox)
@@ -54,6 +55,7 @@ RobotContainer::RobotContainer()
     , m_bash(m_instance)
     , m_ledSubSystem(m_instance)
     , m_visionSubSystem(m_instance, &m_swerveDrive)
+    , m_ouiOuiPlacerSubsystem(m_instance)
     , m_homeArmExtensionCommand(m_lifter)
     , m_scoreConeCommand{m_lifter, m_bash, m_intake}
     , m_autoNothing{}
@@ -63,7 +65,7 @@ RobotContainer::RobotContainer()
     , m_autoOnlyBalance{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
-    , m_auto3gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
+    , m_auto3gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoCableProtector2Gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoCableProtector3Gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
@@ -315,6 +317,20 @@ RobotContainer::RobotContainer()
       },
       {&m_lifter}));
 
+  m_ouiOuiPlacerSubsystem.SetDefaultCommand(frc2::RunCommand(
+      [this] {
+        double ouiOuiSpeed = m_ouiOuiSpeed.Map(
+            m_controllers.OperatorController().GetY(argos_lib::XboxController::JoystickHand::kRightHand));
+
+        if (ouiOuiSpeed == 0.0) {
+          m_ouiOuiPlacerSubsystem.StopOuiOuiPlacer();
+        } else {
+          // Inverted so it's more intuitive for operator
+          m_ouiOuiPlacerSubsystem.SetOuiOuiSpeed(-ouiOuiSpeed);
+        }
+      },
+      {&m_ouiOuiPlacerSubsystem}));
+
   m_bash.SetDefaultCommand(frc2::RunCommand(
       [this] {
         double bashSpeed = (m_bashSpeed.Map(m_controllers.OperatorController().GetTriggerAxis(
@@ -370,6 +386,8 @@ void RobotContainer::ConfigureBindings() {
 
   auto coneDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsConeDetected(); }});
   auto cubeDetectedTrigger = (frc2::Trigger{[this]() { return m_intake.IsCubeDetected(); }});
+
+  auto gamepieceLostTrigger = (frc2::Trigger{[this]() { return m_intake.IsGamepieceLost(); }});
 
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
@@ -544,6 +562,9 @@ void RobotContainer::ConfigureBindings() {
 
   startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
+  // * Uncomment this line to re-enable bash homing
+  // startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
+
   startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
@@ -587,6 +608,15 @@ void RobotContainer::ConfigureBindings() {
                 [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kReallyGreen, false); },
                 500_ms);
           }).ToPtr());
+  (gamepieceLostTrigger.Debounce(200_ms) && !intakeConeTrigger && !intakeCubeTrigger && !scoreConeTrigger &&
+   !scoreCubeTrigger)
+      .OnTrue(frc2::InstantCommand([this]() {
+                m_controllers.DriverController().SetVibration(
+                    argos_lib::TemporaryVibrationPattern(argos_lib::VibrationAlternatePulse(250_ms, 1.0), 500_ms));
+                m_ledSubSystem.TemporaryAnimate(
+                    [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kWhite, false); },
+                    500_ms);
+              }).ToPtr());
 
   ledMissileSwitchTrigger.OnTrue(frc2::InstantCommand(
                                      [this]() {

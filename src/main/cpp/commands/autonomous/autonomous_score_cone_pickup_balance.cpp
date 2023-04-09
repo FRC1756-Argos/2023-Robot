@@ -133,7 +133,7 @@ bool AutonomousScoreConePickupBalance::IsFinished() {
   return m_allCommands.get()->IsFinished();
 }
 
-/* Autonomous Command Meathods */
+/* Autonomous Command Methods */
 std::string AutonomousScoreConePickupBalance::GetName() const {
   return "Loading Station Cone Pickup Balance";
 }

@@ -33,6 +33,7 @@
 #include "subsystems/bash_guard_subsystem.h"
 #include "subsystems/intake_subsystem.h"
 #include "subsystems/lifter_subsystem.h"
+#include "subsystems/oui_oui_placer_subsystem.h"
 #include "subsystems/simple_led_subsystem.h"
 #include "subsystems/swerve_drive_subsystem.h"
 #include "subsystems/vision_subsystem.h"
@@ -77,6 +78,8 @@ class RobotContainer {
       m_wristSpeed;
   argos_lib::InterpolationMap<decltype(controllerMap::bashSpeed.front().inVal), controllerMap::bashSpeed.size()>
       m_bashSpeed;
+  argos_lib::InterpolationMap<decltype(controllerMap::ouiOuiSpeed.front().inVal), controllerMap::ouiOuiSpeed.size()>
+      m_ouiOuiSpeed;
 
   const argos_lib::RobotInstance m_instance;
 
@@ -89,6 +92,7 @@ class RobotContainer {
   BashGuardSubsystem m_bash;
   SimpleLedSubsystem m_ledSubSystem;
   VisionSubsystem m_visionSubSystem;
+  OuiOuiPlacerSubsystem m_ouiOuiPlacerSubsystem;
   HomeArmExtensionCommand m_homeArmExtensionCommand;
   ScoreConeCommand m_scoreConeCommand;
 

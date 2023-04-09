@@ -32,6 +32,9 @@ namespace address {
     struct bash_guard {
       constexpr static argos_lib::CANAddress extension{14, "rio"};
     };
+    struct oui_oui_placer {
+      constexpr static argos_lib::CANAddress ouiOuiDriver{15, "rio"};  // @todo assume rio bus?
+    };                                                                 // oui_oui_placer
     struct encoders {
       constexpr static argos_lib::CANAddress frontLeftEncoder{1, "drive"};
       constexpr static argos_lib::CANAddress frontRightEncoder{2, "drive"};
@@ -69,6 +72,7 @@ namespace address {
     using solenoids = address::comp_bot::solenoids;
     using sensors = address::comp_bot::sensors;
     using led = address::comp_bot::led;
+    using ouiOuiDriver = address::comp_bot::oui_oui_placer;
   }  // namespace practice_bot
 
 }  // namespace address

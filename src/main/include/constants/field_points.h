@@ -8,6 +8,7 @@
 #include <frc/geometry/Pose2d.h>
 #include <frc/geometry/Translation2d.h>
 #include <frc/geometry/Translation3d.h>
+#include <frc/spline/Spline.h>
 #include <units/angle.h>
 #include <units/length.h>
 
@@ -61,6 +62,24 @@ namespace utils {
   /// @return The reflected point accross the middle of the field
   constexpr frc::Translation3d ReflectFieldPoint(const frc::Translation3d source) {
     return frc::Translation3d{source.X(), field_dimensions::fieldMaxY - source.Y(), source.Z()};
+  }
+
+  constexpr frc::Translation2d ReflectFieldPoint(const frc::Translation2d source) {
+    return frc::Translation2d{source.X(), field_dimensions::fieldMaxY - source.Y()};
+  }
+
+  template <class T>
+  std::vector<T> ReflectFieldPoint(const std::vector<T> source) {
+    std::vector<T> retVal;
+    retVal.reserve(source.size());
+    std::transform(
+        source.begin(), source.end(), std::back_inserter(retVal), [](T val) { return ReflectFieldPoint(val); });
+    return retVal;
+  }
+
+  constexpr frc::Spline<3>::ControlVector ReflectFieldPoint(const frc::Spline<3>::ControlVector source) {
+    return frc::Spline<3>::ControlVector{
+        .x{source.x}, .y{units::meter_t{field_dimensions::fieldMaxY}.to<double>() - source.y[0], -source.y[1]}};
   }
 
   frc::Pose2d ReflectFieldPoint(const frc::Pose2d source);
