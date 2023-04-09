@@ -387,15 +387,15 @@ void RobotContainer::ConfigureBindings() {
 
   auto robotEnableTrigger = (frc2::Trigger{[this]() { return frc::DriverStation::IsEnabled(); }});
 
-  auto armExtensionHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_lifter.IsArmExtensionHomed(); }});
-
-  auto startupExtensionHomeTrigger = robotEnableTrigger && armExtensionHomeRequiredTrigger;
-
   // Bashguard homing trigger
 
   auto bashGuardHomeRequiredTrigger = (frc2::Trigger{[this]() { return !m_bash.IsBashGuardHomed(); }});
 
+  auto extensionHomeRequiredTrigger = (frc2::Trigger{[this] { return !m_lifter.ArmExtensionHomeFileExists(); }});
+
   auto startupBashGuardHomeTrigger = robotEnableTrigger && bashGuardHomeRequiredTrigger;
+
+  auto startupExtensionHomeTrigger = robotEnableTrigger && extensionHomeRequiredTrigger;
 
   // SHOULDER TRIGGERS
   auto homeShoulder = (frc2::Trigger{[this]() {
@@ -556,12 +556,13 @@ void RobotContainer::ConfigureBindings() {
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
 
-  startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
-
   // * Uncomment this line to re-enable bash homing
   // startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
 
   startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());
+
+  // Home extension on robot enable
+  startupExtensionHomeTrigger.OnTrue(HomeArmExtensionCommand(m_lifter).ToPtr());
 
   frc::SmartDashboard::PutNumber("MPTesting/TravelSpeed (in/s)", 90.0);
   frc::SmartDashboard::PutNumber("MPTesting/TravelAccel (in/s^2)", 80.0);

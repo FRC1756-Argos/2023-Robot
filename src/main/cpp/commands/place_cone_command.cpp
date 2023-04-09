@@ -39,9 +39,7 @@ void PlaceConeCommand::Initialize() {
                        LifterSubsystem& lifterRef = *m_lifter;
                        m_lifter->SetShoulderAngle(PlaceConeCommand::GetShoulderAngle(lifterRef, m_desiredArmPos));
                      }).ToPtr())
-          .AndThen(frc2::WaitUntilCommand([this]() {
-                     return m_bashGuard->IsBashGuardHomed() && m_lifter->IsArmExtensionHomed();
-                   }).ToPtr())
+          .AndThen(frc2::WaitUntilCommand([this]() { return m_bashGuard->IsBashGuardHomed(); }).ToPtr())
           .AndThen(SetArmPoseCommand{m_lifter,
                                      m_bashGuard,
                                      m_scoringPosition,
