@@ -2,6 +2,8 @@
 ///            Open Source Software; you can modify and/or share it under the terms of
 ///            the license file in the root directory of this project.
 
+#include "commands/autonomous/autonomous_cable_protector_3gp.h"
+
 #include <commands/drive_to_position.h>
 #include <commands/initialize_odometry_command.h>
 #include <commands/place_cone_command.h>
@@ -14,7 +16,6 @@
 #include <units/angular_velocity.h>
 #include <units/velocity.h>
 
-#include "commands/autonomous/autonomous_cable_protector_3gp.h"
 #include "commands/drive_to_position_absolute.h"
 #include "commands/drive_to_position_spline.h"
 #include "commands/oui_oui_place_cone_command.h"
