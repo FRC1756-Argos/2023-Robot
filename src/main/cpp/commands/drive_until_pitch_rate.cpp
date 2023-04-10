@@ -19,7 +19,7 @@ DriveUntilPitchRate::DriveUntilPitchRate(SwerveDriveSubsystem* swerveDrive,
     , m_pitchRateGoal{pitchRateGoal}
     , m_approachDirection{approachDirection}
     , m_timeout{timeout}
-    , m_velocityRamper{2 / 1_s, 2 / 1_s, initialPower} {
+    , m_velocityRamper{6 / 1_s, 6 / 1_s, initialPower} {
   // * AddRequirements OK here because no child commands are called that depend on subsystem
   AddRequirements(swerveDrive);
 }
