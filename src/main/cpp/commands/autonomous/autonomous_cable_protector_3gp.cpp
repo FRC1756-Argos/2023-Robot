@@ -15,6 +15,9 @@
 #include <units/velocity.h>
 
 #include "commands/autonomous/autonomous_Cable_protector_3gp.h"
+#include "commands/drive_to_position_absolute.h"
+#include "commands/drive_to_position_spline.h"
+#include "commands/oui_oui_place_cone_command.h"
 #include "commands/score_cone_command.h"
 #include "commands/set_arm_pose_command.h"
 #include "constants/auto.h"
@@ -34,8 +37,8 @@ AutonomousCableProtector3Gp::AutonomousCableProtector3Gp(SwerveDriveSubsystem& d
 // Called when the command is initially scheduled.
 void AutonomousCableProtector3Gp::Initialize() {
   auto blueAlliance = frc::DriverStation::GetAlliance() == frc::DriverStation::Alliance::kBlue;
-  auto startingPosition = blueAlliance ? starting_positions::blue_alliance::cableProtectorConeReverse :
-                                         starting_positions::red_alliance::cableProtectorConeReverse;
+  auto startingPosition = blueAlliance ? starting_positions::blue_alliance::cableProtectorCone :
+                                         starting_positions::red_alliance::cableProtectorCone;
   auto interimWaypoint1 = blueAlliance ? interim_waypoints::blue_alliance::backAwayFromCableProtectorConeReverse :
                                          interim_waypoints::red_alliance::backAwayFromCableProtectorConeReverse;
   auto pickupPosition1 =

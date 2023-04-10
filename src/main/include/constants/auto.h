@@ -94,10 +94,16 @@ namespace starting_positions {
                      starting_positions::blue_alliance::loadingStationConeReverse3d.Y()},
                     0_deg};
 
+    constexpr auto cableProtectorConeReverse3d =
+        field_points::blue_alliance::outer_grid::middleRowRight.m_position +
+        frc::Translation3d{
+            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension,
+            measure_up::oui_oui_place::lateralOffset,
+            0_m};
     constexpr auto cableProtectorConeReverse =
-        frc::Pose2d{{starting_positions::blue_alliance::cableProtectorCone3d.X(),
-                     starting_positions::blue_alliance::cableProtectorCone3d.Y()},
-                    0_deg};
+        frc::Pose2d{{starting_positions::blue_alliance::cableProtectorConeReverse3d.X(),
+                     starting_positions::blue_alliance::cableProtectorConeReverse3d.Y()},
+                    1_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto loadingStationCone =
@@ -107,7 +113,7 @@ namespace starting_positions {
     static const auto loadingStationConeReverse =
         utils::ReflectFieldPoint(starting_positions::blue_alliance::loadingStationConeReverse);
     static const auto cableProtectorConeReverse =
-        utils::ReflectFieldPoint(starting_positions::blue_alliance::loadingStationConeReverse);
+        utils::ReflectFieldPoint(starting_positions::blue_alliance::cableProtectorConeReverse);
   }  // namespace red_alliance
 }  // namespace starting_positions
 
@@ -162,8 +168,6 @@ namespace interim_waypoints {
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCube);
     static const auto backAwayFromLoadingStationConeReverse =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationConeReverse);
-    static const auto backAwayFromLoadingStationCube =
-        utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCube);
     static const auto approachSecondCube =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::approachSecondCube);
     static const auto chargingStationStage =
@@ -192,13 +196,13 @@ namespace game_piece_pickup {
                                             -90_deg};
     constexpr auto gamePiece3 = frc::Pose2d{
         {game_piece_pickup::blue_alliance::gamePiece3_3d.X(), game_piece_pickup::blue_alliance::gamePiece3_3d.Y()},
-        0_deg};
+        1_deg};
     constexpr auto gamePiece2_3d =
         field_points::blue_alliance::game_pieces::gp_2 -
         frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
     constexpr auto gamePiece2 = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece2_3d.X(),
                                              game_piece_pickup::blue_alliance::gamePiece2_3d.Y() - 6_in},
-                                            90_deg};
+                                            89_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto gamePiece0 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece0);
@@ -217,10 +221,11 @@ namespace path_constraints {
     static const auto gp0ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
     static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
 
-    static const auto cableProtectorBackOut = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 4.5_fps_sq};
-    static const auto cableProtectorGridToGp3 = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 4_fps_sq};
-    static const auto gp3ToScore = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 4_fps_sq};
-    static const auto cableProtectorPullIn = frc::TrapezoidProfile<units::inches>::Constraints{3_fps, 4_fps_sq};
+    static const auto cableProtectorBackOut = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 7_fps_sq};
+    static const auto cableProtectorGridToGp3 = frc::TrapezoidProfile<units::inches>::Constraints{5_fps, 6_fps_sq};
+    static const auto gp3ToScore = frc::TrapezoidProfile<units::inches>::Constraints{4.5_fps, 5_fps_sq};
+    static const auto gp2ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 5_fps_sq};
+    static const auto cableProtectorPullIn = frc::TrapezoidProfile<units::inches>::Constraints{5_fps, 5_fps_sq};
 
     static const auto loadingStationBackOut_3gp = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 8_fps_sq};
     static const auto stageChargeStationPullIn_3gp = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 8_fps_sq};
@@ -248,6 +253,7 @@ namespace path_constraints {
     static const auto cableProtectorPullIn =
         frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
     static const auto gp3ToScore = frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
+    static const auto gp2ToScore = frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
 
     static const auto loadingStationBackOut_3gp =
         frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
