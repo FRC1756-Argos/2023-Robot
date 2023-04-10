@@ -131,16 +131,16 @@ namespace game_piece_pickup {
     constexpr auto gamePiece0 = frc::Pose2d{
         {game_piece_pickup::blue_alliance::gamePiece0_3d.X(), game_piece_pickup::blue_alliance::gamePiece0_3d.Y()},
         0_deg};
-    constexpr auto gamePiece1_3d =
+    constexpr auto gamePiece1_3gp_3d =
         field_points::blue_alliance::game_pieces::gp_1 -
         frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
-    constexpr auto gamePiece1 = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece1_3d.X(),
-                                             game_piece_pickup::blue_alliance::gamePiece1_3d.Y() + 6_in},
-                                            -90_deg};
+    constexpr auto gamePiece1_3gp = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece1_3gp_3d.X(),
+                                                 game_piece_pickup::blue_alliance::gamePiece1_3gp_3d.Y() + 6_in},
+                                                -90_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
     static const auto gamePiece0 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece0);
-    static const auto gamePiece1 = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece1);
+    static const auto gamePiece1_3gp = utils::ReflectFieldPoint(game_piece_pickup::blue_alliance::gamePiece1_3gp);
   }  // namespace red_alliance
 }  // namespace game_piece_pickup
 
@@ -153,9 +153,9 @@ namespace path_constraints {
     static const auto gp0ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 10_fps_sq};
     static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
 
-    static const auto loadingStationBackOut_3gp = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 8_fps_sq};
-    static const auto stageChargeStationPullIn_3gp = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 8_fps_sq};
-    static const auto loadingStationGridToGp0_3gp = frc::TrapezoidProfile<units::inches>::Constraints{5_fps, 8_fps_sq};
+    static const auto loadingStationBackOut_3gp = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 8_fps_sq};
+    static const auto stageChargeStationPullIn_3gp = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 8_fps_sq};
+    static const auto loadingStationGridToGp0_3gp = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 8_fps_sq};
     static const auto gp0ToScore_3gp = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 8_fps_sq};
     static const auto loadingStationPullIn_3gp = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 8_fps_sq};
   }  // namespace translation
