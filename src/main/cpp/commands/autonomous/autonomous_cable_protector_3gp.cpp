@@ -14,7 +14,7 @@
 #include <units/angular_velocity.h>
 #include <units/velocity.h>
 
-#include "commands/autonomous/autonomous_Cable_protector_3gp.h"
+#include "commands/autonomous/autonomous_cable_protector_3gp.h"
 #include "commands/drive_to_position_absolute.h"
 #include "commands/drive_to_position_spline.h"
 #include "commands/oui_oui_place_cone_command.h"
