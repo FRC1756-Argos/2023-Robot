@@ -11,6 +11,7 @@ Robot code for 2023 FRC season
 | Color | Pattern | Strips | Meaning | Trigger |
 | ----- | ------- | ------ | ------- | ------- |
 | Red/Blue | Solid | All | Robot disabled; indicates alliance received from DS | Robot disabled |
+| Cat Yellow | Solid | All | Robot disabled; no connection to FMS or driver station since startup | Robot startup |
 | Red/Blue | Uniform fade in/out | All | Teleop enabled; indicates alliance received from DS | Robot enabled in teleop mode |
 | Red/Blue | Fade sweeping from front to back | All | Autonomous enabled; indicates alliance received from DS | Robot enabled in autonomous mode |
 | Cone Yellow/Magenta | Solid | Top 10 LEDs of each strip | Indicates game piece selected on operator control box for intake and placement positions | Operator flips game piece switch |
