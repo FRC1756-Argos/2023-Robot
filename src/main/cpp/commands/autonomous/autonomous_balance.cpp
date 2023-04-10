@@ -47,7 +47,7 @@ AutonomousBalance::AutonomousBalance(SwerveDriveSubsystem& drive,
                                          PathType::concaveDown}
                            .ToPtr()
                            .AlongWith(DriveOverChargingStation{&m_drive, 0_deg, 180_deg}.ToPtr()))
-              .AndThen(frc2::WaitCommand(500_ms).ToPtr())
+              .AndThen(frc2::WaitCommand(750_ms).ToPtr())
               .AndThen(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr()),
       } {}
 

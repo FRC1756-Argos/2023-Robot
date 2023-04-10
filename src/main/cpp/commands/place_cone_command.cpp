@@ -14,6 +14,7 @@
 #include <units/velocity.h>
 
 #include "commands/grip_cone_command.h"
+#include "commands/home_arm_extension_command.h"
 #include "commands/score_cone_command.h"
 #include "commands/set_arm_pose_command.h"
 #include "constants/scoring_positions.h"
@@ -35,18 +36,18 @@ void PlaceConeCommand::Initialize() {
   m_allCommands =
       GripConeCommand(m_intake)
           .ToPtr()
+          .AlongWith(HomeArmExtensionCommand{*m_lifter}.ToPtr())
           .AlongWith(frc2::InstantCommand([this]() {
                        LifterSubsystem& lifterRef = *m_lifter;
                        m_lifter->SetShoulderAngle(PlaceConeCommand::GetShoulderAngle(lifterRef, m_desiredArmPos));
                      }).ToPtr())
-          .AndThen(frc2::WaitUntilCommand([this]() { return m_bashGuard->IsBashGuardHomed(); }).ToPtr())
           .AndThen(SetArmPoseCommand{m_lifter,
                                      m_bashGuard,
                                      m_scoringPosition,
                                      frc::Translation2d{0_in, 0_in},
                                      []() { return true; },
                                      []() { return false; },
-                                     PathType::concaveDown}
+                                     PathType::componentWise}
                        .ToPtr())
           .AndThen(ScoreConeCommand{*m_lifter, *m_bashGuard, *m_intake}.ToPtr());
   m_allCommands.get()->Initialize();

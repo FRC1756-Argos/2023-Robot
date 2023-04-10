@@ -24,7 +24,7 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
     , m_commands{
           DriveUntilPitch{m_pDrive,
                           m_approachAngle,
-                          0.2,
+                          0.25,
                           0,
                           thresholds::robotClimbPitch * m_initialPitchSign,
                           m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
@@ -34,7 +34,7 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                   DriveUntilPitch{m_pDrive,
                                   m_approachAngle,
                                   0.3,
-                                  0.2,
+                                  0.25,
                                   9_deg * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                   2_s}
@@ -69,7 +69,7 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                       .ToPtr())
               .AndThen(frc2::InstantCommand([this, drive, approachAngle]() { drive->SwerveDrive(approachAngle, 0.2); })
                            .ToPtr()
-                           .AndThen(frc2::WaitCommand{0.5_s}.ToPtr())
+                           .AndThen(frc2::WaitCommand{750_ms}.ToPtr())
                            .AndThen(frc2::InstantCommand([this, drive]() { drive->StopDrive(); }).ToPtr()))} {}
 
 // Called when the command is initially scheduled.
