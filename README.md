@@ -16,6 +16,7 @@ Robot code for 2023 FRC season
 | Cone Yellow/Magenta | Solid | Top 10 LEDs of each strip | Indicates game piece selected on operator control box for intake and placement positions | Operator flips game piece switch |
 | Cone Yellow/Magenta | Flash | All | Request game piece | Operator controller D-pad up/down |
 | Green | Flash | All | Game piece intake | Game piece detected in intake while driver is intaking |
+| White | Flash | All | Game peice is lost | Gampiece is no longer detected prior to placement |
 | Green | Solid | Front left & right | Vision alignment successful | Vision alignment activated and cone node is detected in correct position |
 | Cat Yellow | Flash | Front left/right | Vision alignment adjusting; flashes in direction of adjustment | Vision alignment activated and cone node is detected at lateral offset from desired position |
 | Red | Solid | Front left & right | Vision alignment no target | Vision alignment activated and no cone node is detected |

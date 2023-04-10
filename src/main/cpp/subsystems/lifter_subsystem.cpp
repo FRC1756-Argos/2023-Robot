@@ -64,6 +64,12 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
                      std::string(GetCANBus(address::comp_bot::encoders::wristEncoder,
                                            address::practice_bot::encoders::wristEncoder,
                                            instance))}
+    , m_extensionEncoder{GetCANAddr(address::comp_bot::encoders::armExtenderEncoder,
+                                    address::comp_bot::encoders::armExtenderEncoder,
+                                    instance),
+                         std::string(GetCANBus(address::comp_bot::encoders::armExtenderEncoder,
+                                               address::comp_bot::encoders::armExtenderEncoder,
+                                               instance))}
     , m_kinematics{measure_up::lifter::fulcrumPosition,
                    measure_up::lifter::armBar::centerOfRotDis,
                    measure_up::lifter::effector::effectorFromArm,
@@ -72,6 +78,7 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
     , m_logger{"LIFTER_SUBSYSTEM"}
     , m_shoulderHomeStorage{"homes/shoulderHome"}
     , m_wristHomingStorage{paths::wristHomesPath}
+    , m_extensionHomingStorage{paths::extensionHomePath}
     , m_extensionTuner{"argos/lifter/extension",
                        {&m_armExtensionMotor},
                        0,
@@ -121,6 +128,13 @@ LifterSubsystem::LifterSubsystem(argos_lib::RobotInstance instance)
     m_logger.Log(argos_lib::LogLevel::ERR, "Wirst encoder configuration failed\n");
   }
 
+  bool extensionSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::extensionEncoderConf>(
+      m_extensionEncoder, 100_ms);
+  if (!extensionSuccess) {
+    m_logger.Log(argos_lib::LogLevel::ERR, "Extension encoder configuration failed\n");
+    m_extensionHomed = false;
+  }
+
   bool shoulderSuccess = argos_lib::cancoder_config::CanCoderConfig<encoder_conf::comp_bot::shoulderEncoderConf>(
       m_shoulderEncoder, 100_ms);
 
@@ -151,7 +165,7 @@ bool LifterSubsystem::IsExtensionAt(units::inch_t extension) {
 
 void LifterSubsystem::SetArmExtension(units::inch_t extension) {
   if (!IsArmExtensionHomed()) {
-    m_logger.Log(argos_lib::LogLevel::ERR, "Arm extension commanded while not home\n");
+    m_logger.Log(argos_lib::LogLevel::ERR, "Arm extension commanded while not homed\n");
     return;
   }
 
@@ -257,6 +271,22 @@ void LifterSubsystem::Periodic() {
   if (!m_shoulderHomed && m_shoulderHomeStorage.Load()) {
     InitializeShoulderHome();
   }
+
+  if (!m_extensionHomed && m_extensionHomingStorage.Load()) {
+    InitializeArmExtensionHome();
+  }
+
+  // * extension debugging
+  // frc::SmartDashboard::PutNumber("extensionHoming/Position (in)", GetArmExtension().to<double>());
+  // frc::SmartDashboard::PutNumber("extensionHoming/Sens Position (sens units)",
+  //                                sensor_conversions::lifter::arm_extension::ToSensorUnit(GetArmExtension()));
+  // frc::SmartDashboard::PutBoolean("extensionHoming/Is extension homed?", IsArmExtensionHomed());
+
+  // std::optional<units::degree_t> savedArmExtension = m_extensionHomingStorage.Load();
+  // if (savedArmExtension) {
+  //   frc::SmartDashboard::PutNumber("extensionHoming/saved home pos (deg)", savedArmExtension.value().to<double>());
+  // }
+  // * end debugging
 }
 
 void LifterSubsystem::Disable() {
@@ -271,9 +301,57 @@ bool LifterSubsystem::IsShoulderMoving() {
   return std::abs(m_shoulderDrive.GetSelectedSensorVelocity()) > 10;
 }
 
+bool LifterSubsystem::ArmExtensionHomeFileExists() {
+  // Check if file exists by attempting to get value
+  return m_extensionHomingStorage.Load() != std::nullopt;
+}
+
 void LifterSubsystem::UpdateArmExtensionHome() {
+  // This process assumes the arm is all the way back at it's minimal possible extension, and that extension matches home extension in measure up
+  const units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_extensionEncoder.GetAbsolutePosition());
+  bool saved = m_extensionHomingStorage.Save(currentEncoder);
+  if (!saved) {
+    m_logger.Log(argos_lib::LogLevel::ERR, "Extension homes failed to save properly to file\n");
+    m_extensionHomed = false;
+    return;  // Breaking error, exit homing
+  }
+
+  // Assume since we homed, we are at the homing extension
   m_armExtensionMotor.SetSelectedSensorPosition(
       sensor_conversions::lifter::arm_extension::ToSensorUnit(measure_up::lifter::arm_extension::homeExtension));
+
+  m_extensionHomed = true;
+  EnableArmExtensionSoftLimits();
+}
+
+void LifterSubsystem::InitializeArmExtensionHome() {
+  std::optional<units::degree_t> extensionHome = m_extensionHomingStorage.Load();
+
+  if (!extensionHome) {  // Check if values failed to populate
+    m_logger.Log(argos_lib::LogLevel::ERR, "Extension failed to load homes from filesystem");
+    m_extensionHomed = false;
+    return;  // Breaking, exit
+  }
+
+  const units::degree_t currentEncoder = units::make_unit<units::degree_t>(m_extensionEncoder.GetAbsolutePosition());
+
+  // How far has CANCoder drifted from saved home?
+  units::degree_t angularDrift =
+      argos_lib::angle::ConstrainAngle(currentEncoder - extensionHome.value(), 0_deg, 360_deg);
+  units::inch_t extensionDrift = sensor_conversions::lifter::arm_extension::ExtensionFromRotation(angularDrift);
+
+  // Get current extension from drift
+  units::inch_t currentExtension = measure_up::lifter::arm_extension::homeExtension + extensionDrift;
+
+  // * debugging
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Current encoder (deg)", currentEncoder.to<double>());
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Angular drift (deg)", angularDrift.to<double>());
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Extension drift (in)", extensionDrift.to<double>());
+  frc::SmartDashboard::PutNumber("extensionHoming/init/Current extension (in)", currentExtension.to<double>());
+  // * end
+
+  m_armExtensionMotor.SetSelectedSensorPosition(
+      sensor_conversions::lifter::arm_extension::ToSensorUnit(currentExtension));
   m_extensionHomed = true;
   EnableArmExtensionSoftLimits();
 }

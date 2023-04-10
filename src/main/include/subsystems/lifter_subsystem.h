@@ -111,8 +111,15 @@ class LifterSubsystem : public frc2::SubsystemBase {
   /// @return True when shoulder is in motion
   bool IsShoulderMoving();
 
+  /// @brief Checks if home file for arm extension exists
+  /// @return True -> File exists, False otherwise
+  bool ArmExtensionHomeFileExists();
+
   /// @brief Update arm home position
   void UpdateArmExtensionHome();
+
+  /// @brief Initializes the arm extension home from file system
+  void InitializeArmExtensionHome();
 
   /// @brief Initializes the homed shoulder value from FS
   void InitializeShoulderHome();
@@ -196,6 +203,12 @@ class LifterSubsystem : public frc2::SubsystemBase {
   void ResetPathFaults();
   bool IsFatalPathFault();
 
+  /// @brief Turn off soft limits for arm extension
+  void DisableArmExtensionSoftLimits();
+
+  /// @brief Turn on soft limits for arm extension
+  void EnableArmExtensionSoftLimits();
+
  private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
@@ -206,10 +219,12 @@ class LifterSubsystem : public frc2::SubsystemBase {
   WPI_TalonFX m_wrist;              ///< Motor that controls wrist movement
   CANCoder m_shoulderEncoder;       ///< Encoder that measures shoulder position
   CANCoder m_wristEncoder;          ///< Encoder for measuring wrist position
+  CANCoder m_extensionEncoder;      ///< Encoder for measuring extension of arm
   LifterKinematics m_kinematics;    ///< Kinematic model for solving arm joints & position
   argos_lib::ArgosLogger m_logger;  ///< Handles logging errors & info
-  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;  ///< File system homing for shoulder
-  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;   ///< File system homing for wrist
+  argos_lib::FSHomingStorage<units::degree_t> m_shoulderHomeStorage;     ///< File system homing for shoulder
+  argos_lib::FSHomingStorage<units::degree_t> m_wristHomingStorage;      ///< File system homing for wrist
+  argos_lib::FSHomingStorage<units::degree_t> m_extensionHomingStorage;  ///< File system homing for wrist
   argos_lib::NTMotorPIDTuner m_extensionTuner;  ///< TEMP network tables PID tuner for tuning extension
   argos_lib::NTMotorPIDTuner m_wristTuner;      ///< TEMP network tables PID tuner for tuning wrist
   argos_lib::NTMotorPIDTuner m_shoulderTuner;   ///< TEMP network tables PID tuner for tuning shoulder
@@ -229,12 +244,6 @@ class LifterSubsystem : public frc2::SubsystemBase {
 
   /// @brief Turn off soft limits for wrist
   void DisableWristSoftLimits();
-
-  /// @brief Turn on soft limits for arm extension
-  void EnableArmExtensionSoftLimits();
-
-  /// @brief Turn off soft limits for arm extension
-  void DisableArmExtensionSoftLimits();
 
   /// @brief Turn on soft limits for arm shoulder
   void EnableShoulderSoftLimits();

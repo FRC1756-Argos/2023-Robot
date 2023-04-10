@@ -46,6 +46,7 @@ namespace paths {
   const std::string swerveHomesPath = "homes/swerveHomes";
   const std::string wristHomesPath = "homes/wristHomes";
   const std::string shoulderHome = "homes/shoulderHome";
+  const std::string extensionHomePath = "homes/extensionHome";
 }  // namespace paths
 
 namespace networkTables {

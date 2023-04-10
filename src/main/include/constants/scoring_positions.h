@@ -41,11 +41,11 @@ namespace scoring_positions {
     constexpr static SetpointPosition cubeLow(frc::Translation2d(20.5_in, 23_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeLow_wristInverted(frc::Translation2d(20.5_in, 23_in),
                                                             BashGuardPosition::Retracted);
-    constexpr static SetpointPosition cubeMid(frc::Translation2d(33_in, 36_in), BashGuardPosition::Retracted);
-    constexpr static SetpointPosition cubeMid_wristInverted(frc::Translation2d(33_in, 36_in),
+    constexpr static SetpointPosition cubeMid(frc::Translation2d(33_in, 37_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeMid_wristInverted(frc::Translation2d(33_in, 37_in),
                                                             BashGuardPosition::Retracted);
-    constexpr static SetpointPosition cubeHigh(frc::Translation2d(48.5_in, 48_in), BashGuardPosition::Retracted);
-    constexpr static SetpointPosition cubeHigh_wristInverted(frc::Translation2d(48.5_in, 48_in),
+    constexpr static SetpointPosition cubeHigh(frc::Translation2d(48.5_in, 49_in), BashGuardPosition::Retracted);
+    constexpr static SetpointPosition cubeHigh_wristInverted(frc::Translation2d(48.5_in, 49_in),
                                                              BashGuardPosition::Retracted);
     constexpr static SetpointPosition coneIntake(frc::Translation2d(31.5_in, 12.5_in), BashGuardPosition::Deployed);
     constexpr static SetpointPosition cubeIntake(frc::Translation2d(31.5_in, 14_in), BashGuardPosition::Deployed);
