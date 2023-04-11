@@ -82,7 +82,7 @@ namespace starting_positions {
             field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
     constexpr auto cableProtectorCone = frc::Pose2d{{starting_positions::blue_alliance::cableProtectorCone3d.X(),
                                                      starting_positions::blue_alliance::cableProtectorCone3d.Y()},
-                                                    180_deg};
+                                                    179_deg};
     constexpr auto loadingStationConeReverse3d =
         field_points::blue_alliance::inner_grid::middleRowLeft.m_position +
         frc::Translation3d{
@@ -222,6 +222,7 @@ namespace path_constraints {
     static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
 
     static const auto cableProtectorBackOut = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 7_fps_sq};
+    static const auto cableProtectorBackOut2Gp = frc::TrapezoidProfile<units::inches>::Constraints{5_fps, 5_fps_sq};
     static const auto cableProtectorGridToGp3 = frc::TrapezoidProfile<units::inches>::Constraints{5_fps, 6_fps_sq};
     static const auto gp3ToScore = frc::TrapezoidProfile<units::inches>::Constraints{4.5_fps, 5_fps_sq};
     static const auto gp2ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 5_fps_sq};
@@ -247,6 +248,8 @@ namespace path_constraints {
         frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
 
     static const auto cableProtectorBackOut =
+        frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
+    static const auto cableProtectorBackOut2Gp =
         frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
     static const auto cableProtectorGridToGp3 =
         frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};

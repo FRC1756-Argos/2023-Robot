@@ -18,7 +18,6 @@
 #include "Constants.h"
 #include "commands/autonomous/autonomous_balance.h"
 #include "commands/autonomous/autonomous_cable_protector_2gp.h"
-#include "commands/autonomous/autonomous_cable_protector_3gp.h"
 #include "commands/autonomous/autonomous_cable_protector_3gp_oui_oui.h"
 #include "commands/autonomous/autonomous_cable_protector_place_exit.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
@@ -108,7 +107,6 @@ class RobotContainer {
   AutonomousLoadingStation3GP m_auto3gp;
   AutonomousPlaceExit m_autoPlaceExit;
   AutonomousCableProtector2Gp m_autoCableProtector2Gp;
-  AutonomousCableProtector3Gp m_autoCableProtector3Gp;
   AutonomousCableProtector3GPOuiOui m_autoCableProtector3GpOuiOui;
   AutonomousCableProtectorPlaceExit m_autoCablePlaceExit;
   AutonomousScoreConePickupBalance m_autoScorePickupBalanceCone;
