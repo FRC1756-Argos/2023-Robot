@@ -194,9 +194,9 @@ namespace game_piece_pickup {
     constexpr auto gamePiece1_3gp = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece1_3gp_3d.X(),
                                                  game_piece_pickup::blue_alliance::gamePiece1_3gp_3d.Y() + 6_in},
                                                 -90_deg};
-    constexpr auto gamePiece3 = frc::Pose2d{
-        {game_piece_pickup::blue_alliance::gamePiece3_3d.X(), game_piece_pickup::blue_alliance::gamePiece3_3d.Y()},
-        1_deg};
+    constexpr auto gamePiece3 = frc::Pose2d{{game_piece_pickup::blue_alliance::gamePiece3_3d.X() + 6_in,
+                                             game_piece_pickup::blue_alliance::gamePiece3_3d.Y() - 2_in},
+                                            1_deg};
     constexpr auto gamePiece2_3d =
         field_points::blue_alliance::game_pieces::gp_2 -
         frc::Translation3d{measure_up::chassis::length / 2 + measure_up::bumperExtension - 12_in, 0_m, 0_m};
@@ -222,6 +222,7 @@ namespace path_constraints {
     static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
 
     static const auto cableProtectorBackOut = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 7_fps_sq};
+    static const auto cableProtectorSplineOut = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 6.5_fps_sq};
     static const auto cableProtectorGridToGp3 = frc::TrapezoidProfile<units::inches>::Constraints{5_fps, 6_fps_sq};
     static const auto gp3ToScore = frc::TrapezoidProfile<units::inches>::Constraints{4.5_fps, 5_fps_sq};
     static const auto gp2ToScore = frc::TrapezoidProfile<units::inches>::Constraints{6_fps, 5_fps_sq};
@@ -247,6 +248,8 @@ namespace path_constraints {
         frc::TrapezoidProfile<units::degrees>::Constraints{360_deg_per_s, 360_deg_per_s_sq};
 
     static const auto cableProtectorBackOut =
+        frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
+    static const auto cableProtectorSplineOut =
         frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
     static const auto cableProtectorGridToGp3 =
         frc::TrapezoidProfile<units::degrees>::Constraints{300_deg_per_s, 300_deg_per_s_sq};
