@@ -68,7 +68,6 @@ RobotContainer::RobotContainer()
     , m_auto3gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoCableProtector2Gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
-    , m_autoCableProtector3Gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoCableProtector3GpOuiOui{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
@@ -81,7 +80,6 @@ RobotContainer::RobotContainer()
                       &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
                       &m_autoCableProtector2Gp,
-                      &m_autoCableProtector3Gp,
                       &m_autoCableProtector3GpOuiOui,
                       &m_auto3gp,
                       &m_autoScorePickupBalanceCone,

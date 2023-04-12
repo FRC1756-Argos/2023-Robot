@@ -222,6 +222,7 @@ namespace path_constraints {
     static const auto loadingStationPullIn = frc::TrapezoidProfile<units::inches>::Constraints{6.5_fps, 10_fps_sq};
 
     static const auto cableProtectorBackOut = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 7_fps_sq};
+    static const auto cableProtectorBackOut2Gp = frc::TrapezoidProfile<units::inches>::Constraints{4.5_fps, 5_fps_sq};
     static const auto cableProtectorSplineOut = frc::TrapezoidProfile<units::inches>::Constraints{7_fps, 6.5_fps_sq};
     static const auto cableProtectorGridToGp3 = frc::TrapezoidProfile<units::inches>::Constraints{5_fps, 6_fps_sq};
     static const auto gp3ToScore = frc::TrapezoidProfile<units::inches>::Constraints{4.5_fps, 5_fps_sq};
