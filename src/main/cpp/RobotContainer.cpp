@@ -72,6 +72,8 @@ RobotContainer::RobotContainer()
     , m_autoCableProtector3GpOuiOui{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
+    , m_autoRightSlamGrabBalance{m_swerveDrive, m_ledSubSystem, m_ouiOuiPlacerSubsystem, m_lifter, m_bash, m_intake}
+    , m_autoLeftSlamGrabBalance{m_swerveDrive, m_ledSubSystem, m_ouiOuiPlacerSubsystem, m_lifter, m_bash, m_intake}
     , m_autoSelector{{&m_autoNothing,
                       // &m_autoDriveTuning, // This is just for tuning auto path follower
                       &m_autoDriveForward,
@@ -85,7 +87,9 @@ RobotContainer::RobotContainer()
                       &m_autoCableProtector3GpOuiOui,
                       &m_auto3gp,
                       &m_autoScorePickupBalanceCone,
-                      &m_autoOnlyBalance},
+                      &m_autoOnlyBalance,
+                      &m_autoRightSlamGrabBalance,
+                      &m_autoLeftSlamGrabBalance},
                      &m_autoNothing}
     , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
@@ -564,6 +568,8 @@ void RobotContainer::ConfigureBindings() {
   // SWAP CONTROLLERS TRIGGER ACTIVATION
   (driverTriggerSwapCombo || operatorTriggerSwapCombo)
       .WhileTrue(argos_lib::SwapControllersCommand(&m_controllers).ToPtr());
+
+  startupExtensionHomeTrigger.OnTrue(&m_homeArmExtensionCommand);
 
   // * Uncomment this line to re-enable bash homing
   // startupBashGuardHomeTrigger.OnTrue(BashGuardHomingCommand(m_bash).ToPtr());

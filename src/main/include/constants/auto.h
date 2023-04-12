@@ -30,6 +30,16 @@ namespace timeouts {
   /// @brief The max ammount of time the robot is allowed to talk while slamming a cone using the oui oui placer
   constexpr units::millisecond_t robotSlamCone = units::millisecond_t{1500};
   /// @todo add max time the robot should take to level the charge station
+  namespace slam_grab {
+    namespace right {
+      /// @brief Time to travel from charge station to game piece on right slam grab
+      constexpr auto toGamePiece = units::millisecond_t{1500};
+    }  // namespace right
+    namespace left {
+      /// @brief Time to travel from charge station to game piece on left slam grab
+      constexpr auto toGamePiece = units::millisecond_t{1500};
+    }  // namespace left
+  }    // namespace slam_grab
 }  // namespace timeouts
 
 namespace place_positions {
@@ -68,6 +78,15 @@ namespace place_positions {
 
 namespace starting_positions {
   namespace blue_alliance {
+    // * "right" and "left" here are relative to behind the glass, to make communication easier for drive team
+    constexpr auto rightSlamGrab3d =
+        field_points::blue_alliance::coop_grid::middleRowLeft.m_position +
+        frc::Translation3d{
+            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
+    constexpr auto leftSlamGrab3d =
+        field_points::blue_alliance::coop_grid::middleRowRight.m_position +
+        frc::Translation3d{
+            field_points::grids::gridDepth + measure_up::chassis::length / 2 + measure_up::bumperExtension, 0_m, 0_m};
     constexpr auto loadingStationCone3d =
         field_points::blue_alliance::inner_grid::middleRowLeft.m_position +
         frc::Translation3d{
@@ -75,6 +94,12 @@ namespace starting_positions {
     constexpr auto loadingStationCone = frc::Pose2d{{starting_positions::blue_alliance::loadingStationCone3d.X(),
                                                      starting_positions::blue_alliance::loadingStationCone3d.Y()},
                                                     180_deg};
+    constexpr auto rightSlamGrab = frc::Pose2d{{starting_positions::blue_alliance::rightSlamGrab3d.X(),
+                                                starting_positions::blue_alliance::rightSlamGrab3d.Y()},
+                                               0_deg};
+    constexpr auto leftSlamGrab = frc::Pose2d{
+        {starting_positions::blue_alliance::leftSlamGrab3d.X(), starting_positions::blue_alliance::leftSlamGrab3d.Y()},
+        0_deg};
 
     constexpr auto cableProtectorCone3d =
         field_points::blue_alliance::outer_grid::topRowRight.m_position +
@@ -106,6 +131,10 @@ namespace starting_positions {
                     1_deg};
   }  // namespace blue_alliance
   namespace red_alliance {
+    // * "right" and "left" here are relative to behind the glass, to make communication easier for drive team
+    static const auto rightSlamGrab = utils::ReflectFieldPoint(starting_positions::blue_alliance::rightSlamGrab);
+    static const auto leftSlamGrab = utils::ReflectFieldPoint(starting_positions::blue_alliance::leftSlamGrab);
+
     static const auto loadingStationCone =
         utils::ReflectFieldPoint(starting_positions::blue_alliance::loadingStationCone);
     static const auto cableProtectorCone =
@@ -158,7 +187,31 @@ namespace interim_waypoints {
                          measure_up::bumperExtension + fudges::stationStageFudge,
                      field_points::blue_alliance::charge_station::chargeStationCenter.Y()},
                     180_deg};
-  }  // namespace blue_alliance
+
+    // * Interim waypoints for slam grab command(s)
+    namespace slam_grab {
+      namespace right {
+        /// @brief Angle from after charge station to picking up game piece
+        constexpr auto angleToPickup = -5_deg;
+        /// @brief Expected position after driving over charge station. Assume robot yaw is 0° and oui oui is on robot right
+        constexpr auto afterDriveOverCharge = frc::Pose2d{
+            {field_points::charge_station::outerEdgeX + measure_up::chassis::length / 2 + measure_up::bumperExtension,
+             field_points::blue_alliance::coop_grid::middleRowLeft.m_position.Y() -
+                 measure_up::oui_oui_place::lateralOffset},
+            0_deg};
+      }  // namespace right
+      namespace left {
+        /// @brief Angle from after charge station to picking up game piece
+        constexpr auto angleToPickup = 0_deg;
+        /// @brief Expected position after driving over charge station. Assume robot yaw is 0° and oui oui is on robot left
+        constexpr auto afterDriveOverCharge = frc::Pose2d{
+            {field_points::charge_station::outerEdgeX + measure_up::chassis::length / 2 + measure_up::bumperExtension,
+             field_points::blue_alliance::coop_grid::middleRowLeft.m_position.Y() +
+                 measure_up::oui_oui_place::lateralOffset},
+            0_deg};
+      }  // namespace left
+    }    // namespace slam_grab
+  }      // namespace blue_alliance
   namespace red_alliance {
     static const auto backAwayFromLoadingStationCone =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromLoadingStationCone);
@@ -174,7 +227,26 @@ namespace interim_waypoints {
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::chargingStationStage);
     static const auto backAwayFromCableProtectorConeReverse =
         utils::ReflectFieldPoint(interim_waypoints::blue_alliance::backAwayFromCableProtectorConeReverse);
-  }  // namespace red_alliance
+    namespace slam_grab {
+      namespace right {
+        /// @brief Angle from after charge station to picking up game piece
+        static const auto angleToPickup =
+            utils::ReflectAngle(interim_waypoints::blue_alliance::slam_grab::right::angleToPickup);
+        /// @brief Expected position after driving over charge station. Assume robot yaw is 0° and oui oui is on robot right
+        static const auto afterDriveOverCharge =
+            utils::ReflectFieldPoint(interim_waypoints::blue_alliance::slam_grab::right::afterDriveOverCharge);
+      }  // namespace right
+      namespace left {
+        /// @brief Angle from after charge station to picking up game piece
+        static const auto angleToPickup =
+            utils::ReflectAngle(interim_waypoints::blue_alliance::slam_grab::left::angleToPickup);
+        /// @brief Expected position after driving over charge station. Assume robot yaw is 0° and oui oui is on robot left
+        static const auto afterDriveOverCharge =
+            utils::ReflectFieldPoint(interim_waypoints::blue_alliance::slam_grab::left::afterDriveOverCharge);
+
+      }  // namespace left
+    }    // namespace slam_grab
+  }      // namespace red_alliance
 }  // namespace interim_waypoints
 
 namespace game_piece_pickup {

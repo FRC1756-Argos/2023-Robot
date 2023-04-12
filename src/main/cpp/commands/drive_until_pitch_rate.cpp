@@ -4,6 +4,10 @@
 
 #include "commands/drive_until_pitch_rate.h"
 
+// REMOVEME debugging
+#include <frc/smartdashboard/SmartDashboard.h>
+// ! end
+
 DriveUntilPitchRate::DriveUntilPitchRate(SwerveDriveSubsystem* swerveDrive,
                                          units::degree_t velAngle,
                                          double power,
@@ -28,7 +32,7 @@ DriveUntilPitchRate::DriveUntilPitchRate(SwerveDriveSubsystem* swerveDrive,
 void DriveUntilPitchRate::Initialize() {
   m_velocityRamper.Reset(m_initialPower);
   m_startTime = std::chrono::high_resolution_clock::now();
-  // std::printf("Driving to pitch rate: %0.2f\n", m_pitchRateGoal.to<double>());
+  std::printf("[ERROR] Driving to pitch rate: %0.2f\n", m_pitchRateGoal.to<double>());
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -69,8 +73,11 @@ bool DriveUntilPitchRate::IsFinished() {
       finished = pitchRate <= m_pitchRateGoal;
       break;
   }
-  // if (finished) {
-  //   std::printf("---> pitch rate: %0.2f\n", pitchRate.to<double>());
-  // }
+  if (finished) {
+    std::printf("[ERROR] ---> pitch rate: %0.2f\n", pitchRate.to<double>());
+  }
+  // REMOVEME debuggini
+  frc::SmartDashboard::PutNumber("DriveUntilPitchRate/Finished? ", static_cast<double>(finished));
+  // ! end
   return finished;
 }
