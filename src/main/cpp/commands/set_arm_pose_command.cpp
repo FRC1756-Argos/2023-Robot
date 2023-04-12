@@ -296,7 +296,7 @@ void SetArmPoseCommand::Initialize() {
 
   auto bashGuardPath = path_planning::GenerateProfiledBashGuard(m_bashGuard->GetBashGuardExtension(),
                                                                 targetBashGuardPosition,
-                                                                {.maxVelocity = 120_ips, .maxAcceleration = 120_ips2},
+                                                                {.maxVelocity = 200_ips, .maxAcceleration = 200_ips2},
                                                                 50_ms);
   auto generalArmPath = path_planning::GenerateProfiledPath(
       desiredPath,

@@ -615,11 +615,13 @@ void RobotContainer::ConfigureBindings() {
   (gamepieceLostTrigger.Debounce(200_ms) && !intakeConeTrigger && !intakeCubeTrigger && !scoreConeTrigger &&
    !scoreCubeTrigger)
       .OnTrue(frc2::InstantCommand([this]() {
-                m_controllers.DriverController().SetVibration(
-                    argos_lib::TemporaryVibrationPattern(argos_lib::VibrationAlternatePulse(250_ms, 1.0), 500_ms));
-                m_ledSubSystem.TemporaryAnimate(
-                    [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kWhite, false); },
-                    500_ms);
+                if (frc::DriverStation::IsTeleop()) {
+                  m_controllers.DriverController().SetVibration(
+                      argos_lib::TemporaryVibrationPattern(argos_lib::VibrationConstant(0.0, 1.0), 500_ms));
+                  m_ledSubSystem.TemporaryAnimate(
+                      [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kWhite, false); },
+                      500_ms);
+                }
               }).ToPtr());
 
   ledMissileSwitchTrigger.OnTrue(frc2::InstantCommand(
