@@ -29,7 +29,7 @@ Robot code for 2023 FRC season
 | ------- | ---------- | ------- |
 | Continuous 100% | Both | Swapping controllers activated.  Swap occurs after vibration ends |
 | 500 ms pulse (along with green flash LEDs) | Driver | Game piece detected in intake while driver is intaking |
-| 500 ms pulse (along with white flash LEDs) | Driver | Game piece lost |
+| 500 ms right only (along with white flash LEDs) | Driver | Game piece lost |
 
 ## FTP
 
