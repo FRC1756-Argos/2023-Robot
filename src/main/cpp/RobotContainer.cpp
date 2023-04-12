@@ -72,8 +72,13 @@ RobotContainer::RobotContainer()
     , m_autoCableProtector3GpOuiOui{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
-    , m_autoRightSlamGrabBalance{m_swerveDrive, m_ledSubSystem, m_ouiOuiPlacerSubsystem, m_lifter, m_bash, m_intake}
-    , m_autoLeftSlamGrabBalance{m_swerveDrive, m_ledSubSystem, m_ouiOuiPlacerSubsystem, m_lifter, m_bash, m_intake}
+    , m_autoLoadingStationSlamGrab{m_swerveDrive, m_ledSubSystem, m_ouiOuiPlacerSubsystem, m_lifter, m_bash, m_intake}
+    , m_autoCableProtectorSlamGrabBalance{m_swerveDrive,
+                                          m_ledSubSystem,
+                                          m_ouiOuiPlacerSubsystem,
+                                          m_lifter,
+                                          m_bash,
+                                          m_intake}
     , m_autoSelector{{&m_autoNothing,
                       // &m_autoDriveTuning, // This is just for tuning auto path follower
                       &m_autoDriveForward,
@@ -88,8 +93,8 @@ RobotContainer::RobotContainer()
                       &m_auto3gp,
                       &m_autoScorePickupBalanceCone,
                       &m_autoOnlyBalance,
-                      &m_autoRightSlamGrabBalance,
-                      &m_autoLeftSlamGrabBalance},
+                      &m_autoLoadingStationSlamGrab,
+                      &m_autoCableProtectorSlamGrabBalance},
                      &m_autoNothing}
     , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}

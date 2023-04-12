@@ -21,16 +21,16 @@
 #include "commands/autonomous/autonomous_cable_protector_3gp.h"
 #include "commands/autonomous/autonomous_cable_protector_3gp_oui_oui.h"
 #include "commands/autonomous/autonomous_cable_protector_place_exit.h"
+#include "commands/autonomous/autonomous_cable_protector_slam_grab_balance.h"
 #include "commands/autonomous/autonomous_drive_forward.h"
 #include "commands/autonomous/autonomous_drive_tuning.h"
-#include "commands/autonomous/autonomous_left_slam_grab_balance.h"
+#include "commands/autonomous/autonomous_load_station_slam_grab_balance.h"
 #include "commands/autonomous/autonomous_loading_station_2_cone.h"
 #include "commands/autonomous/autonomous_loading_station_3gp.h"
 #include "commands/autonomous/autonomous_loading_station_cone_cube_score.h"
 #include "commands/autonomous/autonomous_nothing.h"
 #include "commands/autonomous/autonomous_only_balance.h"
 #include "commands/autonomous/autonomous_place_exit.h"
-#include "commands/autonomous/autonomous_right_slam_grab_balance.h"
 #include "commands/autonomous/autonomous_score_cone_pickup_balance.h"
 #include "controls/operator_control_box.h"
 #include "subsystems/bash_guard_subsystem.h"
@@ -114,8 +114,8 @@ class RobotContainer {
   AutonomousCableProtector3GPOuiOui m_autoCableProtector3GpOuiOui;
   AutonomousCableProtectorPlaceExit m_autoCablePlaceExit;
   AutonomousScoreConePickupBalance m_autoScorePickupBalanceCone;
-  AutonomousRightSlamGrabBalance m_autoRightSlamGrabBalance;
-  AutonomousLeftSlamGrabBalance m_autoLeftSlamGrabBalance;
+  AutoLoadStationSlamGrabBalance m_autoLoadingStationSlamGrab;
+  AutoCableProtectSlamGrabBalance m_autoCableProtectorSlamGrabBalance;
 
   AutoSelector m_autoSelector;
 

@@ -24,16 +24,16 @@
  * directly; this is crucially important, or else the decorator functions in
  * Command will *not* work!
  */
-class AutonomousRightSlamGrabBalance
-    : public frc2::CommandHelper<frc2::CommandBase, AutonomousRightSlamGrabBalance>
+class AutoCableProtectSlamGrabBalance
+    : public frc2::CommandHelper<frc2::CommandBase, AutoCableProtectSlamGrabBalance>
     , public AutonomousCommand {
  public:
-  AutonomousRightSlamGrabBalance(SwerveDriveSubsystem& drive,
-                                 SimpleLedSubsystem& leds,
-                                 OuiOuiPlacerSubsystem& ouiOui,
-                                 LifterSubsystem& lifter,
-                                 BashGuardSubsystem& bash,
-                                 IntakeSubsystem& intake);
+  AutoCableProtectSlamGrabBalance(SwerveDriveSubsystem& drive,
+                                  SimpleLedSubsystem& leds,
+                                  OuiOuiPlacerSubsystem& ouiOui,
+                                  LifterSubsystem& lifter,
+                                  BashGuardSubsystem& bash,
+                                  IntakeSubsystem& intake);
 
   void Initialize() override;
 
