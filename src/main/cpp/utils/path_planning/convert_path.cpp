@@ -61,7 +61,8 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
   compositePath.shoulderPath.reserve(generalPath.size());
 
   bool bashGuardStationary = bashGuardPath.empty() || bashGuardPath.front().position == bashGuardPath.back().position;
-  bool bashGuardRetracting = !bashGuardStationary && bashGuardPath.back().position < bashGuardPath.front().position;
+  [[maybe_unused]] bool bashGuardRetracting =
+      !bashGuardStationary && bashGuardPath.back().position < bashGuardPath.front().position;
 
   // Not necessary when not syncing paths
   // auto bashGuardPathTime =
@@ -80,15 +81,16 @@ CompositeMPPath path_planning::GenerateCompositeMPPath(ArmMPPath generalPath,
   //                                          return runningSum + newPoint.time;
   //                                        });
 
-  if (bashGuardRetracting) {
-    compositePath.bashGuardPath = PadProfile(compositePath.bashGuardPath, 500_ms, true);
-  } else if (!bashGuardStationary) {
-    // Disable padding that delays arm since there's no chance of arm hitting bash guard anymore
-    // auto timeDelta = generalPathTime - bashGuardPathTime;
-    // if (timeDelta < 500_ms) {
-    //   generalPath = PadProfile(generalPath, 500_ms - timeDelta, true);
-    // }
-  }
+  // Just run bash guards at the beginning to get them out of the way faster (#196)
+  // if (bashGuardRetracting) {
+  //   compositePath.bashGuardPath = PadProfile(compositePath.bashGuardPath, 500_ms, true);
+  // } else if (!bashGuardStationary) {
+  //   // Disable padding that delays arm since there's no chance of arm hitting bash guard anymore
+  //   // auto timeDelta = generalPathTime - bashGuardPathTime;
+  //   // if (timeDelta < 500_ms) {
+  //   //   generalPath = PadProfile(generalPath, 500_ms - timeDelta, true);
+  //   // }
+  // }
 
   for (const auto& point : generalPath) {
     const ArmPathPoint armPositionVector(point.position.x - shoulderFulcrum.x, point.position.z - shoulderFulcrum.z);
