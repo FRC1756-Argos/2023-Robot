@@ -296,7 +296,7 @@ void SwerveDriveSubsystem::SwerveDrive(const double fwVelocity, const double sid
     }
 
     const auto controllerChassisSpeeds =
-        m_followerController.Calculate(m_poseEstimator.GetEstimatedPosition(), desiredProfileState, desiredAngle);
+        m_followerController.Calculate(GetContinuousOdometry(), desiredProfileState, desiredAngle);
     moduleStates = m_swerveDriveKinematics.ToSwerveModuleStates(controllerChassisSpeeds);
     frc::SmartDashboard::PutNumber("SwerveFollower/Desired X",
                                    units::inch_t{desiredProfileState.pose.X()}.to<double>());

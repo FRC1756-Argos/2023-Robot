@@ -42,7 +42,7 @@ void AutonomousCableProtector2Gp::Initialize() {
 
   std::vector<frc::Translation2d> splineScoreToGp3WaypointsBlue{{15.96_ft, 1.65_ft}};
   auto splineScoreToGp3Cp0Blue = ConvertToControlVector(6.97_ft, 1.726_ft, 1.8_ft, 0_ft);
-  auto splineScoreToGp3Cp1Blue = ConvertToControlVector(21.741_ft, 2.96_ft, 2.856_ft, 0_ft);
+  auto splineScoreToGp3Cp1Blue = ConvertToControlVector(22.6_ft, 1.96_ft, 2.856_ft, 0_ft);
 
   auto splineScoreToGp3Cp0 = blueAlliance ? splineScoreToGp3Cp0Blue : utils::ReflectFieldPoint(splineScoreToGp3Cp0Blue);
   auto splineScoreToGp3Cp1 = blueAlliance ? splineScoreToGp3Cp1Blue : utils::ReflectFieldPoint(splineScoreToGp3Cp1Blue);
@@ -50,8 +50,8 @@ void AutonomousCableProtector2Gp::Initialize() {
       blueAlliance ? splineScoreToGp3WaypointsBlue : utils::ReflectFieldPoint(splineScoreToGp3WaypointsBlue);
 
   std::vector<frc::Translation2d> splineGp3ToScoreWaypointsBlue{{14.5_ft, 2.75_ft}};
-  auto splineGp3ToScoreCp0Blue = ConvertToControlVector(21.562_ft, 3.000_ft, -0.737_ft, 0.017_ft);
-  auto splineGp3ToScoreCp1Blue = ConvertToControlVector(9_ft, 3.4_ft, -6.587_ft, 0_ft);
+  auto splineGp3ToScoreCp0Blue = ConvertToControlVector(22.6_ft, 1.96_ft, -0.737_ft, 0.017_ft);
+  auto splineGp3ToScoreCp1Blue = ConvertToControlVector(7.2_ft, 3.4_ft, -6.587_ft, 0_ft);
 
   auto splineGp3ToScoreCp0 = blueAlliance ? splineGp3ToScoreCp0Blue : utils::ReflectFieldPoint(splineGp3ToScoreCp0Blue);
   auto splineGp3ToScoreCp1 = blueAlliance ? splineGp3ToScoreCp1Blue : utils::ReflectFieldPoint(splineGp3ToScoreCp1Blue);
@@ -59,22 +59,13 @@ void AutonomousCableProtector2Gp::Initialize() {
       blueAlliance ? splineGp3ToScoreWaypointsBlue : utils::ReflectFieldPoint(splineGp3ToScoreWaypointsBlue);
 
   std::vector<frc::Translation2d> splineScoreToGp2WaypointsBlue{{16.102_ft, 1.861_ft}};
-  auto splineScoreToGp2Cp0Blue = ConvertToControlVector(9_ft, 3.4_ft, 5.839_ft, -0.287_ft);
+  auto splineScoreToGp2Cp0Blue = ConvertToControlVector(7.2_ft, 3.4_ft, 5.839_ft, -0.287_ft);
   auto splineScoreToGp2Cp1Blue = ConvertToControlVector(25.4_ft, 5.0_ft, 0_ft, 12.3_ft);
 
   auto splineScoreToGp2Cp0 = blueAlliance ? splineScoreToGp2Cp0Blue : utils::ReflectFieldPoint(splineScoreToGp2Cp0Blue);
   auto splineScoreToGp2Cp1 = blueAlliance ? splineScoreToGp2Cp1Blue : utils::ReflectFieldPoint(splineScoreToGp2Cp1Blue);
   auto splineScoreToGp2Waypoints =
       blueAlliance ? splineScoreToGp2WaypointsBlue : utils::ReflectFieldPoint(splineScoreToGp2WaypointsBlue);
-
-  std::vector<frc::Translation2d> splineGp2ToScoreWaypointsBlue{};
-  auto splineGp2ToScoreCp0Blue = ConvertToControlVector(23.407_ft, 5.211_ft, 0.155_ft, -10.173_ft);
-  auto splineGp2ToScoreCp1Blue = ConvertToControlVector(15.951_ft, 2.493_ft, -4.66_ft, 0.078_ft);
-
-  auto splineGp2ToScoreCp0 = blueAlliance ? splineGp2ToScoreCp0Blue : utils::ReflectFieldPoint(splineGp2ToScoreCp0Blue);
-  auto splineGp2ToScoreCp1 = blueAlliance ? splineGp2ToScoreCp1Blue : utils::ReflectFieldPoint(splineGp2ToScoreCp1Blue);
-  auto splineGp2ToScoreWaypoints =
-      blueAlliance ? splineGp2ToScoreWaypointsBlue : utils::ReflectFieldPoint(splineGp2ToScoreWaypointsBlue);
 
   m_leds.ColorSweep(m_leds.GetAllianceColor(), true);
 
@@ -86,7 +77,7 @@ void AutonomousCableProtector2Gp::Initialize() {
                         &m_lifter,
                         &m_intake,
                         scoring_positions::lifter_extension_end::coneHigh.lifterPosition,
-                        ScoringPosition{.column = ScoringColumn::leftGrid_leftCone, .row = ScoringRow::high},
+                        ScoringPosition{.column = ScoringColumn::rightGrid_rightCone, .row = ScoringRow::high},
                     }
                         .ToPtr())
                        // Drive forward to game piece 3
@@ -96,23 +87,34 @@ void AutonomousCableProtector2Gp::Initialize() {
                                                       splineScoreToGp3Waypoints,
                                                       splineScoreToGp3Cp1,
                                                       pickupPosition1.Rotation().Degrees(),
-                                                      0_s,
-                                                      path_constraints::translation::gp3ToScore,
-                                                      path_constraints::rotation::gp3ToScore,
+                                                      2.1_s,
+                                                      path_constraints::translation::cableProtectorBackOut2Gp,
+                                                      path_constraints::rotation::cableProtectorBackOut,
                                                       0_fps,
                                                       0_fps}
                                     .ToPtr()
                                     .AlongWith(SetArmPoseCommand{
                                         &m_lifter,
                                         &m_bashGuard,
-                                        ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
+                                        ScoringPosition{ScoringColumn::rightGrid_rightCone, ScoringRow::low},
                                         frc::Translation2d{0_in, 0_in},
                                         []() { return false; },
                                         []() { return false; },
                                         PathType::componentWise,
                                         speeds::armKinematicSpeeds::effectorFastVelocity,
                                         speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                                   .ToPtr())
+                                                   .ToPtr()
+                                                   .AndThen(SetArmPoseCommand{
+                                                       &m_lifter,
+                                                       &m_bashGuard,
+                                                       ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
+                                                       frc::Translation2d{0_in, 0_in},
+                                                       []() { return false; },
+                                                       []() { return false; },
+                                                       PathType::componentWise,
+                                                       speeds::armKinematicSpeeds::effectorFastVelocity,
+                                                       speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                                                .ToPtr()))
                                     .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr())))
           // Drive back to place (and turn)
           .AndThen(
@@ -131,7 +133,7 @@ void AutonomousCableProtector2Gp::Initialize() {
                   .ToPtr()
                   .AlongWith(SetArmPoseCommand{&m_lifter,
                                                &m_bashGuard,
-                                               ScoringPosition{ScoringColumn::leftGrid_leftCone, ScoringRow::low},
+                                               ScoringPosition{ScoringColumn::rightGrid_rightCone, ScoringRow::low},
                                                frc::Translation2d{0_in, 0_in},
                                                []() { return false; },
                                                []() { return false; },
@@ -142,7 +144,7 @@ void AutonomousCableProtector2Gp::Initialize() {
                                  .AndThen(SetArmPoseCommand{
                                      &m_lifter,
                                      &m_bashGuard,
-                                     ScoringPosition{ScoringColumn::leftGrid_middleCube, ScoringRow::high},
+                                     ScoringPosition{ScoringColumn::rightGrid_middleCube, ScoringRow::high},
                                      frc::Translation2d{0_in, 0_in},
                                      []() { return false; },
                                      []() { return false; },
@@ -161,81 +163,27 @@ void AutonomousCableProtector2Gp::Initialize() {
                                     splineScoreToGp2Waypoints,
                                     splineScoreToGp2Cp1,
                                     pickupPosition2.Rotation().Degrees(),
-                                    2.0_s,
-                                    path_constraints::translation::cableProtectorBackOut2Gp,
-                                    path_constraints::rotation::cableProtectorBackOut2Gp,
+                                    1.5_s,
+                                    path_constraints::translation::cableProtectorBackOut,
+                                    path_constraints::rotation::cableProtectorBackOut,
                                     0_fps,
                                     0_fps}
                   .ToPtr()
-                  // Place cube
-                  .AlongWith(
-                      frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}
-                          .ToPtr()
-                          .AlongWith(frc2::WaitCommand{350_ms}.ToPtr())
-                          .AndThen(frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())
-                          .AndThen((SetArmPoseCommand{&m_lifter,
-                                                      &m_bashGuard,
-                                                      ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
-                                                      frc::Translation2d{0_in, 0_in},
-                                                      []() { return false; },
-                                                      []() { return false; },
-                                                      PathType::componentWise,
-                                                      speeds::armKinematicSpeeds::effectorFastVelocity,
-                                                      speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                        .ToPtr())
-                                       .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr()))))
-          // Drive back to place second game piece
-          .AndThen((DriveToPositionSpline{&m_drive,
-                                          splineGp2ToScoreCp0,
-                                          pickupPosition2.Rotation().Degrees(),
-                                          splineGp2ToScoreWaypoints,
-                                          splineGp2ToScoreCp1,
-                                          placePosition.Rotation().Degrees(),
-                                          0_s,
-                                          path_constraints::translation::gp2ToScore,
-                                          path_constraints::rotation::gp2ToScore,
-                                          0_fps,
-                                          0_fps}
-                        .ToPtr()
-                        .AlongWith(
-                            SetArmPoseCommand{&m_lifter,
-                                              &m_bashGuard,
-                                              ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
-                                              frc::Translation2d{0_in, 0_in},
-                                              []() { return false; },
-                                              []() { return false; },
-                                              PathType::componentWise,
-                                              speeds::armKinematicSpeeds::effectorVelocity,
-                                              speeds::armKinematicSpeeds::effectorAcceleration}
-                                .ToPtr()))
-                       // Stop intake
-                       .AlongWith(frc2::WaitCommand{750_ms}.ToPtr().AndThen(
-                           frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())))
-          // shoot game piece
-          .AndThen(
-              SetArmPoseCommand{&m_lifter,
-                                &m_bashGuard,
-                                ScoringPosition{ScoringColumn::rightGrid_middleCube, ScoringRow::middle},
-                                frc::Translation2d{0_in, 0_in},
-                                []() { return false; },
-                                []() { return false; },
-                                PathType::componentWise,
-                                speeds::armKinematicSpeeds::effectorVelocity,
-                                speeds::armKinematicSpeeds::effectorAcceleration}
-                  .ToPtr()
-                  .AlongWith((frc2::WaitCommand{150_ms}.ToPtr())
-                                 .AndThen(frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}.ToPtr().AlongWith(
-                                     frc2::WaitCommand{200_ms}.ToPtr()))))
-          .AndThen(SetArmPoseCommand{&m_lifter,
-                                     &m_bashGuard,
-                                     ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
-                                     frc::Translation2d{0_in, 0_in},
-                                     []() { return false; },
-                                     []() { return false; },
-                                     PathType::componentWise,
-                                     speeds::armKinematicSpeeds::effectorFastVelocity,
-                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
-                       .ToPtr());
+                  // Stow along the path
+                  .AlongWith(frc2::InstantCommand{[this]() { m_intake.EjectCube(); }}
+                                 .ToPtr()
+                                 .AlongWith(frc2::WaitCommand{350_ms}.ToPtr())
+                                 .AndThen(frc2::InstantCommand{[this]() { m_intake.IntakeStop(); }}.ToPtr())
+                                 .AndThen((SetArmPoseCommand{&m_lifter,
+                                                             &m_bashGuard,
+                                                             ScoringPosition{ScoringColumn::stow, ScoringRow::invalid},
+                                                             frc::Translation2d{0_in, 0_in},
+                                                             []() { return false; },
+                                                             []() { return false; },
+                                                             PathType::componentWise,
+                                                             speeds::armKinematicSpeeds::effectorFastVelocity,
+                                                             speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                               .ToPtr()))));
   m_allCommands.get()->Initialize();
 }
 
@@ -258,7 +206,7 @@ bool AutonomousCableProtector2Gp::IsFinished() {
 
 /* Autonomous Command Methods */
 std::string AutonomousCableProtector2Gp::GetName() const {
-  return "Cable Protector 2GP + shoot";
+  return "Cable Protector 2GP + Backout Stow";
 }
 
 frc2::Command* AutonomousCableProtector2Gp::GetCommand() {
