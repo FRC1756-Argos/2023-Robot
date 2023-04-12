@@ -37,7 +37,7 @@ units::degree_t argos_lib::angle::ConstrainAngle(units::degree_t inVal,
                                                  units::degree_t minVal,
                                                  units::degree_t maxVal) {
   const auto range = maxVal - minVal;
-  inVal = units::math::fmod(inVal - minVal, maxVal - minVal);
+  inVal = units::math::fmod(inVal - minVal, range);
   if (inVal < 0_deg) {
     inVal += range;
   }

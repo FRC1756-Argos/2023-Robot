@@ -43,7 +43,7 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
                   // Final Approach to center
                   DriveUntilPitchRate{m_pDrive,
                                       m_approachAngle,
-                                      0.06,
+                                      0.15,
                                       0.15,
                                       thresholds::robotTippingPitchRate * m_initialPitchSign,
                                       m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
@@ -52,16 +52,17 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
               .AndThen(
                   DriveUntilPitch{m_pDrive,
                                   m_approachAngle,
-                                  0.06,
-                                  0.06,
-                                  6_deg * m_initialPitchSign,
+                                  0.15,
+                                  0.15,
+                                  8_deg * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                   4_s}
                       .ToPtr())
               .AndThen(frc2::InstantCommand([this, drive]() {
-                         drive->SwerveDrive(m_approachAngle, m_approachForward ? 0.15 : -0.15);
+                         drive->SwerveDrive(180_deg + m_approachAngle,
+                                            -0.15);  /// @todo Why do both sign and angle need modified?
                        }).ToPtr())
-              .AndThen(frc2::WaitCommand(250_ms).ToPtr())
+              .AndThen(frc2::WaitCommand(150_ms).ToPtr())
               .AndThen(frc2::InstantCommand([this, drive]() {
                          drive->StopDrive();
                          drive->LockWheels();
