@@ -75,7 +75,7 @@ bool AutonomousCableProtectorPlaceExit::IsFinished() {
 }
 
 std::string AutonomousCableProtectorPlaceExit::GetName() const {
-  return "Cable Protector Place & Exit";
+  return "10. Cable Protector Mobility";
 }
 
 frc2::Command* AutonomousCableProtectorPlaceExit::GetCommand() {

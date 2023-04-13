@@ -75,15 +75,15 @@ RobotContainer::RobotContainer()
                       // &m_autoDriveTuning, // This is just for tuning auto path follower
                       &m_autoDriveForward,
                       &m_autoPlaceExit,
-                      &m_autoCablePlaceExit,
-                      &m_autoBalance,
-                      &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
-                      &m_autoCableProtector2Gp,
-                      &m_autoCableProtector3GpOuiOui,
-                      &m_auto3gp,
+                      &m_autoLoadingStation2Cone,
                       &m_autoScorePickupBalanceCone,
-                      &m_autoOnlyBalance},
+                      &m_auto3gp,
+                      &m_autoOnlyBalance,
+                      &m_autoBalance,
+                      &m_autoCablePlaceExit,
+                      &m_autoCableProtector2Gp,
+                      &m_autoCableProtector3GpOuiOui},
                      &m_autoNothing}
     , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}

@@ -206,7 +206,7 @@ bool AutonomousCableProtector2Gp::IsFinished() {
 
 /* Autonomous Command Methods */
 std::string AutonomousCableProtector2Gp::GetName() const {
-  return "Cable Protector 2GP + Backout Stow";
+  return "11. Cable Protector Cone Cube";
 }
 
 frc2::Command* AutonomousCableProtector2Gp::GetCommand() {

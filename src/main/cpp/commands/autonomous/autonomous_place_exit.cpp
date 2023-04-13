@@ -73,7 +73,7 @@ bool AutonomousPlaceExit::IsFinished() {
 }
 
 std::string AutonomousPlaceExit::GetName() const {
-  return "Loading Station Place and Exit";
+  return "02. Loading Station Place and Exit";
 }
 
 frc2::Command* AutonomousPlaceExit::GetCommand() {
