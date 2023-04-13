@@ -788,3 +788,18 @@ void SwerveDriveSubsystem::ResetIMUYaw() {
 frc::ChassisSpeeds SwerveDriveSubsystem::GetChassisVelocity() {
   return m_swerveDriveKinematics.ToChassisSpeeds(GetCurrentModuleStates());
 }
+
+// REMOVEME debugging
+void SwerveDriveSubsystem::PutHerInNeuturalTerry() {
+  m_backRight.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  m_frontRight.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  m_frontLeft.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  m_backRight.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+}
+void SwerveDriveSubsystem::PutHerInBrakeTerry() {
+  m_backRight.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  m_frontRight.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  m_frontLeft.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  m_backRight.m_drive.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+}
+// ! end

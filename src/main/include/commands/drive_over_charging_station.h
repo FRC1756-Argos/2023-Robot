@@ -12,7 +12,10 @@
 
 class DriveOverChargingStation : public frc2::CommandHelper<frc2::CommandBase, DriveOverChargingStation> {
  public:
-  DriveOverChargingStation(SwerveDriveSubsystem* drive, units::degree_t approachAngle, units::degree_t robotYaw);
+  DriveOverChargingStation(SwerveDriveSubsystem* drive,
+                           units::degree_t approachAngle,
+                           units::degree_t robotYaw,
+                           bool extraDrive = true);
 
   void Initialize() override;
 
@@ -26,6 +29,7 @@ class DriveOverChargingStation : public frc2::CommandHelper<frc2::CommandBase, D
   SwerveDriveSubsystem* m_pDrive;         ///< Raw pointer to swerve drive subsystem object
   const units::degree_t m_approachAngle;  ///< Angle of drive direction relative to field-centric
   units::degree_t m_robotYawAngle;        ///< Robot orientation
+  const bool m_extraDrive;
   const bool m_approachForward;
   const int m_initialPitchSign;
   frc2::CommandPtr m_commands;  ///< Commands to execute

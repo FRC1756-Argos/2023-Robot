@@ -18,10 +18,12 @@
 
 DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                                    units::degree_t approachAngle,
-                                                   units::degree_t robotYaw)
+                                                   units::degree_t robotYaw,
+                                                   bool extraDrive)
     : m_pDrive{drive}
     , m_approachAngle{approachAngle}
     , m_robotYawAngle{robotYaw}
+    , m_extraDrive{extraDrive}
     , m_approachForward{units::math::abs(
                             argos_lib::angle::ConstrainAngle(robotYaw - approachAngle, -180_deg, 180_deg)) < 90_deg}
     , m_initialPitchSign{m_approachForward ? 1 : -1}
@@ -71,21 +73,10 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                   m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
                                   2_s}
                       .ToPtr())
-              .AndThen(frc2::InstantCommand([this, drive, approachAngle]() {
-                         // REMOVEME debugging
-                         frc::SmartDashboard::PutBoolean("DriveOverChargeStation/Drive by approach angle?", true);
-                         // ! end
-
-                         drive->SwerveDrive(approachAngle, 0.2);
-                       })
+              .AndThen(frc2::InstantCommand([this, drive, approachAngle]() { drive->SwerveDrive(approachAngle, 0.2); })
                            .ToPtr()
-                           .AndThen(frc2::WaitCommand{750_ms}.ToPtr())
-                           .AndThen(frc2::InstantCommand([this, drive]() {
-                                      drive->StopDrive();  // REMOVEME debugging
-                                      frc::SmartDashboard::PutBoolean("DriveOverChargeStation/Stopped Drivetrain? ",
-                                                                      true);
-                                      // ! end
-                                    }).ToPtr()))} {}
+                           .AndThen(frc2::WaitCommand{extraDrive ? 750_ms : 0_ms}.ToPtr())
+                           .AndThen(frc2::InstantCommand([this, drive]() { drive->StopDrive(); }).ToPtr()))} {}
 
 // Called when the command is initially scheduled.
 void DriveOverChargingStation::Initialize() {
@@ -99,9 +90,6 @@ void DriveOverChargingStation::Execute() {
 
 // Called once the command ends or is interrupted.
 void DriveOverChargingStation::End(bool interrupted) {
-  // REMOVEME debugging
-  frc::SmartDashboard::PutBoolean("DriveOverChargeStation/Was Cancelled? ", interrupted);
-  // ! end
   if (interrupted) {
     m_commands.Cancel();
   }
@@ -110,8 +98,5 @@ void DriveOverChargingStation::End(bool interrupted) {
 // Returns true when the command should end.
 bool DriveOverChargingStation::IsFinished() {
   bool finished = m_commands.get()->IsFinished();
-  // REMOVEME debugging
-  frc::SmartDashboard::PutBoolean("DriveOverChargeStation/Is Finished? ", finished);
-  // ! end
   return finished;
 }

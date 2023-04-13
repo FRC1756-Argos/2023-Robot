@@ -64,7 +64,7 @@ void AutoLoadStationSlamGrabBalance::Initialize() {
                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
                                       .ToPtr()))
-          .AndThen(DriveOverChargingStation(&m_drive, 0_deg, 0_deg).ToPtr())
+          .AndThen(DriveOverChargingStation(&m_drive, 0_deg, 0_deg, false).ToPtr())
           .AndThen((DriveByTimeCommand{m_drive, angleToGamePiece, 0.3, timeToGamePiece}.ToPtr())
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bash,

@@ -7,6 +7,7 @@
 #include <frc/DriverStation.h>
 #include <frc2/command/Command.h>
 #include <frc2/command/InstantCommand.h>
+#include <frc2/command/WaitCommand.h>
 
 #include <string>
 
@@ -64,8 +65,8 @@ void AutoCableProtectSlamGrabBalance::Initialize() {
                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
                                       .ToPtr()))
-          .AndThen(DriveOverChargingStation(&m_drive, 0_deg, 0_deg).ToPtr())
-          .AndThen((DriveByTimeCommand{m_drive, angleToGamePiece, 0.3, timeToGamePiece}.ToPtr())
+          .AndThen(DriveOverChargingStation(&m_drive, 0_deg, 0_deg, false).ToPtr())
+          .AndThen((frc2::WaitCommand{750_ms}.ToPtr())
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bash,
                                                     ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
@@ -75,7 +76,8 @@ void AutoCableProtectSlamGrabBalance::Initialize() {
                                                     PathType::componentWise,
                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                      .ToPtr())
+                                      .ToPtr()))
+          .AndThen((DriveByTimeCommand{m_drive, angleToGamePiece, 0.15, timeToGamePiece}.ToPtr())
                        .AlongWith(frc2::InstantCommand{[this] { m_intake.IntakeCube(); }}.ToPtr()))
           .AndThen((SetArmPoseCommand{&m_lifter,
                                       &m_bash,
@@ -87,8 +89,8 @@ void AutoCableProtectSlamGrabBalance::Initialize() {
                                       speeds::armKinematicSpeeds::effectorFastVelocity,
                                       speeds::armKinematicSpeeds::effectorFastAcceleration}
                         .ToPtr()
-                        .AlongWith(frc2::InstantCommand{[this] { m_intake.IntakeStop(); }}.ToPtr())
-                        .AlongWith(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr())));
+                        .AlongWith(frc2::InstantCommand{[this] { m_intake.IntakeStop(); }}.ToPtr())));
+  // .AlongWith(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr())));
   m_allCommands.get()->Initialize();
 }
 

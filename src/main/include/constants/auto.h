@@ -37,7 +37,7 @@ namespace timeouts {
     }  // namespace loadStation
     namespace calbeProtector {
       /// @brief Time to travel from charge station to game piece on left slam grab
-      constexpr auto toGamePiece = units::millisecond_t{1500};
+      constexpr auto toGamePiece = units::millisecond_t{750};
     }  // namespace calbeProtector
   }    // namespace slam_grab
 }  // namespace timeouts
@@ -193,7 +193,7 @@ namespace interim_waypoints {
     namespace slam_grab {
       namespace loadStation {
         /// @brief Angle from after charge station to picking up game piece
-        constexpr auto angleToPickup = -5_deg;
+        constexpr auto angleToPickup = 5_deg;
         /// @brief Expected position after driving over charge station. Assume robot yaw is 0° and oui oui is on robot right
         constexpr auto afterDriveOverCharge = frc::Pose2d{
             {field_points::charge_station::outerEdgeX + measure_up::chassis::length / 2 + measure_up::bumperExtension,
@@ -203,7 +203,7 @@ namespace interim_waypoints {
       }  // namespace loadStation
       namespace cableProtector {
         /// @brief Angle from after charge station to picking up game piece
-        constexpr auto angleToPickup = 0_deg;
+        constexpr auto angleToPickup = -35_deg;
         /// @brief Expected position after driving over charge station. Assume robot yaw is 0° and oui oui is on robot left
         constexpr auto afterDriveOverCharge = frc::Pose2d{
             {field_points::charge_station::outerEdgeX + measure_up::chassis::length / 2 + measure_up::bumperExtension,
