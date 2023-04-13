@@ -56,7 +56,7 @@ bool AutonomousDriveForward::IsFinished() {
 }
 
 std::string AutonomousDriveForward::GetName() const {
-  return "Drive Forward";
+  return "01. Drive Forward";
 }
 
 frc2::Command* AutonomousDriveForward::GetCommand() {

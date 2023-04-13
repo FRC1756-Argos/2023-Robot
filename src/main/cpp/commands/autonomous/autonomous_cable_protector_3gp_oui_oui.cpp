@@ -241,7 +241,7 @@ bool AutonomousCableProtector3GPOuiOui::IsFinished() {
 
 /* Autonomous Command Methods */
 std::string AutonomousCableProtector3GPOuiOui::GetName() const {
-  return "OUI OUI Cable Protector 3 Game Piece";
+  return "12. Cable Protector 3 Game Piece";
 }
 
 frc2::Command* AutonomousCableProtector3GPOuiOui::GetCommand() {

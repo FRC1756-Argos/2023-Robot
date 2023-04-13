@@ -180,7 +180,7 @@ bool AutonomousLoadingStation2Cone::IsFinished() {
 }
 
 std::string AutonomousLoadingStation2Cone::GetName() const {
-  return "Loading Station 2 Cone";
+  return "04. Loading Station 2 Cone";
 }
 
 frc2::Command* AutonomousLoadingStation2Cone::GetCommand() {

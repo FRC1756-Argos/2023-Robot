@@ -260,7 +260,7 @@ bool AutonomousLoadingStation3GP::IsFinished() {
 
 /* Autonomous Command Methods */
 std::string AutonomousLoadingStation3GP::GetName() const {
-  return "OUI OUI Loading Station 3 Game Piece";
+  return "06. Loading Station 3 Game Piece";
 }
 
 frc2::Command* AutonomousLoadingStation3GP::GetCommand() {
