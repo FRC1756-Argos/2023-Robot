@@ -32,7 +32,10 @@ frc::Trajectory::State SwerveTrapezoidalSpline::Calculate(units::second_t time) 
 
 units::degree_t SwerveTrapezoidalSpline::HeadingSetpoint(units::second_t time) const {
   if (time >= m_turnDelay) {
-    return m_finalAngle;
+    if (time - m_turnDelay >= units::math::min((m_pathTrajectory.TotalTime() - m_turnDelay) / 2, 0.5_s)) {
+      return m_finalAngle;
+    }
+    return (m_finalAngle - m_initialAngle) / 2 + m_initialAngle;
   }
   return m_initialAngle;
 }
