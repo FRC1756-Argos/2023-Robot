@@ -7,14 +7,14 @@
 #include <commands/autonomous/autonomous_command.h>
 #include <frc2/command/CommandBase.h>
 #include <frc2/command/CommandHelper.h>
-#include <frc2/command/SequentialCommandGroup.h>
-#include <subsystems/bash_guard_subsystem.h>
-#include <subsystems/intake_subsystem.h>
-#include <subsystems/lifter_subsystem.h>
-#include <subsystems/simple_led_subsystem.h>
-#include <subsystems/swerve_drive_subsystem.h>
 
 #include <string>
+
+#include "subsystems/bash_guard_subsystem.h"
+#include "subsystems/intake_subsystem.h"
+#include "subsystems/lifter_subsystem.h"
+#include "subsystems/simple_led_subsystem.h"
+#include "subsystems/swerve_drive_subsystem.h"
 
 class AutonomousCableProtector2Gp
     : public frc2::CommandHelper<frc2::CommandBase, AutonomousCableProtector2Gp>

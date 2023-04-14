@@ -23,7 +23,7 @@ bool AutonomousNothing::IsFinished() {
 }
 
 std::string AutonomousNothing::GetName() const {
-  return "Do Nothing";
+  return "00. Do Nothing";
 }
 
 frc2::Command* AutonomousNothing::GetCommand() {

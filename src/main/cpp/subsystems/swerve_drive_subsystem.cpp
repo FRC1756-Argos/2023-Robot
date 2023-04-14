@@ -93,17 +93,19 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
                       frc2::PIDController{controlLoop::practice_bot::drive::linear_follower::kP,
                                           controlLoop::practice_bot::drive::linear_follower::kI,
                                           controlLoop::practice_bot::drive::linear_follower::kD})
-    , m_rotationalPID(
-          instance == argos_lib::RobotInstance::Competition ?
-              frc::ProfiledPIDController<units::radians>{controlLoop::comp_bot::drive::rotational_follower::kP,
-                                                         controlLoop::comp_bot::drive::rotational_follower::kI,
-                                                         controlLoop::comp_bot::drive::rotational_follower::kD,
-                                                         m_rotationalPIDConstraints} :
-              frc::ProfiledPIDController<units::radians>{controlLoop::practice_bot::drive::rotational_follower::kP,
-                                                         controlLoop::practice_bot::drive::rotational_follower::kI,
-                                                         controlLoop::practice_bot::drive::rotational_follower::kD,
-                                                         m_rotationalPIDConstraints})
-    , m_followerController{m_linearPID, m_linearPID, m_rotationalPID}
+    , m_followerController{m_linearPID,
+                           m_linearPID,
+                           instance == argos_lib::RobotInstance::Competition ?
+                               frc::ProfiledPIDController<units::radians>{
+                                   controlLoop::comp_bot::drive::rotational_follower::kP,
+                                   controlLoop::comp_bot::drive::rotational_follower::kI,
+                                   controlLoop::comp_bot::drive::rotational_follower::kD,
+                                   m_rotationalPIDConstraints} :
+                               frc::ProfiledPIDController<units::radians>{
+                                   controlLoop::practice_bot::drive::rotational_follower::kP,
+                                   controlLoop::practice_bot::drive::rotational_follower::kI,
+                                   controlLoop::practice_bot::drive::rotational_follower::kD,
+                                   m_rotationalPIDConstraints}}
     , m_driveMotorPIDTuner(
           "argos/drive/driveMotors",
           {&m_frontLeft.m_drive, &m_frontRight.m_drive, &m_backRight.m_drive, &m_backLeft.m_drive},
@@ -164,20 +166,41 @@ SwerveDriveSubsystem::SwerveDriveSubsystem(const argos_lib::RobotInstance instan
 
   InitializeMotors();
 
-  m_rotationalPID.EnableContinuousInput(-180_deg, 180_deg);
+  m_followerController.getThetaController().EnableContinuousInput(-180_deg, 180_deg);
 
   m_linearFollowerTuner_P.AddMonitor(
-      "kP", [this](double val) { m_linearPID.SetP(val); }, m_linearPID.GetP());
+      "kP",
+      [this](double val) {
+        m_followerController.getXController().SetP(val);
+        m_followerController.getYController().SetP(val);
+      },
+      m_followerController.getXController().GetP());
   m_linearFollowerTuner_I.AddMonitor(
-      "kI", [this](double val) { m_linearPID.SetI(val); }, m_linearPID.GetI());
+      "kI",
+      [this](double val) {
+        m_followerController.getXController().SetI(val);
+        m_followerController.getYController().SetI(val);
+      },
+      m_followerController.getXController().GetI());
   m_linearFollowerTuner_D.AddMonitor(
-      "kD", [this](double val) { m_linearPID.SetD(val); }, m_linearPID.GetD());
+      "kD",
+      [this](double val) {
+        m_followerController.getXController().SetD(val);
+        m_followerController.getYController().SetD(val);
+      },
+      m_followerController.getXController().GetD());
   m_rotationalFollowerTuner_P.AddMonitor(
-      "kP", [this](double val) { m_rotationalPID.SetP(val); }, m_rotationalPID.GetP());
+      "kP",
+      [this](double val) { m_followerController.getThetaController().SetP(val); },
+      m_followerController.getThetaController().GetP());
   m_rotationalFollowerTuner_I.AddMonitor(
-      "kI", [this](double val) { m_rotationalPID.SetI(val); }, m_rotationalPID.GetI());
+      "kI",
+      [this](double val) { m_followerController.getThetaController().SetI(val); },
+      m_followerController.getThetaController().GetI());
   m_rotationalFollowerTuner_D.AddMonitor(
-      "kD", [this](double val) { m_rotationalPID.SetD(val); }, m_rotationalPID.GetD());
+      "kD",
+      [this](double val) { m_followerController.getThetaController().SetD(val); },
+      m_followerController.getThetaController().GetD());
   m_rotationalFollowerConstraintTuner_vel.AddMonitor(
       "maxVel (deg_per_s)",
       [this](double val) {
@@ -302,8 +325,9 @@ void SwerveDriveSubsystem::SwerveDrive(const double fwVelocity, const double sid
                                    units::inch_t{desiredProfileState.pose.X()}.to<double>());
     frc::SmartDashboard::PutNumber("SwerveFollower/Desired Y",
                                    units::inch_t{desiredProfileState.pose.Y()}.to<double>());
-    frc::SmartDashboard::PutNumber("SwerveFollower/Desired Angle",
+    frc::SmartDashboard::PutNumber("SwerveFollower/Desired State Angle",
                                    desiredProfileState.pose.Rotation().Degrees().to<double>());
+    frc::SmartDashboard::PutNumber("SwerveFollower/Desired Angle", desiredAngle.to<double>());
     frc::SmartDashboard::PutNumber(
         "SwerveFollower/Desired Curvature",
         units::unit_t<units::compound_unit<units::degrees, units::inverse<units::feet>>>{desiredProfileState.curvature}
@@ -590,6 +614,8 @@ void SwerveDriveSubsystem::InitializeOdometry(const frc::Pose2d& currentPose) {
 frc::Rotation2d SwerveDriveSubsystem::GetContinuousOdometryAngle() {
   const auto latestOdometry = m_poseEstimator.GetEstimatedPosition();
 
+  frc::SmartDashboard::PutNumber("(Odometry) Raw Angle", latestOdometry.Rotation().Degrees().to<double>());
+
   if (m_prevOdometryAngle > 90_deg && latestOdometry.Rotation().Degrees() < -(90_deg)) {
     m_continuousOdometryOffset += 360_deg;
   } else if (m_prevOdometryAngle < -(90_deg) && latestOdometry.Rotation().Degrees() > 90_deg) {
@@ -597,7 +623,9 @@ frc::Rotation2d SwerveDriveSubsystem::GetContinuousOdometryAngle() {
   }
   m_prevOdometryAngle = latestOdometry.Rotation().Degrees();
 
-  return frc::Rotation2d{latestOdometry.Rotation().Degrees() + m_continuousOdometryOffset};
+  auto continuousOdometry = frc::Rotation2d{latestOdometry.Rotation().Degrees() + m_continuousOdometryOffset};
+  frc::SmartDashboard::PutNumber("(Odometry) Continuous Angle", continuousOdometry.Degrees().to<double>());
+  return continuousOdometry;
 }
 
 frc::Rotation2d SwerveDriveSubsystem::GetNearestSquareAngle() {
@@ -722,20 +750,22 @@ frc::SwerveModulePosition SwerveModule::GetPosition() {
 }
 
 void SwerveDriveSubsystem::UpdateFollowerLinearPIDParams(double kP, double kI, double kD) {
-  m_linearPID.SetPID(kP, kI, kD);
-  m_linearPID.Reset();
+  m_followerController.getXController().SetPID(kP, kI, kD);
+  m_followerController.getYController().SetPID(kP, kI, kD);
+  m_followerController.getXController().Reset();
+  m_followerController.getYController().Reset();
 }
 
 void SwerveDriveSubsystem::UpdateFollowerRotationalPIDParams(double kP, double kI, double kD) {
-  m_rotationalPID.SetPID(kP, kI, kD);
-  m_rotationalPID.Reset(m_rotationalPID.GetGoal());
+  m_followerController.getThetaController().SetPID(kP, kI, kD);
+  m_followerController.getThetaController().Reset(m_followerController.getThetaController().GetGoal());
 }
 
 void SwerveDriveSubsystem::UpdateFollowerRotationalPIDConstraints(
     frc::TrapezoidProfile<units::radians>::Constraints constraints) {
-  m_rotationalPID.SetConstraints(constraints);
+  m_followerController.getThetaController().SetConstraints(constraints);
   m_rotationalPIDConstraints = constraints;
-  m_rotationalPID.Reset(m_rotationalPID.GetGoal());
+  m_followerController.getThetaController().Reset(m_followerController.getThetaController().GetGoal());
 }
 
 void SwerveDriveSubsystem::UpdateFollowerRotationalPIDConstraints(
@@ -749,7 +779,6 @@ void SwerveDriveSubsystem::StartDrivingProfile(SwerveTrapezoidalProfileSegment n
   m_manualOverride = false;
   m_pActiveSwerveProfile = std::make_unique<SwerveTrapezoidalProfileSegment>(newProfile);
   m_pActiveSwerveSplineProfile.reset();
-  m_followerController = frc::HolonomicDriveController(m_linearPID, m_linearPID, m_rotationalPID);
   m_swerveProfileStartTime = std::chrono::steady_clock::now();
   m_followingProfile = true;
 }
@@ -758,8 +787,10 @@ void SwerveDriveSubsystem::StartDrivingProfile(SwerveTrapezoidalSpline newProfil
   m_profileComplete = false;
   m_manualOverride = false;
   m_pActiveSwerveSplineProfile = std::make_unique<SwerveTrapezoidalSpline>(newProfile);
+  m_followerController.getThetaController().Reset(newProfile.HeadingSetpoint(0_s));
+  m_followerController.getXController().Reset();
+  m_followerController.getXController().Reset();
   m_pActiveSwerveProfile.reset();
-  m_followerController = frc::HolonomicDriveController(m_linearPID, m_linearPID, m_rotationalPID);
   m_swerveProfileStartTime = std::chrono::steady_clock::now();
   m_followingProfile = true;
 }

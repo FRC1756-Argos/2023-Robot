@@ -12,6 +12,7 @@
 
 #include "commands/drive_to_position_absolute.h"
 #include "commands/drive_to_position_spline.h"
+#include "commands/home_arm_extension_command.h"
 #include "commands/initialize_odometry_command.h"
 #include "commands/oui_oui_place_cone_command.h"
 #include "commands/place_cone_command.h"
@@ -75,29 +76,32 @@ void AutonomousCableProtector3GPOuiOui::Initialize() {
   m_allCommands =
       InitializeOdometryCommand{&m_drive, {startingPosition}}
           .ToPtr()
-          .AndThen(
-              (OuiOuiPlaceConeCommand{&m_placer}.ToPtr())
-                  // Drive forward to game piece 3
-                  .AlongWith(frc2::WaitCommand(400_ms).ToPtr().AndThen(
-                      DriveToPositionAbsolute{&m_drive,
-                                              pickupPosition1,
-                                              pickupPosition1.Rotation().Degrees(),
-                                              path_constraints::translation::cableProtectorBackOut,
-                                              path_constraints::rotation::cableProtectorBackOut,
-                                              0_fps,
-                                              0_fps}
-                          .ToPtr()
-                          .AlongWith(SetArmPoseCommand{&m_lifter,
-                                                       &m_bashGuard,
-                                                       ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
-                                                       frc::Translation2d{0_in, 0_in},
-                                                       []() { return false; },
-                                                       []() { return false; },
-                                                       PathType::componentWise,
-                                                       speeds::armKinematicSpeeds::effectorFastVelocity,
-                                                       speeds::armKinematicSpeeds::effectorFastAcceleration}
-                                         .ToPtr())
-                          .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr()))))
+          .AndThen(OuiOuiPlaceConeCommand{&m_placer}
+                       .ToPtr()
+                       // Drive forward to game piece 3
+                       .AlongWith(frc2::WaitCommand(400_ms).ToPtr().AndThen(
+                           DriveToPositionAbsolute{&m_drive,
+                                                   pickupPosition1,
+                                                   pickupPosition1.Rotation().Degrees(),
+                                                   path_constraints::translation::cableProtectorBackOut,
+                                                   path_constraints::rotation::cableProtectorBackOut,
+                                                   0_fps,
+                                                   0_fps}
+                               .ToPtr()))
+                       .AlongWith(HomeArmExtensionCommand{m_lifter}
+                                      .ToPtr()
+                                      .AndThen(SetArmPoseCommand{
+                                          &m_lifter,
+                                          &m_bashGuard,
+                                          ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
+                                          frc::Translation2d{0_in, 0_in},
+                                          []() { return false; },
+                                          []() { return false; },
+                                          PathType::componentWise,
+                                          speeds::armKinematicSpeeds::effectorFastVelocity,
+                                          speeds::armKinematicSpeeds::effectorFastAcceleration}
+                                                   .ToPtr())
+                                      .AlongWith(frc2::InstantCommand{[this]() { m_intake.IntakeCube(); }}.ToPtr())))
           // Drive back to place (and turn)
           .AndThen(
               // Drive back to waypoint with turn
@@ -146,8 +150,8 @@ void AutonomousCableProtector3GPOuiOui::Initialize() {
                                     splineScoreToGp2Cp1,
                                     pickupPosition2.Rotation().Degrees(),
                                     2.0_s,
-                                    path_constraints::translation::cableProtectorBackOut,
-                                    path_constraints::rotation::cableProtectorBackOut,
+                                    path_constraints::translation::cableProtectorSplineOut,
+                                    path_constraints::rotation::cableProtectorSplineOut,
                                     0_fps,
                                     0_fps}
                   .ToPtr()
@@ -241,7 +245,7 @@ bool AutonomousCableProtector3GPOuiOui::IsFinished() {
 
 /* Autonomous Command Methods */
 std::string AutonomousCableProtector3GPOuiOui::GetName() const {
-  return "OUI OUI Cable Protector 3 Game Piece";
+  return "12. Cable Protector 3 Game Piece";
 }
 
 frc2::Command* AutonomousCableProtector3GPOuiOui::GetCommand() {

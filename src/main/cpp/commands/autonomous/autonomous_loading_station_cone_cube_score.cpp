@@ -171,7 +171,7 @@ bool AutonomousLoadingStationConeCubeScore::IsFinished() {
 
 /* Autonomous Command Methods */
 std::string AutonomousLoadingStationConeCubeScore::GetName() const {
-  return "Loading Station Cone Cube";
+  return "03. Loading Station Cone Cube";
 }
 
 frc2::Command* AutonomousLoadingStationConeCubeScore::GetCommand() {

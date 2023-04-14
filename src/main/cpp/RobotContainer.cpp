@@ -68,7 +68,6 @@ RobotContainer::RobotContainer()
     , m_auto3gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoCableProtector2Gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
-    , m_autoCableProtector3Gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoCableProtector3GpOuiOui{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
@@ -83,18 +82,17 @@ RobotContainer::RobotContainer()
                       // &m_autoDriveTuning, // This is just for tuning auto path follower
                       &m_autoDriveForward,
                       &m_autoPlaceExit,
-                      &m_autoCablePlaceExit,
-                      &m_autoBalance,
-                      &m_autoLoadingStation2Cone,
                       &m_autoConeCubeScore,
-                      &m_autoCableProtector2Gp,
-                      &m_autoCableProtector3Gp,
-                      &m_autoCableProtector3GpOuiOui,
-                      &m_auto3gp,
+                      &m_autoLoadingStation2Cone,
                       &m_autoScorePickupBalanceCone,
-                      &m_autoOnlyBalance,
                       &m_autoLoadingStationSlamGrab,
-                      &m_autoCableProtectorSlamGrabBalance},
+                      &m_autoCableProtectorSlamGrabBalance,
+                      &m_auto3gp,
+                      &m_autoOnlyBalance,
+                      &m_autoBalance,
+                      &m_autoCablePlaceExit,
+                      &m_autoCableProtector2Gp,
+                      &m_autoCableProtector3GpOuiOui},
                      &m_autoNothing}
     , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
@@ -641,11 +639,13 @@ void RobotContainer::ConfigureBindings() {
   (gamepieceLostTrigger.Debounce(200_ms) && !intakeConeTrigger && !intakeCubeTrigger && !scoreConeTrigger &&
    !scoreCubeTrigger)
       .OnTrue(frc2::InstantCommand([this]() {
-                m_controllers.DriverController().SetVibration(
-                    argos_lib::TemporaryVibrationPattern(argos_lib::VibrationAlternatePulse(250_ms, 1.0), 500_ms));
-                m_ledSubSystem.TemporaryAnimate(
-                    [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kWhite, false); },
-                    500_ms);
+                if (frc::DriverStation::IsTeleop()) {
+                  m_controllers.DriverController().SetVibration(
+                      argos_lib::TemporaryVibrationPattern(argos_lib::VibrationConstant(0.0, 1.0), 500_ms));
+                  m_ledSubSystem.TemporaryAnimate(
+                      [this]() { m_ledSubSystem.SetAllGroupsFlash(argos_lib::gamma_corrected_colors::kWhite, false); },
+                      500_ms);
+                }
               }).ToPtr());
 
   ledMissileSwitchTrigger.OnTrue(frc2::InstantCommand(

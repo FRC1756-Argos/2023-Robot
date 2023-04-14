@@ -135,7 +135,7 @@ bool AutonomousScoreConePickupBalance::IsFinished() {
 
 /* Autonomous Command Methods */
 std::string AutonomousScoreConePickupBalance::GetName() const {
-  return "Loading Station Cone Pickup Balance";
+  return "05. Loading Station Cone Pickup Balance";
 }
 
 frc2::Command* AutonomousScoreConePickupBalance::GetCommand() {

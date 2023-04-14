@@ -71,7 +71,7 @@ bool AutonomousOnlyBalance::IsFinished() {
 }
 
 std::string AutonomousOnlyBalance::GetName() const {
-  return "Only Balance";
+  return "07. Only Balance";
 }
 
 frc2::Command* AutonomousOnlyBalance::GetCommand() {
