@@ -5,6 +5,9 @@
 #include "constants/field_points.h"
 
 frc::Pose2d utils::ReflectFieldPoint(const frc::Pose2d source) {
-  return frc::Pose2d{{source.X(), field_dimensions::fieldMaxY - source.Y()},
-                     argos_lib::angle::NearestAngle(-source.Rotation().Degrees(), source.Rotation().Degrees())};
+  units::degree_t targetAngle =
+      units::math::abs(units::math::abs(source.Rotation().Degrees()) - 180_deg) <= 0.01_deg ?
+          -source.Rotation().Degrees() :
+          argos_lib::angle::NearestAngle(-source.Rotation().Degrees(), source.Rotation().Degrees());
+  return frc::Pose2d{{source.X(), field_dimensions::fieldMaxY - source.Y()}, targetAngle};
 }

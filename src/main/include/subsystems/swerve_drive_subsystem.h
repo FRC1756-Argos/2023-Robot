@@ -287,8 +287,6 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
   std::chrono::time_point<std::chrono::steady_clock> m_swerveProfileStartTime;  ///< Time when active profile began
   frc::ProfiledPIDController<units::radians>::Constraints m_rotationalPIDConstraints;
   frc2::PIDController m_linearPID;  ///< Correction parameters for x/y error when following drive profile
-  frc::ProfiledPIDController<units::radians>
-      m_rotationalPID;  ///< Correction parameters for rotational error when following drive profile
   frc::HolonomicDriveController m_followerController;  ///< Controller to follow drive profile
 
   argos_lib::NTMotorPIDTuner m_driveMotorPIDTuner;  ///< Utility to tune drive motors
