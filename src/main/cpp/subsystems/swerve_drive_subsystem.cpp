@@ -513,7 +513,7 @@ void SwerveDriveSubsystem::SwerveDrive(const units::degree_t& velAngle,
                                        const double& rotVelocity) {
   // Filter/Validate inputs
   units::degree_t filteredVelAngle = argos_lib::angle::ConstrainAngle(velAngle, 0_deg, 360_deg);
-  double filteredVel = std::clamp<double>(velocity, 0, 1);
+  double filteredVel = std::clamp<double>(velocity, -1, 1);
   double filteredRotVelocity = std::clamp<double>(rotVelocity, -1, 1);
 
   // Calculate velocity components and make field-centric speeds

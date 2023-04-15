@@ -43,7 +43,7 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
                   // Final Approach to center
                   DriveUntilPitchRate{m_pDrive,
                                       m_approachAngle,
-                                      0.06,
+                                      0.15,
                                       0.15,
                                       thresholds::robotTippingPitchRate * m_initialPitchSign,
                                       m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
@@ -52,16 +52,32 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
               .AndThen(
                   DriveUntilPitch{m_pDrive,
                                   m_approachAngle,
-                                  0.06,
-                                  0.06,
-                                  6_deg * m_initialPitchSign,
+                                  0.15,
+                                  0.15,
+                                  (m_approachForward ? 8_deg : 10_deg) * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                   4_s}
                       .ToPtr())
-              .AndThen(frc2::InstantCommand([this, drive]() {
-                         drive->SwerveDrive(m_approachAngle, m_approachForward ? 0.15 : -0.15);
-                       }).ToPtr())
-              .AndThen(frc2::WaitCommand(250_ms).ToPtr())
+              .AndThen(
+                  DriveUntilPitch{m_pDrive,
+                                  m_approachAngle + 180_deg,
+                                  0.12,
+                                  0.12,
+                                  // Opposite of initial sign
+                                  -5_deg * m_initialPitchSign,
+                                  m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
+                                  2_s}
+                      .ToPtr())
+              .AndThen(
+                  DriveUntilPitch{m_pDrive,
+                                  m_approachAngle + 180_deg,
+                                  0.12,
+                                  0.12,
+                                  // Opposite of initial sign
+                                  -5_deg * m_initialPitchSign,
+                                  m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
+                                  2_s}
+                      .ToPtr())
               .AndThen(frc2::InstantCommand([this, drive]() {
                          drive->StopDrive();
                          drive->LockWheels();

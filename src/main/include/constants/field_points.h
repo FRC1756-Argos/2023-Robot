@@ -68,6 +68,10 @@ namespace utils {
     return frc::Translation2d{source.X(), field_dimensions::fieldMaxY - source.Y()};
   }
 
+  constexpr units::angle::degree_t ReflectAngle(const units::angle::degree_t sourceAngle) {
+    return sourceAngle * units::scalar_t{-1};
+  }
+
   template <class T>
   std::vector<T> ReflectFieldPoint(const std::vector<T> source) {
     std::vector<T> retVal;

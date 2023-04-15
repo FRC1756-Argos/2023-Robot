@@ -14,10 +14,12 @@
 
 DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                                    units::degree_t approachAngle,
-                                                   units::degree_t robotYaw)
+                                                   units::degree_t robotYaw,
+                                                   bool extraDrive)
     : m_pDrive{drive}
     , m_approachAngle{approachAngle}
     , m_robotYawAngle{robotYaw}
+    , m_extraDrive{extraDrive}
     , m_approachForward{units::math::abs(
                             argos_lib::angle::ConstrainAngle(robotYaw - approachAngle, -180_deg, 180_deg)) < 90_deg}
     , m_initialPitchSign{m_approachForward ? 1 : -1}
@@ -69,7 +71,7 @@ DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                       .ToPtr())
               .AndThen(frc2::InstantCommand([this, drive, approachAngle]() { drive->SwerveDrive(approachAngle, 0.2); })
                            .ToPtr()
-                           .AndThen(frc2::WaitCommand{750_ms}.ToPtr())
+                           .AndThen(frc2::WaitCommand{extraDrive ? 750_ms : 0_ms}.ToPtr())
                            .AndThen(frc2::InstantCommand([this, drive]() { drive->StopDrive(); }).ToPtr()))} {}
 
 // Called when the command is initially scheduled.
@@ -91,5 +93,6 @@ void DriveOverChargingStation::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool DriveOverChargingStation::IsFinished() {
-  return m_commands.get()->IsFinished();
+  bool finished = m_commands.get()->IsFinished();
+  return finished;
 }

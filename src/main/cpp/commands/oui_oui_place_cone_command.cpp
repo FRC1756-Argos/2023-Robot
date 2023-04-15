@@ -39,9 +39,11 @@ bool OuiOuiPlaceConeCommand::IsFinished() {
   // Check if robot is taking too long to place cone
   auto curTime = std::chrono::steady_clock::now();
   const auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime);
+
   if (timePassed.count() >= timeouts::robotSlamCone.to<double>()) {
     return true;
   }
+
   bool stalled = m_ouiOuiPlacer->IsStalled();
   return stalled;
 }
