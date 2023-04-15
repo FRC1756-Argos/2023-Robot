@@ -142,8 +142,8 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | B               | Home Swerve (hold with <kbd>A</kbd> and <kbd>X</kbd>) |
 | X               | Home Swerve (hold with <kbd>A</kbd> and <kbd>B</kbd>) |
 | Y               | Field Home (hold) |
-| LB              | Unused |
-| RB              | Cone/Cube Intake (game piece selected by operator control box switch) |
+| LB              | Cube Intake |
+| RB              | Cone Intake |
 | LT              | Enable vision alignment |
 | RT              | Cone/Cube Score (game piece selected by operator control box switch) |
 | Back            | Swap (hold with <kbd>Start</kbd>) |

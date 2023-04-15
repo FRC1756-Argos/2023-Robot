@@ -443,12 +443,8 @@ void RobotContainer::ConfigureBindings() {
   auto cubeSelectedTrigger = frc2::Trigger{[this]() { return m_buttonBox.GetGamePiece() == GamePiece::CUBE; }};
   auto coneSelectedTrigger = !cubeSelectedTrigger;
 
-  auto intakeConeTrigger =
-      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight) &&
-      coneSelectedTrigger;
-  auto intakeCubeTrigger =
-      m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight) &&
-      cubeSelectedTrigger;
+  auto intakeConeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperRight);
+  auto intakeCubeTrigger = m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kBumperLeft);
   auto scoreConeTrigger =
       m_controllers.DriverController().TriggerRaw(argos_lib::XboxController::Button::kRightTrigger) &&
       coneSelectedTrigger;
