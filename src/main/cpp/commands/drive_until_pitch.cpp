@@ -9,10 +9,6 @@
 #include "units/angle.h"
 #include "units/time.h"
 
-// REMOVEME debugging
-#include <frc/smartdashboard/SmartDashboard.h>
-// ! end
-
 DriveUntilPitch::DriveUntilPitch(SwerveDriveSubsystem* swerveDrive,
                                  units::degree_t velAngle,
                                  double power,
@@ -81,8 +77,5 @@ bool DriveUntilPitch::IsFinished() {
   // if (finished) {
   //   std::printf("---> pitch: %0.2f\n", pitch.to<double>());
   // }
-  // REMOVEME debugging
-  frc::SmartDashboard::PutNumber("DriveUntilPitch/Finished? ", static_cast<double>(finished));
-  // ! end
   return finished;
 }

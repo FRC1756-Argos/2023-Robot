@@ -241,10 +241,6 @@ class SwerveDriveSubsystem : public frc2::SubsystemBase {
    * @return pitch rate in unit degrees per second
    */
   units::degrees_per_second_t GetRobotPitchRate();
-  // REMOVEME debugging
-  void PutHerInNeuturalTerry();
-  void PutHerInBrakeTerry();
-  // ! end
 
  private:
   argos_lib::RobotInstance m_instance;

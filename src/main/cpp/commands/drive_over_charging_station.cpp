@@ -12,10 +12,6 @@
 #include "commands/drive_until_pitch_rate.h"
 #include "constants/auto.h"
 
-// REMOVEME debugging
-#include <frc/smartdashboard/SmartDashboard.h>
-// ! end
-
 DriveOverChargingStation::DriveOverChargingStation(SwerveDriveSubsystem* drive,
                                                    units::degree_t approachAngle,
                                                    units::degree_t robotYaw,

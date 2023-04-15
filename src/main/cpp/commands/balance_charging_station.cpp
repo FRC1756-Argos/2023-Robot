@@ -54,15 +54,30 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
                                   m_approachAngle,
                                   0.15,
                                   0.15,
-                                  8_deg * m_initialPitchSign,
+                                  (m_approachForward ? 8_deg : 10_deg) * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
                                   4_s}
                       .ToPtr())
-              .AndThen(frc2::InstantCommand([this, drive]() {
-                         drive->SwerveDrive(180_deg + m_approachAngle,
-                                            -0.15);  /// @todo Why do both sign and angle need modified?
-                       }).ToPtr())
-              .AndThen(frc2::WaitCommand(150_ms).ToPtr())
+              .AndThen(
+                  DriveUntilPitch{m_pDrive,
+                                  m_approachAngle + 180_deg,
+                                  0.12,
+                                  0.12,
+                                  // Opposite of initial sign
+                                  -5_deg * m_initialPitchSign,
+                                  m_approachForward ? ApproachDirection::Decreasing : ApproachDirection::Increasing,
+                                  2_s}
+                      .ToPtr())
+              .AndThen(
+                  DriveUntilPitch{m_pDrive,
+                                  m_approachAngle + 180_deg,
+                                  0.12,
+                                  0.12,
+                                  // Opposite of initial sign
+                                  -5_deg * m_initialPitchSign,
+                                  m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
+                                  2_s}
+                      .ToPtr())
               .AndThen(frc2::InstantCommand([this, drive]() {
                          drive->StopDrive();
                          drive->LockWheels();

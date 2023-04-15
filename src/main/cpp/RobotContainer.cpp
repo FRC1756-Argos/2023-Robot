@@ -71,7 +71,6 @@ RobotContainer::RobotContainer()
     , m_autoCableProtector3GpOuiOui{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoCablePlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoScorePickupBalanceCone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
-    , m_autoLoadingStationSlamGrab{m_swerveDrive, m_ledSubSystem, m_ouiOuiPlacerSubsystem, m_lifter, m_bash, m_intake}
     , m_autoCableProtectorSlamGrabBalance{m_swerveDrive,
                                           m_ledSubSystem,
                                           m_ouiOuiPlacerSubsystem,
@@ -85,11 +84,10 @@ RobotContainer::RobotContainer()
                       &m_autoConeCubeScore,
                       &m_autoLoadingStation2Cone,
                       &m_autoScorePickupBalanceCone,
-                      &m_autoLoadingStationSlamGrab,
-                      &m_autoCableProtectorSlamGrabBalance,
                       &m_auto3gp,
                       &m_autoOnlyBalance,
                       &m_autoBalance,
+                      &m_autoCableProtectorSlamGrabBalance,
                       &m_autoCablePlaceExit,
                       &m_autoCableProtector2Gp,
                       &m_autoCableProtector3GpOuiOui},
@@ -105,10 +103,6 @@ RobotContainer::RobotContainer()
   // ================== DEFAULT COMMANDS ===============================
   m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
       [this] {
-        // REMOVEME debugging
-        frc::SmartDashboard::PutNumber("Drive/Robot Pitch (deg)", m_swerveDrive.GetRobotPitch().to<double>());
-        frc::SmartDashboard::PutNumber("Drive/Robot Pitch Rate (deg / s)", m_swerveDrive.GetRobotPitch().to<double>());
-        // ! end
         auto deadbandTranslationSpeeds = argos_lib::swerve::CircularInterpolate(
             argos_lib::swerve::TranslationSpeeds{
                 -m_controllers.DriverController().GetY(
@@ -378,15 +372,6 @@ void RobotContainer::ConfigureBindings() {
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kY, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kA, {1500_ms, 0_ms});
   m_controllers.OperatorController().SetButtonDebounce(argos_lib::XboxController::Button::kB, {1500_ms, 0_ms});
-  // REMOVEME debugging
-  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kRight, {1500_ms, 0_ms});
-  auto drivetrainNeutural =
-      m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kRight});
-  drivetrainNeutural.OnTrue(frc2::InstantCommand([this] { m_swerveDrive.PutHerInNeuturalTerry(); }).ToPtr());
-  m_controllers.DriverController().SetButtonDebounce(argos_lib::XboxController::Button::kLeft, {1500_ms, 0_ms});
-  auto drivetrainBrake = m_controllers.DriverController().TriggerDebounced({argos_lib::XboxController::Button::kLeft});
-  drivetrainBrake.OnTrue(frc2::InstantCommand([this] { m_swerveDrive.PutHerInNeuturalTerry(); }).ToPtr());
-  // ! end
 
   /* —————————————————————————————— TRIGGERS ————————————————————————————— */
   auto overrideShoulderTrigger = (frc2::Trigger{[this]() {

@@ -4,10 +4,6 @@
 
 #include "commands/drive_until_pitch_rate.h"
 
-// REMOVEME debugging
-#include <frc/smartdashboard/SmartDashboard.h>
-// ! end
-
 DriveUntilPitchRate::DriveUntilPitchRate(SwerveDriveSubsystem* swerveDrive,
                                          units::degree_t velAngle,
                                          double power,
@@ -76,8 +72,5 @@ bool DriveUntilPitchRate::IsFinished() {
   if (finished) {
     std::printf("[ERROR] ---> pitch rate: %0.2f\n", pitchRate.to<double>());
   }
-  // REMOVEME debuggini
-  frc::SmartDashboard::PutNumber("DriveUntilPitchRate/Finished? ", static_cast<double>(finished));
-  // ! end
   return finished;
 }

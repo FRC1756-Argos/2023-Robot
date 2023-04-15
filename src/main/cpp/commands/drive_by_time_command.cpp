@@ -29,7 +29,9 @@ void DriveByTimeCommand::Execute() {
 }
 
 // Called once the command ends or is interrupted.
-void DriveByTimeCommand::End(bool interrupted) {}
+void DriveByTimeCommand::End(bool interrupted) {
+  m_swerveDrive.StopDrive();
+}
 
 // Returns true when the command should end.
 bool DriveByTimeCommand::IsFinished() {

@@ -43,12 +43,16 @@ void AutoCableProtectSlamGrabBalance::Initialize() {
   bool blueAlliance = frc::DriverStation::GetAlliance() == frc::DriverStation::Alliance::kBlue;
   auto startingPosition = blueAlliance ? starting_positions::blue_alliance::cableProtectorSlamGrab :
                                          starting_positions::red_alliance::cableProtectorSlamGrab;
+
   // angle to drive to game piece
   units::degree_t angleToGamePiece = blueAlliance ?
                                          interim_waypoints::blue_alliance::slam_grab::cableProtector::angleToPickup :
                                          interim_waypoints::red_alliance::slam_grab::cableProtector::angleToPickup;
   // Time to spend driving to game piece
   units::millisecond_t timeToGamePiece = timeouts::slam_grab::calbeProtector::toGamePiece;
+  units::millisecond_t backToCharge = timeouts::slam_grab::calbeProtector::backToCharge;
+  units::millisecond_t timeToWait = timeouts::slam_grab::afterDriveOver;
+  double speed = 0.2;
 
   m_leds.ColorSweep(m_leds.GetAllianceColor(), true);
   m_allCommands =
@@ -66,7 +70,7 @@ void AutoCableProtectSlamGrabBalance::Initialize() {
                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
                                       .ToPtr()))
           .AndThen(DriveOverChargingStation(&m_drive, 0_deg, 0_deg, false).ToPtr())
-          .AndThen((frc2::WaitCommand{750_ms}.ToPtr())
+          .AndThen((frc2::WaitCommand{timeToWait}.ToPtr())
                        .AlongWith(SetArmPoseCommand{&m_lifter,
                                                     &m_bash,
                                                     ScoringPosition{ScoringColumn::cubeIntake, ScoringRow::invalid},
@@ -77,7 +81,7 @@ void AutoCableProtectSlamGrabBalance::Initialize() {
                                                     speeds::armKinematicSpeeds::effectorFastVelocity,
                                                     speeds::armKinematicSpeeds::effectorFastAcceleration}
                                       .ToPtr()))
-          .AndThen((DriveByTimeCommand{m_drive, angleToGamePiece, 0.15, timeToGamePiece}.ToPtr())
+          .AndThen((DriveByTimeCommand{m_drive, angleToGamePiece, speed, timeToGamePiece}.ToPtr())
                        .AlongWith(frc2::InstantCommand{[this] { m_intake.IntakeCube(); }}.ToPtr()))
           .AndThen((SetArmPoseCommand{&m_lifter,
                                       &m_bash,
@@ -89,8 +93,9 @@ void AutoCableProtectSlamGrabBalance::Initialize() {
                                       speeds::armKinematicSpeeds::effectorFastVelocity,
                                       speeds::armKinematicSpeeds::effectorFastAcceleration}
                         .ToPtr()
-                        .AlongWith(frc2::InstantCommand{[this] { m_intake.IntakeStop(); }}.ToPtr())));
-  // .AlongWith(BalanceChargingStation{&m_drive, 180_deg, 180_deg}.ToPtr())));
+                        .AlongWith(frc2::InstantCommand{[this] { m_intake.IntakeStop(); }}.ToPtr())))
+          .AndThen(DriveByTimeCommand{m_drive, angleToGamePiece - 180_deg, speed, backToCharge}.ToPtr())
+          .AndThen(BalanceChargingStation{&m_drive, 180_deg, 0_deg}.ToPtr());
   m_allCommands.get()->Initialize();
 }
 
@@ -117,7 +122,7 @@ bool AutoCableProtectSlamGrabBalance::IsFinished() {
    * @copydoc AutonomousCommand::GetName()
    */
 std::string AutoCableProtectSlamGrabBalance::GetName() const {
-  return "Cable Protector slam grab balance";
+  return "09. Balance 1.5 Game Piece";
 }
 
 /**
