@@ -125,6 +125,17 @@ The first run may take a moment, but subsequent automatic runs are very fast.
 
 You'll now have the linter run before each commit!  For compatibility with Windows, we recommend the pip version of clang-format, but wpi-format will find any installed `clang-format` binary in the system path.
 
+
+## Robot Startup
+
+> **To properly start up, the following mechanisms need to be started up in a state such that:**
+
+The **Oui Oui Placer** is pointing upwards towards the sky, against it's n-stop.
+
+The **Bash Guards** are all the way back, inside the robot to their n-stops.
+
+The **Arm assembly** needs to be reasonably close to the stow position (not up and out).
+
 ## Controls
 
 **Driver:**
@@ -174,12 +185,6 @@ You'll now have the linter run before each commit!  For compatibility with Windo
 | Start           | Swap (hold with <kbd>Back</kbd>) |
 | Left JS Button  | Unused |
 | Right JS Button | Unused |
-
-## Cone Placer / Oui Oui Placer Startup
-
-In order for the robot to function correctly, the carbon fiber arm that holds the cone slamming
-mechanism must be started such that the cone is at the top of its arc with the carbon fiber rod
-pointing twords the sky against the mechanical n-stop.
 
 ## Software Checkout
 
