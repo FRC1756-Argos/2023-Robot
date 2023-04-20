@@ -47,7 +47,7 @@ namespace scoring_positions {
     constexpr static SetpointPosition cubeHigh(frc::Translation2d(48.5_in, 49_in), BashGuardPosition::Retracted);
     constexpr static SetpointPosition cubeHigh_wristInverted(frc::Translation2d(48.5_in, 49_in),
                                                              BashGuardPosition::Retracted);
-    constexpr static SetpointPosition coneIntake(frc::Translation2d(31.5_in, 13.5_in), BashGuardPosition::Deployed);
+    constexpr static SetpointPosition coneIntake(frc::Translation2d(31.5_in, 13.25_in), BashGuardPosition::Deployed);
     constexpr static SetpointPosition cubeIntake(frc::Translation2d(31.5_in, 14.75_in), BashGuardPosition::Deployed);
     constexpr static SetpointPosition stow(frc::Translation2d(10.5_in, 19.5_in), BashGuardPosition::Retracted);
   }  // namespace lifter_extension_end
