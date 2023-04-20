@@ -55,7 +55,7 @@ void AutonomousLoadingStation3GP::Initialize() {
 
   std::vector<frc::Translation2d> splineScoreToGp1WaypointsBlue{};
   auto splineScoreToGp1Cp0Blue = ConvertToControlVector(8.3_ft, 14.515_ft, 6.573_ft, 0_ft);
-  auto splineScoreToGp1Cp1Blue = ConvertToControlVector(24_ft, 12.5_ft, 0_ft, -14.137_ft);
+  auto splineScoreToGp1Cp1Blue = ConvertToControlVector(24_ft, 13.5_ft, 0_ft, -14.137_ft);
 
   auto splineScoreToGp1Cp0 = blueAlliance ? splineScoreToGp1Cp0Blue : utils::ReflectFieldPoint(splineScoreToGp1Cp0Blue);
   auto splineScoreToGp1Cp1 = blueAlliance ? splineScoreToGp1Cp1Blue : utils::ReflectFieldPoint(splineScoreToGp1Cp1Blue);
@@ -63,7 +63,7 @@ void AutonomousLoadingStation3GP::Initialize() {
       blueAlliance ? splineScoreToGp1WaypointsBlue : utils::ReflectFieldPoint(splineScoreToGp1WaypointsBlue);
 
   std::vector<frc::Translation2d> splineGp1ToScoreWaypointsBlue{};
-  auto splineGp1ToScoreCp0Blue = ConvertToControlVector(24_ft, 12.5_ft, 0_ft, 14.137_ft);
+  auto splineGp1ToScoreCp0Blue = ConvertToControlVector(24_ft, 13.5_ft, 0_ft, 14.137_ft);
   auto splineGp1ToScoreCp1Blue = ConvertToControlVector(8.3_ft, 13.7_ft, -6.573_ft, 0_ft);
 
   auto splineGp1ToScoreCp0 = blueAlliance ? splineGp1ToScoreCp0Blue : utils::ReflectFieldPoint(splineGp1ToScoreCp0Blue);
