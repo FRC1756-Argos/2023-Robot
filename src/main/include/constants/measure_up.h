@@ -49,8 +49,8 @@ namespace measure_up {
     }  // namespace wrist
     namespace shoulder {
       constexpr auto homeAngle = 0_deg;
-      constexpr auto minAngle = -59_deg;
-      constexpr auto maxAngle = 5_deg;
+      constexpr auto minAngle = -56.5_deg;
+      constexpr auto maxAngle = 7_deg;
       constexpr auto acceptErr = 2_deg;
       constexpr auto fixedBoomActuatorPosition =
           frc::Translation2d{-14.75_in, 4.5_in};  ///< Linear actuator mount point relative to robot origin
