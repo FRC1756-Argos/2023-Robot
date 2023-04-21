@@ -81,6 +81,17 @@ When commissioning a new robot, you should set the instance type to either "Comp
 8. Then double click on the homes folder.
 9. Then you can click on the shoulderHomes file to see the home of the shoulder.
 
+### Homing Extension
+1. Set arm to be in back n-stop position. Make sure it's ALL the way back!
+2. Power on robot. Connect the robot to your computer, no controller is needed for this homing.
+3. Open File Explorer
+4. Click in the white space in the bar at the top
+5. Use one of the above FTP addresses
+6. Double click on home folder
+7. Double click on lvuser folder
+8. Double click on homes folder
+9. Delete the extension homes file & restart code WITHOUT moving the arm extension
+
 
 ### Vision
 
@@ -135,6 +146,10 @@ The **Oui Oui Placer** is pointing upwards towards the sky, against it's n-stop.
 The **Bash Guards** are all the way back, inside the robot to their n-stops.
 
 The **Arm assembly** needs to be reasonably close to the stow position (not up and out).
+
+**Arm Extension Warning**: Because of the use of the function `ExtensionFromRotation()`, the extension has a condition where it can believe it "wraps" around. To home, the extension treats some absolute value as zero degrees [0-360), if the extension is *physically* held beyond this zero, the absolute encoder might read 359° rather than 0° (or any other value beyond the home) causing the extension to "wrap around" and initialize the motor with completely incorrect soft limits, and current position.
+
+Ex: You home the arm at absolute encoder 5° (which may map to 0 in extension depending on gearing of encoder rotation to extension), the arm is homed at an absolute encoder value of 3° because it was mechanically held past 5° before start. The extension now believes it's at 357° (which may be an extension of 30 in). A huge error!
 
 ## Controls
 
