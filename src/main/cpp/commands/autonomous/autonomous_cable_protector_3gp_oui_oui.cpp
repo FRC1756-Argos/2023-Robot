@@ -46,7 +46,7 @@ void AutonomousCableProtector3GPOuiOui::Initialize() {
 
   std::vector<frc::Translation2d> splineGp3ToScoreWaypointsBlue{{14.5_ft, 2.75_ft}};
   auto splineGp3ToScoreCp0Blue = ConvertToControlVector(21.562_ft, 3.000_ft, -0.737_ft, 0.017_ft);
-  auto splineGp3ToScoreCp1Blue = ConvertToControlVector(9_ft, 3.4_ft, -6.587_ft, 0_ft);
+  auto splineGp3ToScoreCp1Blue = ConvertToControlVector(8.8_ft, 3.4_ft, -6.587_ft, 0_ft);
 
   auto splineGp3ToScoreCp0 = blueAlliance ? splineGp3ToScoreCp0Blue : utils::ReflectFieldPoint(splineGp3ToScoreCp0Blue);
   auto splineGp3ToScoreCp1 = blueAlliance ? splineGp3ToScoreCp1Blue : utils::ReflectFieldPoint(splineGp3ToScoreCp1Blue);
@@ -54,7 +54,7 @@ void AutonomousCableProtector3GPOuiOui::Initialize() {
       blueAlliance ? splineGp3ToScoreWaypointsBlue : utils::ReflectFieldPoint(splineGp3ToScoreWaypointsBlue);
 
   std::vector<frc::Translation2d> splineScoreToGp2WaypointsBlue{{16.102_ft, 1.861_ft}};
-  auto splineScoreToGp2Cp0Blue = ConvertToControlVector(9_ft, 3.4_ft, 5.839_ft, -0.287_ft);
+  auto splineScoreToGp2Cp0Blue = ConvertToControlVector(8.8_ft, 3.4_ft, 5.839_ft, -0.287_ft);
   auto splineScoreToGp2Cp1Blue = ConvertToControlVector(25.4_ft, 5.0_ft, 0_ft, 12.3_ft);
 
   auto splineScoreToGp2Cp0 = blueAlliance ? splineScoreToGp2Cp0Blue : utils::ReflectFieldPoint(splineScoreToGp2Cp0Blue);
@@ -64,7 +64,7 @@ void AutonomousCableProtector3GPOuiOui::Initialize() {
 
   std::vector<frc::Translation2d> splineGp2ToScoreWaypointsBlue{};
   auto splineGp2ToScoreCp0Blue = ConvertToControlVector(25.4_ft, 4.75_ft, 0.083_ft, -12.22_ft);
-  auto splineGp2ToScoreCp1Blue = ConvertToControlVector(9.2_ft, 2.9_ft, -6.459_ft, -0.06_ft);
+  auto splineGp2ToScoreCp1Blue = ConvertToControlVector(9.0_ft, 2.9_ft, -6.459_ft, -0.06_ft);
 
   auto splineGp2ToScoreCp0 = blueAlliance ? splineGp2ToScoreCp0Blue : utils::ReflectFieldPoint(splineGp2ToScoreCp0Blue);
   auto splineGp2ToScoreCp1 = blueAlliance ? splineGp2ToScoreCp1Blue : utils::ReflectFieldPoint(splineGp2ToScoreCp1Blue);

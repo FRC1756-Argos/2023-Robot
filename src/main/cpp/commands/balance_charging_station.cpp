@@ -71,10 +71,10 @@ BalanceChargingStation::BalanceChargingStation(SwerveDriveSubsystem* drive,
               .AndThen(
                   DriveUntilPitch{m_pDrive,
                                   m_approachAngle + 180_deg,
-                                  0.12,
-                                  0.12,
+                                  0.1,
+                                  0.1,
                                   // Opposite of initial sign
-                                  -5_deg * m_initialPitchSign,
+                                  -6.5_deg * m_initialPitchSign,
                                   m_approachForward ? ApproachDirection::Increasing : ApproachDirection::Decreasing,
                                   2_s}
                       .ToPtr())

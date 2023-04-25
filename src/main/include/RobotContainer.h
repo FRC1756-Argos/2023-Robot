@@ -25,6 +25,7 @@
 #include "commands/autonomous/autonomous_drive_tuning.h"
 #include "commands/autonomous/autonomous_loading_station_2_cone.h"
 #include "commands/autonomous/autonomous_loading_station_3gp.h"
+#include "commands/autonomous/autonomous_loading_station_3gp_tune.h"
 #include "commands/autonomous/autonomous_loading_station_cone_cube_score.h"
 #include "commands/autonomous/autonomous_nothing.h"
 #include "commands/autonomous/autonomous_only_balance.h"
@@ -106,6 +107,7 @@ class RobotContainer {
   AutonomousLoadingStation2Cone m_autoLoadingStation2Cone;
   AutonomousLoadingStationConeCubeScore m_autoConeCubeScore;
   AutonomousLoadingStation3GP m_auto3gp;
+  AutonomousLoadingStation3GPTune m_auto3gp_tune;
   AutonomousPlaceExit m_autoPlaceExit;
   AutonomousCableProtector2Gp m_autoCableProtector2Gp;
   AutonomousCableProtector3GPOuiOui m_autoCableProtector3GpOuiOui;

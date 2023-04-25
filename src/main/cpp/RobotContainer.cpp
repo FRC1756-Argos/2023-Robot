@@ -66,6 +66,7 @@ RobotContainer::RobotContainer()
     , m_autoLoadingStation2Cone{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoConeCubeScore{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_auto3gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
+    , m_auto3gp_tune{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
     , m_autoPlaceExit{m_swerveDrive, m_bash, m_lifter, m_ledSubSystem, m_intake}
     , m_autoCableProtector2Gp{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem}
     , m_autoCableProtector3GpOuiOui{m_swerveDrive, m_bash, m_lifter, m_intake, m_ledSubSystem, m_ouiOuiPlacerSubsystem}
@@ -90,7 +91,8 @@ RobotContainer::RobotContainer()
                       &m_autoCableProtectorSlamGrabBalance,
                       &m_autoCablePlaceExit,
                       &m_autoCableProtector2Gp,
-                      &m_autoCableProtector3GpOuiOui},
+                      &m_autoCableProtector3GpOuiOui,
+                      &m_auto3gp_tune},
                      &m_autoNothing}
     , m_lateralNudgeRate{12 / 1_s}
     , m_rotationalNudgeRate{4 / 1_s}
